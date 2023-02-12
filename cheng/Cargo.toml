@@ -1,0 +1,12 @@
+[package]
+name = "cheng"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+[build-dependencies]
+rand = "0.8"
+
+[features]
+simd = []

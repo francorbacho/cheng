@@ -19,7 +19,7 @@ fn test_movegen_king() {
 fn test_movegen_rook_steady() {
     let occupancy = BoardMask::from([A2, B8, D3, E1, E3, H2, H5, H7, H8].as_slice());
     let moves = <Rook as steady::SlidingPiece>::moves(H3, occupancy);
-    let moves_expected: BoardMask = [E3, F3, G3, H2, H4, H5].as_slice().into();
+    let moves_expected = BoardMask::from([E3, F3, G3, H2, H4, H5].as_slice());
     assert_eq!(moves, moves_expected);
 }
 
@@ -54,13 +54,44 @@ fn test_movegen_rook() {
 
     let occupancy = BoardMask::default();
     let moves = Rook::moves(D4, BoardMask::default(), occupancy);
-    let moves_expected: BoardMask = [D1, D2, D3, A4, B4, C4, E4, F4, G4, H4, D5, D6, D7, D8]
-        .as_slice()
-        .into();
+    let moves_expected =
+        BoardMask::from([D1, D2, D3, A4, B4, C4, E4, F4, G4, H4, D5, D6, D7, D8].as_slice());
     assert_eq!(moves, moves_expected);
 
     let occupancy = BoardMask::from([A2, B8, D3, E1, E3, H2, H5, H7, H8].as_slice());
     let moves = Rook::moves(H3, BoardMask::default(), occupancy);
-    let moves_expected: BoardMask = [E3, F3, G3, H2, H4, H5].as_slice().into();
+    let moves_expected: BoardMask = BoardMask::from([E3, F3, G3, H2, H4, H5].as_slice());
+    assert_eq!(moves, moves_expected);
+}
+
+#[test]
+fn test_movegen_bishop_steady() {
+    let occupancy = BoardMask::default();
+
+    let moves = <Bishop as steady::SlidingPiece>::moves(C7, occupancy);
+    let moves_expected = BoardMask::from([H2, G3, F4, E5, D6, B8, A5, B6, D8].as_slice());
+    assert_eq!(moves, moves_expected);
+
+    let occupancy = BoardMask::from([B2, C2, D2, F4, A5, E7, F7, G7].as_slice());
+
+    let moves = <Bishop as steady::SlidingPiece>::moves(C7, occupancy);
+    let moves_expected = BoardMask::from([F4, E5, D6, B8, A5, B6, D8].as_slice());
+    assert_eq!(moves, moves_expected);
+}
+
+#[test]
+fn test_movegen_bishop() {
+    Bishop::init();
+
+    let occupancy = BoardMask::default();
+
+    let moves = Bishop::moves(C7, BoardMask::default(), occupancy);
+    let moves_expected = BoardMask::from([H2, G3, F4, E5, D6, B8, A5, B6, D8].as_slice());
+    assert_eq!(moves, moves_expected);
+
+    let occupancy = BoardMask::from([B2, C2, D2, F4, A5, E7, F7, G7].as_slice());
+
+    let moves = Bishop::moves(C7, BoardMask::default(), occupancy);
+    let moves_expected = BoardMask::from([F4, E5, D6, B8, A5, B6, D8].as_slice());
     assert_eq!(moves, moves_expected);
 }

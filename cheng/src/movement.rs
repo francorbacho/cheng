@@ -36,8 +36,7 @@ impl FromStr for PseudoMove {
 
         let origin: Square = s
             .get(0..2)
-            .map(|sq| sq.parse().ok())
-            .flatten()
+            .and_then(|sq| sq.parse().ok())
             .ok_or(PseudoMoveParseError::WrongOriginSquare)?;
         let takes = &s[2..3] == "x";
         let destination = if takes { s.get(3..5) } else { s.get(2..4) }

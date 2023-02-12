@@ -28,11 +28,6 @@ pub struct Board {
 
 impl Board {
     #[inline]
-    pub fn default() -> Self {
-        Self::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
-    }
-
-    #[inline]
     pub fn empty() -> Self {
         Self {
             white_side: SideState::empty(),
@@ -132,5 +127,12 @@ impl Board {
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
         self.side_mut(self.turn).update(movement);
         self.turn = self.turn.opposite();
+    }
+}
+
+impl Default for Board {
+    #[inline]
+    fn default() -> Self {
+        Self::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
     }
 }

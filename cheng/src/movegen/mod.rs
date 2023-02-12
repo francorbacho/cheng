@@ -91,7 +91,7 @@ impl PieceExt for Bishop {
 
     fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
-        let occupancy = precomputed::ROOK_OCCUPANCY[index].only(friendly.intersection(opposite));
+        let occupancy = precomputed::BISHOP_OCCUPANCY[index].only(friendly.intersection(opposite));
         let hash = magic_hash(
             precomputed::BISHOP_MAGICS[index],
             occupancy,

@@ -44,8 +44,34 @@ impl Board {
         }
     }
 
+    #[inline]
     pub fn result(&self) -> Option<GameResult> {
         self.result
+    }
+
+    #[inline]
+    pub fn side(&self, side: Side) -> &SideState {
+        match side {
+            Side::White => &self.white_side,
+            Side::Black => &self.black_side,
+        }
+    }
+
+    #[inline]
+    pub fn side_mut(&mut self, side: Side) -> &mut SideState {
+        match side {
+            Side::White => &mut self.white_side,
+            Side::Black => &mut self.black_side,
+        }
+    }
+
+    pub fn feed(&mut self, movement: PseudoMove) {
+        self.feed_unchecked(movement);
+    }
+
+    pub fn feed_unchecked(&mut self, movement: PseudoMove) {
+        self.side_mut(self.turn).update(movement);
+        self.turn = self.turn.opposite();
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
@@ -115,31 +141,6 @@ impl Board {
                 result: None,
             })
         }
-    }
-
-    #[inline]
-    pub fn side(&self, side: Side) -> &SideState {
-        match side {
-            Side::White => &self.white_side,
-            Side::Black => &self.black_side,
-        }
-    }
-
-    #[inline]
-    pub fn side_mut(&mut self, side: Side) -> &mut SideState {
-        match side {
-            Side::White => &mut self.white_side,
-            Side::Black => &mut self.black_side,
-        }
-    }
-
-    pub fn feed(&mut self, movement: PseudoMove) {
-        self.feed_unchecked(movement);
-    }
-
-    pub fn feed_unchecked(&mut self, movement: PseudoMove) {
-        self.side_mut(self.turn).update(movement);
-        self.turn = self.turn.opposite();
     }
 }
 

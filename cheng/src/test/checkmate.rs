@@ -1,4 +1,7 @@
-use crate::board::Board;
+use crate::{
+    board::{Board, GameResult},
+    sides::Side,
+};
 
 #[test]
 fn test_checkmate_fast() {
@@ -15,7 +18,12 @@ fn test_checkmate_fast() {
 
     board.feed("h5f7".parse().unwrap());
 
-    // assert!(board.result(), Some(Checkmate));
+    assert_eq!(
+        board.result(),
+        Some(GameResult::Checkmate {
+            winner: Side::White
+        })
+    );
 
     // Fool's mate.
     todo!()

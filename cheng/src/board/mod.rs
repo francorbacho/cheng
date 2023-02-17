@@ -19,11 +19,18 @@ pub enum FENParsingError {
     InvalidAlignment,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum GameResult {
+    Draw,
+    Checkmate { winner: Side },
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Board {
     pub white_side: SideState,
     pub black_side: SideState,
     pub turn: Side,
+    result: Option<GameResult>,
 }
 
 impl Board {
@@ -33,7 +40,12 @@ impl Board {
             white_side: SideState::empty(),
             black_side: SideState::empty(),
             turn: Side::White,
+            result: None,
         }
+    }
+
+    pub fn result(&self) -> Option<GameResult> {
+        self.result
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
@@ -100,6 +112,7 @@ impl Board {
                 white_side,
                 black_side,
                 turn,
+                result: None,
             })
         }
     }

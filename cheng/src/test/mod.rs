@@ -1,3 +1,4 @@
+mod checkmate;
 mod movegen;
 mod moves;
 

@@ -95,3 +95,17 @@ fn test_movegen_bishop() {
     let moves_expected = BoardMask::from([F4, E5, D6, B8, A5, B6, D8].as_slice());
     assert_eq!(moves, moves_expected);
 }
+
+#[test]
+fn test_movegen_cant_slide_to_friendly_occupation() {
+    Rook::init();
+
+    let friendly = BoardMask::from([A3, C1].as_slice());
+    let opposite = BoardMask::from([H3, C8].as_slice());
+
+    let moves = Rook::moves(C3, friendly, opposite);
+    let moves_expected =
+        BoardMask::from([B3, D3, E3, F3, G3, H3, C2, C4, C5, C6, C7, C8].as_slice());
+
+    assert_eq!(moves, moves_expected);
+}

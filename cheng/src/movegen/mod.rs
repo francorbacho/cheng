@@ -1,5 +1,5 @@
 use self::hash::magic_hash;
-use crate::{board::BoardMask, square::Square};
+use crate::{board::BoardMask, pieces::Piece, square::Square};
 
 pub use pieces::{Bishop, King, Knight, Rook};
 
@@ -14,21 +14,56 @@ pub static mut ROOK_MOVES: [[BoardMask; 1 << <Rook as steady::SlidingPiece>::NBI
 pub static mut BISHOP_MOVES: [[BoardMask; 1 << <Bishop as steady::SlidingPiece>::NBITS]; 64] =
     [[BoardMask::const_from(0); 1 << <Bishop as steady::SlidingPiece>::NBITS]; 64];
 
+pub fn moves(piece: Piece, square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
+    match piece {
+        // Piece::Pawn => Pawn::moves(square, friendly, opposite),
+        Piece::Pawn => BoardMask::default(),
+        Piece::Knight => Knight::moves(square, friendly, opposite),
+        Piece::Bishop => Bishop::moves(square, friendly, opposite),
+        Piece::Rook => Rook::moves(square, friendly, opposite),
+        Piece::Queen => Rook::moves(square, friendly, opposite)
+            .intersection(Bishop::moves(square, friendly, opposite)),
+        Piece::King => King::moves(square, friendly, opposite),
+    }
+}
+
+pub fn threats(
+    piece: Piece,
+    square: Square,
+    friendly: BoardMask,
+    opposite: BoardMask,
+) -> BoardMask {
+    match piece {
+        // Piece::Pawn => Pawn::moves(square, friendly, opposite),
+        Piece::Pawn => BoardMask::default(),
+        Piece::Knight => Knight::threats(square, friendly, opposite),
+        Piece::Bishop => Bishop::threats(square, friendly, opposite),
+        Piece::Rook => Rook::threats(square, friendly, opposite),
+        Piece::Queen => Rook::threats(square, friendly, opposite)
+            .intersection(Bishop::threats(square, friendly, opposite)),
+        Piece::King => King::threats(square, friendly, opposite),
+    }
+}
+
 pub trait PieceExt {
     fn init() {}
 
-    fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask;
+    fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
+        Self::threats(square, friendly, opposite).without(friendly)
+    }
+
+    fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask;
 }
 
 impl PieceExt for King {
-    fn moves(square: Square, friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
-        precomputed::KING_MOVES[square.to_index()].without(friendly)
+    fn threats(square: Square, _friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
+        precomputed::KING_MOVES[square.to_index()]
     }
 }
 
 impl PieceExt for Knight {
-    fn moves(square: Square, friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
-        precomputed::KNIGHT_MOVES[square.to_index()].without(friendly)
+    fn threats(square: Square, _friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
+        precomputed::KNIGHT_MOVES[square.to_index()]
     }
 }
 
@@ -54,7 +89,7 @@ impl PieceExt for Rook {
         }
     }
 
-    fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
+    fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
         let occupancy = precomputed::ROOK_OCCUPANCY[index].only(friendly.intersection(opposite));
         let hash = magic_hash(
@@ -89,7 +124,7 @@ impl PieceExt for Bishop {
         }
     }
 
-    fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
+    fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
         let occupancy = precomputed::BISHOP_OCCUPANCY[index].only(friendly.intersection(opposite));
         let hash = magic_hash(

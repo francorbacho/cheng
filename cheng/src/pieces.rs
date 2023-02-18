@@ -14,6 +14,19 @@ impl Piece {
 
     #[cfg(feature = "simd")]
     pub const COUNT: usize = 8;
+
+    pub fn iter() -> impl Iterator<Item = Piece> {
+        [
+            Piece::Pawn,
+            Piece::Knight,
+            Piece::Bishop,
+            Piece::Rook,
+            Piece::Queen,
+            Piece::King,
+        ]
+        .iter()
+        .copied()
+    }
 }
 
 impl From<Piece> for usize {

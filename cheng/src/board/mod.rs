@@ -71,7 +71,20 @@ impl Board {
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
         self.side_mut(self.turn).update(movement);
+
+        self.white_side.update_threats(&self.black_side);
+        self.black_side.update_threats(&self.white_side);
+
+        self.white_side.update_king_in_check(&self.black_side);
+        self.black_side.update_king_in_check(&self.white_side);
+
         self.turn = self.turn.opposite();
+
+        self.update_result();
+    }
+
+    pub fn update_result(&mut self) {
+        todo!()
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {

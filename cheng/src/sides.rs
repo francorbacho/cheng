@@ -1,7 +1,13 @@
 #[cfg(feature = "simd")]
 use std::simd::{Simd, SimdOrd, SimdPartialEq, SimdUint};
 
-use crate::{board::BoardMask, movement::PseudoMove, pieces::Piece, square::Square};
+use crate::{
+    board::BoardMask,
+    movegen::{self},
+    movement::PseudoMove,
+    pieces::Piece,
+    square::Square,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Side {
@@ -23,20 +29,29 @@ impl Side {
 pub struct SideState {
     pub occupancy: BoardMask,
     pub pieces: SidePieces,
+    pub threats: BoardMask,
+    pub pieces_threats: SidePiecesThreats,
+
+    pub king_in_check: bool,
 }
 
 impl SideState {
     #[inline]
     pub fn empty() -> Self {
         Self {
-            occupancy: Default::default(),
-            pieces: Default::default(),
+            occupancy: BoardMask::default(),
+            pieces: SidePieces::default(),
+            threats: BoardMask::default(),
+            pieces_threats: SidePiecesThreats::default(),
+            king_in_check: false,
         }
     }
 
     pub fn put(&mut self, square: Square, piece: Piece) {
         self.occupancy.set(square);
         self.pieces.piece_mut(piece).set(square);
+
+        // NOTE: Here we don't update threaten pieces.
     }
 
     pub fn update(&mut self, movement: PseudoMove) {
@@ -51,6 +66,19 @@ impl SideState {
         self.occupancy.reset(*origin);
         self.occupancy.set(*destination);
         self.pieces.update(movement);
+    }
+
+    pub fn update_threats(&mut self, opposite: &SideState) {
+        self.pieces_threats
+            .recalculate(&self.pieces, self.occupancy, opposite.occupancy);
+        self.threats = self.pieces_threats.threats();
+    }
+
+    pub fn update_king_in_check(&mut self, opposite: &SideState) {
+        self.king_in_check = self
+            .pieces
+            .piece(Piece::King)
+            .has_coincidences(opposite.threats);
     }
 }
 
@@ -124,5 +152,40 @@ impl SidePieces {
             }
             MoveKind::ShortCastle | MoveKind::LongCastle => {}
         }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = BoardMask> {
+        self.0.into_iter()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
+pub struct SidePiecesThreats([BoardMask; Piece::COUNT]);
+
+impl SidePiecesThreats {
+    fn recalculate(
+        &mut self,
+        my_pieces: &SidePieces,
+        friendly_occupancy: BoardMask,
+        opposite_occupancy: BoardMask,
+    ) {
+        let (friendly, opposite) = (friendly_occupancy, opposite_occupancy);
+        for (threats, (squares, piece)) in
+            self.0.iter_mut().zip(my_pieces.iter().zip(Piece::iter()))
+        {
+            *threats = BoardMask::default();
+            for square in squares {
+                *threats =
+                    threats.intersection(movegen::threats(piece, square, friendly, opposite));
+            }
+        }
+    }
+
+    fn threats(&self) -> BoardMask {
+        self.0
+            .iter()
+            .copied()
+            .reduce(|acc, e| acc.intersection(e))
+            .unwrap()
     }
 }

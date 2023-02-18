@@ -50,6 +50,21 @@ impl BoardMask {
         BoardMask(self.0 | mask.0)
     }
 
+    #[inline]
+    pub fn first(&self) -> Option<Square> {
+        let index = self.0.trailing_zeros();
+        if index < 64 {
+            Some(Square::from_index(index as usize))
+        } else {
+            None
+        }
+    }
+
+    #[inline]
+    pub fn has_coincidences(&self, other: BoardMask) -> bool {
+        self.only(other).0 != 0
+    }
+
     pub fn variations(&self) -> usize {
         1 << self.count()
     }
@@ -68,6 +83,16 @@ impl BoardMask {
             }
         }
         BoardMask::from(result)
+    }
+}
+
+impl Iterator for BoardMask {
+    type Item = Square;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let square = self.first()?;
+        self.reset(square);
+        Some(square)
     }
 }
 

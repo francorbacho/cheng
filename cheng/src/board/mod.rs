@@ -75,11 +75,8 @@ impl Board {
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
         self.side_mut(self.turn).update(movement.clone());
-
-        if movement.takes.unwrap_or(true) {
-            self.side_mut(self.turn.opposite())
-                .remove(movement.destination);
-        }
+        self.side_mut(self.turn.opposite())
+            .remove(movement.destination);
 
         self.white_side.update_threats(&self.black_side);
         self.black_side.update_threats(&self.white_side);

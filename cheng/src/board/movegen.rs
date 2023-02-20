@@ -27,12 +27,10 @@ impl<'a> MoveGenerator<'a> {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
                 let moves = crate::movegen::moves(piece, piece_square, friendly, opposite);
                 for destination in moves {
-                    let takes = opposite.get(destination);
                     self.cached_moves.push(PseudoMove {
                         origin: piece_square,
                         destination,
                         kind: MoveKind::Move,
-                        takes: Some(takes),
                     });
                 }
             }

@@ -15,18 +15,12 @@ fn test_move_parsing() {
             origin: E2,
             destination: E4,
             kind: MoveKind::Move,
-            takes: Some(false),
         }
     );
 
     assert_eq!(
-        PseudoMove::from_str("a7xb8").expect("Error parsing"),
-        PseudoMove {
-            origin: A7,
-            destination: B8,
-            kind: MoveKind::Move,
-            takes: Some(true),
-        }
+        PseudoMove::from_str("a7xb8").unwrap_err(),
+        PseudoMoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
@@ -35,18 +29,12 @@ fn test_move_parsing() {
             origin: G7,
             destination: G8,
             kind: MoveKind::Promote(Piece::Queen),
-            takes: Some(false),
         }
     );
 
     assert_eq!(
-        PseudoMove::from_str("c7xb8n").expect("Error parsing"),
-        PseudoMove {
-            origin: C7,
-            destination: B8,
-            kind: MoveKind::Promote(Piece::Knight),
-            takes: Some(true),
-        }
+        PseudoMove::from_str("c7xb8n").unwrap_err(),
+        PseudoMoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(

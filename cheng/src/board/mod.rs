@@ -1,12 +1,16 @@
 mod mask;
 pub use mask::BoardMask;
 
+mod movegen;
+
 use crate::{
     movement::PseudoMove,
     pieces::Piece,
     sides::{Side, SideState},
     square::Square,
 };
+
+use self::movegen::MoveGenerator;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum FENParsingError {
@@ -70,7 +74,12 @@ impl Board {
     }
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
-        self.side_mut(self.turn).update(movement);
+        self.side_mut(self.turn).update(movement.clone());
+
+        if movement.takes.unwrap_or(true) {
+            self.side_mut(self.turn.opposite())
+                .remove(movement.destination);
+        }
 
         self.white_side.update_threats(&self.black_side);
         self.black_side.update_threats(&self.white_side);
@@ -84,7 +93,27 @@ impl Board {
     }
 
     pub fn update_result(&mut self) {
-        todo!()
+        if !self.side(self.turn).king_in_check {
+            // TODO: Check stalemate.
+            return;
+        }
+
+        let movegen = MoveGenerator::new(self);
+        for movement in movegen {
+            let mut clone = self.clone();
+            clone.feed(movement);
+
+            if !clone.side(self.turn).king_in_check {
+                return;
+            }
+        }
+        self.result = Some(GameResult::Checkmate {
+            winner: self.turn.opposite(),
+        });
+    }
+
+    pub fn moves(&self) -> MoveGenerator {
+        MoveGenerator::new(self)
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {

@@ -15,7 +15,7 @@ fn test_move_parsing() {
             origin: E2,
             destination: E4,
             kind: MoveKind::Move,
-            takes: false,
+            takes: Some(false),
         }
     );
 
@@ -25,7 +25,7 @@ fn test_move_parsing() {
             origin: A7,
             destination: B8,
             kind: MoveKind::Move,
-            takes: true,
+            takes: Some(true),
         }
     );
 
@@ -35,7 +35,7 @@ fn test_move_parsing() {
             origin: G7,
             destination: G8,
             kind: MoveKind::Promote(Piece::Queen),
-            takes: false,
+            takes: Some(false),
         }
     );
 
@@ -45,7 +45,7 @@ fn test_move_parsing() {
             origin: C7,
             destination: B8,
             kind: MoveKind::Promote(Piece::Knight),
-            takes: true,
+            takes: Some(true),
         }
     );
 

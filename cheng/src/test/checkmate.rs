@@ -19,12 +19,12 @@ fn test_simple_queen_check() {
     board.feed("f3f7".parse().unwrap());
 
     assert!(board.black_side.king_in_check);
-    assert!(board.result().is_none());
+    assert_eq!(board.result(), None);
 
     board.feed("e8f7".parse().unwrap());
 
     assert!(!board.black_side.king_in_check);
-    assert!(board.result().is_none());
+    assert_eq!(board.result(), None);
 }
 
 #[test]
@@ -53,5 +53,17 @@ fn test_checkmate_fast() {
     );
 
     // Fool's mate.
-    todo!()
+    let mut board = Board::default();
+    board.feed("f2f3".parse().unwrap());
+    board.feed("e7e5".parse().unwrap());
+
+    board.feed("g2g4".parse().unwrap());
+    board.feed("d8h4".parse().unwrap());
+
+    assert_eq!(
+        board.result(),
+        Some(GameResult::Checkmate {
+            winner: Side::Black
+        })
+    );
 }

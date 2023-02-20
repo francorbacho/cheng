@@ -54,6 +54,17 @@ impl SideState {
         // NOTE: Here we don't update threaten pieces.
     }
 
+    pub fn remove(&mut self, square: Square) {
+        let piece = match self.pieces.find(square) {
+            Some(piece) => piece,
+            None => return,
+        };
+        // .expect("Tried to remove non-existing piece");
+
+        self.pieces.piece_mut(piece).reset(square);
+        self.occupancy.reset(square);
+    }
+
     pub fn update(&mut self, movement: PseudoMove) {
         let PseudoMove {
             ref origin,

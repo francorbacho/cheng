@@ -2,15 +2,15 @@ use std::str::FromStr;
 
 use crate::{pieces::Piece, square::Square};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PseudoMove {
     pub origin: Square,
     pub destination: Square,
     pub kind: MoveKind,
-    pub takes: bool,
+    pub takes: Option<bool>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MoveKind {
     Move,
     Promote(Piece),
@@ -58,7 +58,7 @@ impl FromStr for PseudoMove {
         Ok(PseudoMove {
             origin,
             destination,
-            takes,
+            takes: None,
             kind,
         })
     }

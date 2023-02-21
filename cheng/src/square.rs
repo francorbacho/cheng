@@ -6,6 +6,7 @@ pub struct Square(usize);
 impl Square {
     #[inline]
     pub const fn from_index(v: usize) -> Self {
+        assert!(v < 64);
         Self(v)
     }
 

@@ -69,3 +69,16 @@ impl TryFrom<char> for Piece {
         })
     }
 }
+
+impl From<Piece> for char {
+    fn from(value: Piece) -> Self {
+        match value {
+            Piece::Pawn => 'p',
+            Piece::Knight => 'n',
+            Piece::Bishop => 'b',
+            Piece::Rook => 'r',
+            Piece::Queen => 'q',
+            Piece::King => 'k',
+        }
+    }
+}

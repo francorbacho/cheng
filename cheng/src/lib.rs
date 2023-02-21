@@ -10,6 +10,8 @@ mod square;
 pub use crate::{
     board::Board,
     movement::PseudoMove,
+    pieces::Piece,
+    sides::Side,
     square::{consts, Square},
 };
 

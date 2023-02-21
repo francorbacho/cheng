@@ -165,7 +165,7 @@ impl SidePieces {
         }
     }
 
-    fn iter(&self) -> impl Iterator<Item = BoardMask> {
+    pub fn iter(&self) -> impl Iterator<Item = BoardMask> {
         self.0.into_iter()
     }
 }

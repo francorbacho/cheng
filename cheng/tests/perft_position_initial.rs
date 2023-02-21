@@ -21,4 +21,6 @@ fn perft_position_initial() {
     let board = Board::default();
     assert_eq!(perft(&board, 0), 1);
     assert_eq!(perft(&board, 1), 20);
+    assert_eq!(perft(&board, 2), 400);
+    assert_eq!(perft(&board, 3), 8902);
 }

@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{fmt::Display, str::FromStr};
 
 use crate::{pieces::Piece, square::Square};
 
@@ -62,5 +62,11 @@ impl FromStr for PseudoMove {
             destination,
             kind,
         })
+    }
+}
+
+impl Display for PseudoMove {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}{:?}", self.origin, self.destination)
     }
 }

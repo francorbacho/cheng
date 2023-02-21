@@ -1,0 +1,9 @@
+[package]
+name = "cheng-cmd"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cheng = { path = "../cheng" }
+owo-colors = "3.5.0"
+rustyline = "11.0"

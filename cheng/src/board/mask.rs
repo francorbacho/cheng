@@ -61,6 +61,11 @@ impl BoardMask {
     }
 
     #[inline]
+    pub fn push_rank(self) -> BoardMask {
+        Self(self.0.overflowing_shl(8).0)
+    }
+
+    #[inline]
     pub fn has_coincidences(&self, other: BoardMask) -> bool {
         self.only(other).0 != 0
     }

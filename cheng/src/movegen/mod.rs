@@ -1,7 +1,10 @@
-use self::hash::magic_hash;
+use self::{
+    hash::magic_hash,
+    precomputed::{PAWN_CAPTURES, PAWN_MOVES},
+};
 use crate::{board::BoardMask, pieces::Piece, square::Square};
 
-pub use pieces::{Bishop, King, Knight, Rook};
+pub use pieces::{Bishop, King, Knight, Pawn, Rook};
 
 mod hash;
 mod pieces;
@@ -16,8 +19,7 @@ pub static mut BISHOP_MOVES: [[BoardMask; 1 << <Bishop as steady::SlidingPiece>:
 
 pub fn moves(piece: Piece, square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
     match piece {
-        // Piece::Pawn => Pawn::moves(square, friendly, opposite),
-        Piece::Pawn => BoardMask::default(),
+        Piece::Pawn => Pawn::moves(square, friendly, opposite),
         Piece::Knight => Knight::moves(square, friendly, opposite),
         Piece::Bishop => Bishop::moves(square, friendly, opposite),
         Piece::Rook => Rook::moves(square, friendly, opposite),
@@ -34,8 +36,7 @@ pub fn threats(
     opposite: BoardMask,
 ) -> BoardMask {
     match piece {
-        // Piece::Pawn => Pawn::moves(square, friendly, opposite),
-        Piece::Pawn => BoardMask::default(),
+        Piece::Pawn => Pawn::threats(square, friendly, opposite),
         Piece::Knight => Knight::threats(square, friendly, opposite),
         Piece::Bishop => Bishop::threats(square, friendly, opposite),
         Piece::Rook => Rook::threats(square, friendly, opposite),
@@ -64,6 +65,31 @@ impl PieceExt for King {
 impl PieceExt for Knight {
     fn threats(square: Square, _friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
         precomputed::KNIGHT_MOVES[square.to_index()]
+    }
+}
+
+impl PieceExt for Pawn {
+    fn threats(square: Square, _friendly: BoardMask, _opposite: BoardMask) -> BoardMask {
+        PAWN_CAPTURES[square.to_index()]
+    }
+
+    fn moves(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
+        let captures = PAWN_CAPTURES[square.to_index()].only(opposite);
+        let moves = PAWN_MOVES[square.to_index()];
+        let occupancy = friendly.intersection(opposite);
+
+        let occupancy_next_rank_mask = square
+            .checked_next_rank()
+            .map(BoardMask::from)
+            .unwrap_or_default()
+            .only(occupancy);
+
+        let occupancy_allows_two_square_move_mask = occupancy_next_rank_mask.push_rank();
+
+        moves
+            .without(occupancy)
+            .without(occupancy_allows_two_square_move_mask)
+            .intersection(captures)
     }
 }
 

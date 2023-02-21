@@ -49,6 +49,30 @@ fn main() -> io::Result<()> {
         matches!((rank_diff, file_diff), (0, 1) | (1, 0) | (1, 1))
     })?;
 
+    write_to_file(&mut file, "PAWN_MOVES", |square, target| {
+        if square.file() != target.file() {
+            return false;
+        }
+
+        let rank_diff = target.rank() as i32 - square.rank() as i32;
+
+        match square.rank() {
+            0 => false,
+            1 => rank_diff == 1 || rank_diff == 2,
+            _ => rank_diff == 1,
+        }
+    })?;
+
+    write_to_file(&mut file, "PAWN_CAPTURES", |square, target| {
+        let file_diff = (target.file() as i32 - square.file() as i32).abs();
+        let rank_diff = target.rank() as i32 - square.rank() as i32;
+
+        match square.rank() {
+            0 => false,
+            _ => rank_diff == 1 && file_diff == 1,
+        }
+    })?;
+
     write_sliding_piece::<Bishop>(&mut file, "BISHOP")?;
     write_sliding_piece::<Rook>(&mut file, "ROOK")?;
 

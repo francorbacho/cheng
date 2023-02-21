@@ -35,6 +35,21 @@ impl Square {
     pub fn iter_all() -> SquareIterator {
         SquareIterator::default()
     }
+
+    #[inline]
+    pub fn next_rank(self) -> Square {
+        assert!(self.0 + 8 < 64);
+        Square::from_index(self.0 + 8)
+    }
+
+    #[inline]
+    pub fn checked_next_rank(self) -> Option<Square> {
+        if self.0 + 8 < 64 {
+            Some(Square::from_index(self.0 + 8))
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 use crate::{
     board::BoardMask,
-    movegen::{steady, Bishop, King, PieceExt, Rook},
+    movegen::{steady, Bishop, King, Pawn, PieceExt, Rook},
     square::consts::*,
 };
 
@@ -13,6 +13,39 @@ fn test_movegen_king() {
 
     let a1_moves_friendly_occ = King::moves(A1, BoardMask::from(A2), opposite_occupancy);
     assert_eq!(a1_moves_friendly_occ.count(), 2);
+}
+
+#[test]
+fn test_movegen_pawn() {
+    let opposite_occupancy = BoardMask::default();
+    let friendly_occupancy = BoardMask::default();
+    let moves = Pawn::moves(E2, friendly_occupancy, opposite_occupancy);
+    let moves_expected = BoardMask::from([E3, E4].as_slice());
+    assert_eq!(moves, moves_expected);
+
+    let opposite_occupancy = BoardMask::from(C8);
+    let friendly_occupancy = BoardMask::from(B8);
+    let moves = Pawn::moves(B7, friendly_occupancy, opposite_occupancy);
+    let moves_expected = BoardMask::from(C8);
+    assert_eq!(moves, moves_expected);
+
+    let opposite_occupancy = BoardMask::from(E3);
+    let friendly_occupancy = BoardMask::default();
+    let moves = Pawn::moves(E2, friendly_occupancy, opposite_occupancy);
+    let moves_expected = BoardMask::from([].as_slice());
+    assert_eq!(moves, moves_expected);
+
+    let opposite_occupancy = BoardMask::default();
+    let friendly_occupancy = BoardMask::from(H3);
+    let moves = Pawn::moves(H2, friendly_occupancy, opposite_occupancy);
+    let moves_expected = BoardMask::from([].as_slice());
+    assert_eq!(moves, moves_expected);
+
+    let opposite_occupancy = BoardMask::default();
+    let friendly_occupancy = BoardMask::default();
+    let moves = Pawn::threats(E2, friendly_occupancy, opposite_occupancy);
+    let moves_expected = BoardMask::from([D3, F3].as_slice());
+    assert_eq!(moves, moves_expected);
 }
 
 #[test]

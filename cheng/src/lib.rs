@@ -17,3 +17,9 @@ pub use crate::{
 
 #[cfg(test)]
 mod test;
+
+pub fn init() {
+    // TODO: Make these automatic.
+    Rook::init();
+    Bishop::init();
+}

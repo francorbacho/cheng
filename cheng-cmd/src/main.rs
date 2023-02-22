@@ -12,6 +12,8 @@ struct Context {
 }
 
 fn main() -> rustyline::Result<()> {
+    cheng::init();
+
     let mut rl = DefaultEditor::new()?;
     let mut context = Context::default();
     loop {
@@ -64,9 +66,9 @@ fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
         let mut nodes = 0;
         for movement in moves {
             let mut clone = board.clone();
-            clone.feed(movement.clone());
 
-            let move_nodes = inner_perft(board, depth - 1, false);
+            clone.feed(movement.clone());
+            let move_nodes = inner_perft(&clone, depth - 1, false);
             nodes += move_nodes;
 
             if report_nodes {

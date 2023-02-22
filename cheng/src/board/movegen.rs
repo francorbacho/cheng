@@ -22,6 +22,7 @@ impl<'a> MoveGenerator<'a> {
     fn genmoves(&mut self) {
         let friendly = self.board.side(self.board.turn).occupancy;
         let opposite = self.board.side(self.board.turn.opposite()).occupancy;
+        let opposite_threats = self.board.side(self.board.turn.opposite()).threats;
 
         for piece in Piece::iter() {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
@@ -31,6 +32,13 @@ impl<'a> MoveGenerator<'a> {
                     friendly,
                     opposite,
                 );
+
+                let moves = if piece == Piece::King {
+                    moves.without(opposite_threats)
+                } else {
+                    moves
+                };
+
                 for destination in moves {
                     self.cached_moves.push(PseudoMove {
                         origin: piece_square,

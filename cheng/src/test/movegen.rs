@@ -2,7 +2,7 @@ use crate::{
     board::BoardMask,
     movegen::{self, steady, Bishop, King, PieceExt, Rook},
     square::consts::*,
-    Side,
+    Board, Side,
 };
 
 #[test]
@@ -149,4 +149,21 @@ fn test_movegen_cant_slide_to_friendly_occupation() {
         BoardMask::from([B3, D3, E3, F3, G3, H3, C2, C4, C5, C6, C7, C8].as_slice());
 
     assert_eq!(moves, moves_expected);
+}
+
+#[test]
+fn test_movegen_king_cant_move_to_threaten() {
+    crate::init();
+
+    let mut board = Board::default();
+    board.feed("b2b3".parse().unwrap());
+    board.feed("e7e5".parse().unwrap());
+
+    board.feed("c1a3".parse().unwrap());
+    let ok = !board
+        .moves()
+        .collect::<Vec<_>>()
+        .contains(&"e8e7".parse().unwrap());
+
+    assert!(ok);
 }

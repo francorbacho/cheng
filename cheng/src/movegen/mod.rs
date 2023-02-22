@@ -1,7 +1,7 @@
 use self::hash::magic_hash;
 use crate::{board::BoardMask, pieces::Piece, square::Square, Side, SidedPiece};
 
-pub use pieces::{Bishop, King, Knight, Rook};
+pub use pieces::{Bishop, Rook};
 
 mod hash;
 mod pieces;
@@ -98,6 +98,10 @@ pub trait PieceExt {
 
     fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask;
 }
+
+pub struct King;
+
+pub struct Knight;
 
 impl PieceExt for King {
     fn threats(square: Square, _friendly: BoardMask, _opposite: BoardMask) -> BoardMask {

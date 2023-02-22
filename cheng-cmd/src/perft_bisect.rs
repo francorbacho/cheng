@@ -82,9 +82,9 @@ fn perft_bisect_iteration(
             }
             None => {
                 println!("{move_perft_table:?}");
-                return Break(PerftBisectErr::UnexpectedMove {
+                Break(PerftBisectErr::UnexpectedMove {
                     movement: movement.to_string(),
-                });
+                })
             }
         }
     });

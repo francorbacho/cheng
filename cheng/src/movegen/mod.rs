@@ -15,7 +15,7 @@ pub static mut BISHOP_MOVES: [[BoardMask; 1 << <Bishop as steady::SlidingPiece>:
     [[BoardMask::const_from(0); 1 << <Bishop as steady::SlidingPiece>::NBITS]; 64];
 
 pub fn moves(
-    (side, piece): SidedPiece,
+    SidedPiece(side, piece): SidedPiece,
     square: Square,
     friendly: BoardMask,
     opposite: BoardMask,
@@ -32,7 +32,7 @@ pub fn moves(
 }
 
 pub fn threats(
-    (side, piece): SidedPiece,
+    SidedPiece(side, piece): SidedPiece,
     square: Square,
     friendly: BoardMask,
     opposite: BoardMask,

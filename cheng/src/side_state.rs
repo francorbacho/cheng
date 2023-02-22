@@ -1,7 +1,7 @@
 #[cfg(feature = "simd")]
 use std::simd::{Simd, SimdOrd, SimdPartialEq, SimdUint};
 
-use crate::{board::BoardMask, movegen, Piece, PseudoMove, Side, Square};
+use crate::{board::BoardMask, movegen, Piece, PseudoMove, Side, SidedPiece, Square};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SideState {
@@ -173,7 +173,7 @@ impl SidePiecesThreats {
             *threats = BoardMask::default();
             for square in squares {
                 *threats = threats.intersection(movegen::threats(
-                    (side, piece),
+                    SidedPiece(side, piece),
                     square,
                     friendly,
                     opposite,

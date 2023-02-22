@@ -18,7 +18,18 @@ pub use crate::{
     square::{consts, Square},
 };
 
-pub type SidedPiece = (Side, Piece);
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SidedPiece(Side, Piece);
+
+impl From<SidedPiece> for char {
+    fn from(SidedPiece(side, piece): SidedPiece) -> Self {
+        if side == Side::White {
+            char::from(piece).to_ascii_uppercase()
+        } else {
+            char::from(piece)
+        }
+    }
+}
 
 #[cfg(test)]
 mod test;

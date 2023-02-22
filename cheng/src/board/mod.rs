@@ -5,6 +5,7 @@ mod movegen;
 
 use crate::{
     movement::PseudoMove, pieces::Piece, side_state::SideState, sides::Side, square::Square,
+    SidedPiece,
 };
 
 use self::movegen::MoveGenerator;
@@ -35,6 +36,9 @@ pub struct Board {
 }
 
 impl Board {
+    pub const DEFAULT_FEN: &'static str =
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     #[inline]
     pub fn empty() -> Self {
         Self {
@@ -110,6 +114,63 @@ impl Board {
         MoveGenerator::new(self)
     }
 
+    pub fn generate_array(&self) -> [Option<SidedPiece>; 64] {
+        let mut board_vec = [None; 64];
+
+        for (mask, piece) in self.white_side.pieces.iter().zip(Piece::iter()) {
+            for square in mask {
+                let idx = square.to_index();
+                assert_eq!(board_vec[idx], None);
+
+                board_vec[idx] = Some(SidedPiece(Side::White, piece));
+            }
+        }
+
+        for (mask, piece) in self.black_side.pieces.iter().zip(Piece::iter()) {
+            for square in mask {
+                let idx = square.to_index();
+                assert_eq!(board_vec[idx], None);
+
+                board_vec[idx] = Some(SidedPiece(Side::Black, piece));
+            }
+        }
+
+        board_vec
+    }
+
+    pub fn into_fen(&self) -> String {
+        use std::fmt::Write;
+
+        let mut fen = String::new();
+        let array = self.generate_array();
+
+        for (i, pieces) in array.chunks(8).enumerate().rev() {
+            let mut iterator = pieces.iter().peekable();
+            while let Some(piece) = iterator.next() {
+                match piece {
+                    Some(sided_piece) => fen.push(char::from(*sided_piece)),
+                    None => {
+                        let mut accum = 1;
+                        while iterator.peek().map_or(false, |piece| piece.is_none()) {
+                            accum += 1;
+                            iterator.next();
+                        }
+                        fen.push(char::from_digit(accum, 10).unwrap());
+                    }
+                }
+            }
+
+            if i != 0 {
+                fen.push('/');
+            }
+        }
+
+        write!(fen, " {}", char::from(self.turn)).unwrap();
+        write!(fen, " KQkq - 0 1").unwrap();
+
+        fen
+    }
+
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
         use FENParsingError::*;
 
@@ -183,6 +244,6 @@ impl Board {
 impl Default for Board {
     #[inline]
     fn default() -> Self {
-        Self::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").unwrap()
+        Self::from_fen(Board::DEFAULT_FEN).unwrap()
     }
 }

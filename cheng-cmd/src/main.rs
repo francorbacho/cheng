@@ -1,4 +1,8 @@
 mod board_display;
+mod perft_bisect;
+use perft_bisect::perft_bisect;
+
+use std::ops::ControlFlow::{self, Break, Continue};
 
 use cheng::{Board, PseudoMove};
 use rustyline::error::ReadlineError;
@@ -7,7 +11,7 @@ use rustyline::DefaultEditor;
 use crate::board_display::BoardDisplay;
 
 #[derive(Default)]
-struct Context {
+pub struct Context {
     board: Board,
 }
 
@@ -23,6 +27,7 @@ fn main() -> rustyline::Result<()> {
                 let parts: Vec<&str> = line.split(' ').collect();
                 let err = match parts[0] {
                     "perft" => perft(&mut context, parts).map_err(String::from),
+                    "perft-bisect" => perft_bisect(&mut context, parts).map_err(String::from),
                     "fen" => fen(&mut context, parts),
                     "feed" => feed(&mut context, parts),
                     "d" => display_board(&mut context, parts),
@@ -57,40 +62,51 @@ fn fen(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
     Ok(())
 }
 
-fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
-    fn inner_perft(board: &Board, depth: usize, report_nodes: bool) -> usize {
-        if depth == 0 {
-            return 1;
-        }
+pub fn continue_<E>(_movement: &str, _nodes: usize) -> ControlFlow<E, ()> {
+    Continue(())
+}
 
-        let moves = board.moves();
-        let mut nodes = 0;
-        for movement in moves {
-            let mut clone = board.clone();
-
-            clone.feed(movement.clone());
-            let move_nodes = inner_perft(&clone, depth - 1, false);
-            nodes += move_nodes;
-
-            if report_nodes {
-                println!("{movement}: {move_nodes} nodes");
-            }
-        }
-
-        if report_nodes {
-            println!("total nodes: {nodes}");
-        }
-
-        nodes
+fn incremental_perft<E, F>(board: &Board, depth: usize, mut callback: F) -> Result<usize, E>
+where
+    F: FnMut(&str, usize) -> ControlFlow<E, ()>,
+{
+    if depth == 0 {
+        return Ok(1);
     }
 
+    let moves = board.moves();
+    let mut nodes = 0;
+    for movement in moves {
+        let mut clone = board.clone();
+
+        clone.feed(movement.clone());
+        let move_nodes = incremental_perft(&clone, depth - 1, continue_)?;
+        nodes += move_nodes;
+
+        let control = callback(&format!("{}", movement), move_nodes);
+        match control {
+            Continue(_) => continue,
+            Break(e) => return Err(e),
+        }
+    }
+
+    Ok(nodes)
+}
+
+fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
     let depth: usize = parts
         .get(1)
         .ok_or("missing depth")?
         .parse()
         .map_err(|_| "invalid depth")?;
 
-    inner_perft(&context.board, depth, true);
+    let total_nodes = incremental_perft(&context.board, depth, |movement, nodes| {
+        println!("{movement}: {nodes}");
+        Continue::<()>(())
+    })
+    .unwrap();
+
+    println!("total nodes: {total_nodes}");
 
     Ok(())
 }

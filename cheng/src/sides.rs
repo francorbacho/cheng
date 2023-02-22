@@ -13,3 +13,12 @@ impl Side {
         }
     }
 }
+
+impl From<Side> for char {
+    fn from(value: Side) -> Self {
+        match value {
+            Side::White => 'w',
+            Side::Black => 'b',
+        }
+    }
+}

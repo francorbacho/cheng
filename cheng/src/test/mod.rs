@@ -103,6 +103,18 @@ fn test_fen_parsing() {
 }
 
 #[test]
+fn test_fen_generation() {
+    let mut board = Board::default();
+    assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
+
+    board.feed("e2e4".parse().unwrap());
+    let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+    assert_eq!(board.into_fen(), expected_fen);
+
+    // TODO: Add more tests here.
+}
+
+#[test]
 fn test_default_game() {
     let board = Board::default();
     assert_eq!(board.turn, Side::White);

@@ -1,4 +1,4 @@
-use crate::{movement::MoveKind, pieces::Piece, Board, PseudoMove};
+use crate::{movement::MoveKind, pieces::Piece, Board, PseudoMove, SidedPiece};
 
 pub struct MoveGenerator<'a> {
     pub board: &'a Board,
@@ -26,7 +26,7 @@ impl<'a> MoveGenerator<'a> {
         for piece in Piece::iter() {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
                 let moves = crate::movegen::moves(
-                    (self.board.turn, piece),
+                    SidedPiece(self.board.turn, piece),
                     piece_square,
                     friendly,
                     opposite,

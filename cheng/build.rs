@@ -15,6 +15,9 @@ mod hash;
 #[path = "src/movegen/pieces.rs"]
 mod pieces;
 
+#[path = "src/sides.rs"]
+mod sides;
+
 use std::{
     collections::{hash_map::Entry, HashMap},
     fs,
@@ -49,7 +52,7 @@ fn main() -> io::Result<()> {
         matches!((rank_diff, file_diff), (0, 1) | (1, 0) | (1, 1))
     })?;
 
-    write_to_file(&mut file, "PAWN_MOVES", |square, target| {
+    write_to_file(&mut file, "PAWN_MOVES_WHITE", |square, target| {
         if square.file() != target.file() {
             return false;
         }
@@ -63,13 +66,37 @@ fn main() -> io::Result<()> {
         }
     })?;
 
-    write_to_file(&mut file, "PAWN_CAPTURES", |square, target| {
+    write_to_file(&mut file, "PAWN_MOVES_BLACK", |square, target| {
+        if square.file() != target.file() {
+            return false;
+        }
+
+        let rank_diff = target.rank() as i32 - square.rank() as i32;
+
+        match square.rank() {
+            7 => false,
+            6 => rank_diff == -1 || rank_diff == -2,
+            _ => rank_diff == -1,
+        }
+    })?;
+
+    write_to_file(&mut file, "PAWN_CAPTURES_WHITE", |square, target| {
         let file_diff = (target.file() as i32 - square.file() as i32).abs();
         let rank_diff = target.rank() as i32 - square.rank() as i32;
 
         match square.rank() {
             0 => false,
             _ => rank_diff == 1 && file_diff == 1,
+        }
+    })?;
+
+    write_to_file(&mut file, "PAWN_CAPTURES_BLACK", |square, target| {
+        let file_diff = (target.file() as i32 - square.file() as i32).abs();
+        let rank_diff = target.rank() as i32 - square.rank() as i32;
+
+        match square.rank() {
+            7 => false,
+            _ => rank_diff == -1 && file_diff == 1,
         }
     })?;
 

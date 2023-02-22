@@ -4,8 +4,11 @@ mod board;
 mod movegen;
 mod movement;
 mod pieces;
+mod side_state;
 mod sides;
 mod square;
+
+use movegen::{Bishop, PieceExt, Rook};
 
 pub use crate::{
     board::Board,
@@ -14,6 +17,8 @@ pub use crate::{
     sides::Side,
     square::{consts, Square},
 };
+
+pub type SidedPiece = (Side, Piece);
 
 #[cfg(test)]
 mod test;

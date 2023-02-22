@@ -1,6 +1,6 @@
 mod board_display;
 
-use cheng::Board;
+use cheng::{Board, PseudoMove};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
@@ -24,6 +24,7 @@ fn main() -> rustyline::Result<()> {
                 let err = match parts[0] {
                     "perft" => perft(&mut context, parts).map_err(String::from),
                     "fen" => fen(&mut context, parts),
+                    "feed" => feed(&mut context, parts),
                     "d" => display_board(&mut context, parts),
                     other => Err(format!("command not found: {other}")),
                 };
@@ -87,9 +88,21 @@ fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
         .get(1)
         .ok_or("missing depth")?
         .parse()
-        .map_err(|_| "")?;
+        .map_err(|_| "invalid depth")?;
 
     inner_perft(&context.board, depth, true);
+
+    Ok(())
+}
+
+fn feed(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
+    let pseudomove: PseudoMove = parts
+        .get(1)
+        .ok_or("missing move")?
+        .parse()
+        .map_err(|_| "invalid move")?;
+
+    context.board.feed(pseudomove);
 
     Ok(())
 }

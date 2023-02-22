@@ -25,7 +25,12 @@ impl<'a> MoveGenerator<'a> {
 
         for piece in Piece::iter() {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
-                let moves = crate::movegen::moves(piece, piece_square, friendly, opposite);
+                let moves = crate::movegen::moves(
+                    (self.board.turn, piece),
+                    piece_square,
+                    friendly,
+                    opposite,
+                );
                 for destination in moves {
                     self.cached_moves.push(PseudoMove {
                         origin: piece_square,

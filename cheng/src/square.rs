@@ -1,5 +1,7 @@
 use std::{fmt::Debug, str::FromStr};
 
+use crate::sides::Side;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Square(usize);
 
@@ -37,18 +39,19 @@ impl Square {
     }
 
     #[inline]
-    pub fn next_rank(self) -> Square {
+    pub fn next_rank(self, view: Side) -> Square {
         assert!(self.0 + 8 < 64);
-        Square::from_index(self.0 + 8)
+        self.checked_next_rank(view).unwrap()
     }
 
     #[inline]
-    pub fn checked_next_rank(self) -> Option<Square> {
-        if self.0 + 8 < 64 {
-            Some(Square::from_index(self.0 + 8))
-        } else {
-            None
-        }
+    pub fn checked_next_rank(self, view: Side) -> Option<Square> {
+        let (idx, bad) = match view {
+            Side::White => (self.0 + 8, self.0 + 8 >= 64),
+            Side::Black => self.0.overflowing_sub(8),
+        };
+
+        (!bad).then(|| Square::from_index(idx))
     }
 }
 

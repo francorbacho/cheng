@@ -4,10 +4,7 @@ pub use mask::BoardMask;
 mod movegen;
 
 use crate::{
-    movement::PseudoMove,
-    pieces::Piece,
-    sides::{Side, SideState},
-    square::Square,
+    movement::PseudoMove, pieces::Piece, side_state::SideState, sides::Side, square::Square,
 };
 
 use self::movegen::MoveGenerator;
@@ -41,8 +38,8 @@ impl Board {
     #[inline]
     pub fn empty() -> Self {
         Self {
-            white_side: SideState::empty(),
-            black_side: SideState::empty(),
+            white_side: SideState::empty(Side::White),
+            black_side: SideState::empty(Side::Black),
             turn: Side::White,
             result: None,
         }
@@ -119,8 +116,8 @@ impl Board {
         let mut parts = fen.split(' ');
         let board = parts.next().ok_or(MissingPart)?;
 
-        let mut white_side = SideState::empty();
-        let mut black_side = SideState::empty();
+        let mut white_side = SideState::empty(Side::White);
+        let mut black_side = SideState::empty(Side::Black);
 
         let mut squares = Square::iter_all();
 

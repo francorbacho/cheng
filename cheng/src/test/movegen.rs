@@ -1,7 +1,8 @@
 use crate::{
     board::BoardMask,
-    movegen::{steady, Bishop, King, Pawn, PieceExt, Rook},
+    movegen::{self, steady, Bishop, King, PieceExt, Rook},
     square::consts::*,
+    Side,
 };
 
 #[test]
@@ -17,33 +18,40 @@ fn test_movegen_king() {
 
 #[test]
 fn test_movegen_pawn() {
-    let opposite_occupancy = BoardMask::default();
-    let friendly_occupancy = BoardMask::default();
-    let moves = Pawn::moves(E2, friendly_occupancy, opposite_occupancy);
-    let moves_expected = BoardMask::from([E3, E4].as_slice());
-    assert_eq!(moves, moves_expected);
+    use Side::*;
+    macro_rules! f {
+        [$($squares:expr),*] => {
+            [$($squares),*].as_slice()
+        }
+    }
 
-    let opposite_occupancy = BoardMask::from(C8);
-    let friendly_occupancy = BoardMask::from(B8);
-    let moves = Pawn::moves(B7, friendly_occupancy, opposite_occupancy);
-    let moves_expected = BoardMask::from(C8);
-    assert_eq!(moves, moves_expected);
+    #[rustfmt::skip]
+    let movegen_test = [
+        (White, E2, f![],   f![],       f![E3, E4]),
+        (White, E2, f![],   f![E3],     f![]),
+        (White, F2, f![],   f![F4],     f![F3]),
+        (White, H2, f![H3], f![G3, G4], f![G3]),
+        (White, B7, f![B8], f![C8],     f![C8]),
+        (Black, C7, f![],   f![],       f![C6, C5]),
+        (Black, B5, f![],   f![],       f![B4]),
+        (Black, A2, f![],   f![B1],     f![A1, B1]),
+    ];
 
-    let opposite_occupancy = BoardMask::from(E3);
-    let friendly_occupancy = BoardMask::default();
-    let moves = Pawn::moves(E2, friendly_occupancy, opposite_occupancy);
-    let moves_expected = BoardMask::from([].as_slice());
-    assert_eq!(moves, moves_expected);
+    for entry in &movegen_test {
+        let side = entry.0;
+        let square = entry.1;
+        let friendly_occupancy = BoardMask::from(entry.2);
+        let opposite_occupancy = BoardMask::from(entry.3);
+        let expected_moves = BoardMask::from(entry.4);
 
-    let opposite_occupancy = BoardMask::default();
-    let friendly_occupancy = BoardMask::from(H3);
-    let moves = Pawn::moves(H2, friendly_occupancy, opposite_occupancy);
-    let moves_expected = BoardMask::from([].as_slice());
-    assert_eq!(moves, moves_expected);
+        eprintln!("{side:?},{square:?}");
+        eprintln!("{}", BoardMask::from(0x2000000));
 
-    let opposite_occupancy = BoardMask::default();
-    let friendly_occupancy = BoardMask::default();
-    let moves = Pawn::threats(E2, friendly_occupancy, opposite_occupancy);
+        let moves = movegen::pawn_moves(side, square, friendly_occupancy, opposite_occupancy);
+        assert_eq!(moves, expected_moves);
+    }
+
+    let moves = movegen::pawn_threats(Side::White, E2);
     let moves_expected = BoardMask::from([D3, F3].as_slice());
     assert_eq!(moves, moves_expected);
 }

@@ -1,4 +1,4 @@
-use crate::square::Square;
+use crate::{sides::Side, square::Square};
 use std::fmt::{Debug, Display};
 
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
@@ -61,8 +61,11 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn push_rank(self) -> BoardMask {
-        Self(self.0.overflowing_shl(8).0)
+    pub fn push_rank(self, view: Side) -> BoardMask {
+        match view {
+            Side::White => Self(self.0.overflowing_shl(8).0),
+            Side::Black => Self(self.0.overflowing_shr(8).0),
+        }
     }
 
     #[inline]

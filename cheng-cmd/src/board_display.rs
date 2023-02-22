@@ -1,10 +1,8 @@
 use std::fmt::Display;
 
-use cheng::{Board, Piece, Side};
+use cheng::{Board, Piece, Side, SidedPiece};
 
 pub struct BoardDisplay<'a>(pub &'a Board);
-
-type SidedPiece = (Piece, Side);
 
 impl BoardDisplay<'_> {
     fn generate_array(&self) -> [Option<SidedPiece>; 64] {
@@ -15,7 +13,7 @@ impl BoardDisplay<'_> {
                 let idx = square.to_index();
                 assert_eq!(board_vec[idx], None);
 
-                board_vec[idx] = Some((piece, Side::White));
+                board_vec[idx] = Some((Side::White, piece));
             }
         }
 
@@ -24,7 +22,7 @@ impl BoardDisplay<'_> {
                 let idx = square.to_index();
                 assert_eq!(board_vec[idx], None);
 
-                board_vec[idx] = Some((piece, Side::Black));
+                board_vec[idx] = Some((Side::Black, piece));
             }
         }
 
@@ -34,7 +32,7 @@ impl BoardDisplay<'_> {
 
 impl Display for BoardDisplay<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        fn sided_piece_to_string((piece, side): SidedPiece) -> String {
+        fn sided_piece_to_string((side, piece): SidedPiece) -> String {
             if side == Side::White {
                 char::from(piece).to_uppercase().to_string()
             } else {

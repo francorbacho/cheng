@@ -5,7 +5,8 @@ mod moves;
 use crate::{
     board::{Board, BoardMask, FENParsingError},
     pieces::Piece,
-    sides::{Side, SideState},
+    side_state::SideState,
+    sides::Side,
     square::consts::*,
     square::Square,
 };
@@ -53,17 +54,17 @@ fn test_impl_debug_square() {
 
 #[test]
 fn test_correct_next_rank() {
-    assert_eq!(A1.next_rank(), A2);
-    assert_eq!(H7.next_rank(), H8);
-    assert_eq!(F5.next_rank(), F6);
+    assert_eq!(A1.next_rank(Side::White), A2);
+    assert_eq!(H7.next_rank(Side::White), H8);
+    assert_eq!(F5.next_rank(Side::White), F6);
 
-    assert_eq!(F8.checked_next_rank(), None);
-    assert_eq!(G2.checked_next_rank(), Some(G3));
+    assert_eq!(F8.checked_next_rank(Side::White), None);
+    assert_eq!(G2.checked_next_rank(Side::White), Some(G3));
 }
 
 #[test]
 fn test_occupancy_side_pieces_match() {
-    let mut side_pieces = SideState::empty();
+    let mut side_pieces = SideState::empty(Side::White);
     assert_eq!(side_pieces.occupancy, BoardMask::default());
 
     side_pieces.put(A2, Piece::Pawn);

@@ -91,7 +91,7 @@ fn test_relevant_occ_mask_steady() {
 
 #[test]
 fn test_movegen_rook() {
-    Rook::init();
+    crate::init();
 
     let occupancy = BoardMask::default();
     let moves = Rook::moves(D4, BoardMask::default(), occupancy);
@@ -122,7 +122,7 @@ fn test_movegen_bishop_steady() {
 
 #[test]
 fn test_movegen_bishop() {
-    Bishop::init();
+    crate::init();
 
     let occupancy = BoardMask::default();
 
@@ -139,7 +139,7 @@ fn test_movegen_bishop() {
 
 #[test]
 fn test_movegen_cant_slide_to_friendly_occupation() {
-    Rook::init();
+    crate::init();
 
     let friendly = BoardMask::from([A3, C1].as_slice());
     let opposite = BoardMask::from([H3, C8].as_slice());

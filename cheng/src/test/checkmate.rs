@@ -6,8 +6,7 @@ use crate::{
 
 #[test]
 fn test_simple_queen_check() {
-    Bishop::init();
-    Rook::init();
+    crate::init();
 
     let mut board = Board::default();
     board.feed("e2e4".parse().unwrap());
@@ -29,8 +28,7 @@ fn test_simple_queen_check() {
 
 #[test]
 fn test_checkmate_fast() {
-    Bishop::init();
-    Rook::init();
+    crate::init();
 
     // Scholar's mate.
     let mut board = Board::default();

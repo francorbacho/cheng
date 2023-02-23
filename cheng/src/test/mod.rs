@@ -108,7 +108,7 @@ fn test_fen_generation() {
     assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
 
     board.feed("e2e4".parse().unwrap());
-    let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1";
+    let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
     assert_eq!(board.into_fen(), expected_fen);
 
     // TODO: Add more tests here.

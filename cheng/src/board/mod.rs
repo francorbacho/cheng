@@ -164,8 +164,17 @@ impl Board {
             }
         }
 
+        // We always include the en passant square, if it exists. Note that lichess
+        // only includes it if the capture is possible (i.e. there is a pawn to make
+        // an en passant capture). This is simpler for now.
+        let en_passant_str = self
+            .side(self.turn.opposite())
+            .en_passant
+            .map(|sq| format!("{sq:?}"))
+            .unwrap_or("-".to_string());
+
         write!(fen, " {}", char::from(self.turn)).unwrap();
-        write!(fen, " KQkq - 0 1").unwrap();
+        write!(fen, " KQkq {en_passant_str} 0 1").unwrap();
 
         fen
     }

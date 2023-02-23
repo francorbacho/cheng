@@ -10,7 +10,7 @@ pub struct SideState {
     pub pieces: SidePieces,
     pub threats: BoardMask,
     pub pieces_threats: SidePiecesThreats,
-
+    pub en_passant: Option<Square>,
     pub king_in_check: bool,
 }
 
@@ -23,6 +23,7 @@ impl SideState {
             pieces: SidePieces::default(),
             threats: BoardMask::default(),
             pieces_threats: SidePiecesThreats::default(),
+            en_passant: None,
             king_in_check: false,
         }
     }
@@ -45,7 +46,13 @@ impl SideState {
         self.occupancy.reset(square);
     }
 
+    fn is_two_square_pawn_move(&self, movement: PseudoMove) -> bool {
+        self.pieces.piece(Piece::Pawn).get(movement.origin)
+            && (movement.destination.rank() as i32 - movement.origin.rank() as i32).abs() == 2
+    }
+
     pub fn update(&mut self, movement: PseudoMove) {
+        // NOTE: This only updates the state, and assumes the move is valid.
         let PseudoMove {
             ref origin,
             ref destination,
@@ -54,6 +61,12 @@ impl SideState {
 
         assert!(self.occupancy.get(*origin));
         assert!(!self.occupancy.get(*destination));
+
+        if self.is_two_square_pawn_move(movement.clone()) {
+            self.en_passant = Some(origin.next_rank(self.side));
+        } else {
+            self.en_passant = None;
+        }
 
         self.occupancy.reset(*origin);
         self.occupancy.set(*destination);

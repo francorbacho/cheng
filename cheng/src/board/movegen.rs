@@ -1,5 +1,7 @@
 use crate::{movement::MoveKind, pieces::Piece, Board, PseudoMove, SidedPiece};
 
+use super::BoardMask;
+
 pub struct MoveGenerator<'a> {
     pub board: &'a Board,
 
@@ -26,6 +28,15 @@ impl<'a> MoveGenerator<'a> {
 
         for piece in Piece::iter() {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
+                let opposite = if piece == Piece::Pawn {
+                    match self.board.side(self.board.turn.opposite()).en_passant {
+                        Some(square) => opposite.intersection(BoardMask::from(square)),
+                        None => opposite,
+                    }
+                } else {
+                    opposite
+                };
+
                 let moves = crate::movegen::moves(
                     SidedPiece(self.board.turn, piece),
                     piece_square,

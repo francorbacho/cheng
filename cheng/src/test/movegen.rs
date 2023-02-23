@@ -167,3 +167,18 @@ fn test_movegen_king_cant_move_to_threaten() {
 
     assert!(ok);
 }
+
+#[test]
+fn test_en_passant() {
+    // https://lichess.org/analysis/8/5Kpk/8/5P2/8/8/8/8_b_-_-_0_1?color=white
+    let mut board = Board::from_fen("8/5Kpk/8/5P2/8/8/8/8 b - - 0 1").unwrap();
+
+    board.feed("g7g5".parse().unwrap());
+    let contains_move = board
+        .moves()
+        .collect::<Vec<_>>()
+        .contains(&"f5g6".parse().unwrap());
+    assert!(contains_move);
+    board.feed("f5g6".parse().unwrap());
+    assert!(board.side(Side::Black).king_in_check);
+}

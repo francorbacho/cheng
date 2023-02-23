@@ -25,4 +25,5 @@ fn perft_position_initial() {
     assert_eq!(perft(&board, 2), 400);
     assert_eq!(perft(&board, 3), 8902);
     assert_eq!(perft(&board, 4), 197_281);
+    assert_eq!(perft(&board, 5), 4_865_609);
 }

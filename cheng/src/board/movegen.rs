@@ -40,11 +40,17 @@ impl<'a> MoveGenerator<'a> {
                 };
 
                 for destination in moves {
-                    self.cached_moves.push(PseudoMove {
+                    let mut clone = self.board.clone();
+                    let movement = PseudoMove {
                         origin: piece_square,
                         destination,
                         kind: MoveKind::Move,
-                    });
+                    };
+                    clone.feed_unchecked(movement.clone());
+                    if clone.side(self.board.turn).king_in_check {
+                        continue;
+                    }
+                    self.cached_moves.push(movement);
                 }
             }
         }

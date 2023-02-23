@@ -72,6 +72,7 @@ impl Board {
 
     pub fn feed(&mut self, movement: PseudoMove) {
         self.feed_unchecked(movement);
+        self.update_result();
     }
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
@@ -86,8 +87,6 @@ impl Board {
         self.black_side.update_king_in_check(&self.white_side);
 
         self.turn = self.turn.opposite();
-
-        self.update_result();
     }
 
     pub fn update_result(&mut self) {

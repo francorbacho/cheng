@@ -106,9 +106,22 @@ fn perft_bisect_iteration(
 }
 
 fn perft_stockfish(stockfish: &Engine, depth: usize) -> Result<HashMap<String, usize>, String> {
-    let result = stockfish
+    let first_part = stockfish
         .command(&format!("go perft {depth}"))
         .map_err(|e| format!("{e}"))?;
+
+    // We need to do this due to a limitation in the `uci` library.
+    // https://docs.rs/uci/0.1.3/src/uci/lib.rs.html#154
+    let mut result = first_part;
+    loop {
+        let leftovers = stockfish.command("").map_err(|e| format!("{e}"))?;
+        if leftovers.is_empty() {
+            break;
+        }
+        result.push('\n');
+        result.push_str(&leftovers);
+        result.push('\n');
+    }
 
     let mut map = HashMap::new();
     for line in result.lines() {

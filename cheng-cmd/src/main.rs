@@ -62,13 +62,13 @@ fn fen(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
     Ok(())
 }
 
-pub fn continue_<E>(_movement: &str, _nodes: usize) -> ControlFlow<E, ()> {
+pub fn continue_<E>(_movement: &PseudoMove, _nodes: usize) -> ControlFlow<E, ()> {
     Continue(())
 }
 
 fn incremental_perft<E, F>(board: &Board, depth: usize, mut callback: F) -> Result<usize, E>
 where
-    F: FnMut(&str, usize) -> ControlFlow<E, ()>,
+    F: FnMut(&PseudoMove, usize) -> ControlFlow<E, ()>,
 {
     if depth == 0 {
         return Ok(1);
@@ -83,7 +83,7 @@ where
         let move_nodes = incremental_perft(&clone, depth - 1, continue_)?;
         nodes += move_nodes;
 
-        let control = callback(&format!("{}", movement), move_nodes);
+        let control = callback(&movement, move_nodes);
         match control {
             Continue(_) => continue,
             Break(e) => return Err(e),

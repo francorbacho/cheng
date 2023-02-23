@@ -68,7 +68,8 @@ fn perft_bisect_iteration(
 ) -> Result<(), PerftBisectErr> {
     let mut move_perft_table = perft_stockfish(stockfish, depth).unwrap();
     let bisect_result = incremental_perft(board, depth, |movement, nodes| {
-        let expected_nodes = move_perft_table.remove(movement);
+        let movement_str = format!("{movement}");
+        let expected_nodes = move_perft_table.remove(&movement_str);
         match expected_nodes {
             Some(expected) => {
                 if expected != nodes {

@@ -1,6 +1,5 @@
 use crate::{
     board::{Board, GameResult},
-    movegen::{Bishop, PieceExt, Rook},
     sides::Side,
 };
 

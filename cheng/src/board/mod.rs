@@ -76,7 +76,24 @@ impl Board {
     }
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
+        let piece_is_pawn = self
+            .side(self.turn)
+            .pieces
+            .piece(Piece::Pawn)
+            .get(movement.origin);
+
         self.side_mut(self.turn).update(movement.clone());
+
+        if Some(movement.destination) == self.side(self.turn.opposite()).en_passant && piece_is_pawn
+        {
+            // En passant capture
+            let side = self.side_mut(self.turn.opposite());
+            let pawn_pieces = side.pieces.piece_mut(Piece::Pawn);
+            let actual_pawn_square = movement.destination.next_rank(side.side);
+            side.occupancy.reset(actual_pawn_square);
+            pawn_pieces.reset(actual_pawn_square);
+        }
+
         self.side_mut(self.turn.opposite())
             .remove(movement.destination);
 

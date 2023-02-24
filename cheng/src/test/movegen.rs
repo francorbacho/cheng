@@ -2,7 +2,7 @@ use crate::{
     board::BoardMask,
     movegen::{self, steady, Bishop, King, PieceExt, Rook},
     square::consts::*,
-    Board, Side,
+    Board, Piece, Side,
 };
 
 #[test]
@@ -169,16 +169,63 @@ fn test_movegen_king_cant_move_to_threaten() {
 }
 
 #[test]
-fn test_en_passant() {
+fn test_en_passant_as_white() {
     // https://lichess.org/analysis/8/5Kpk/8/5P2/8/8/8/8_b_-_-_0_1?color=white
     let mut board = Board::from_fen("8/5Kpk/8/5P2/8/8/8/8 b - - 0 1").unwrap();
-
     board.feed("g7g5".parse().unwrap());
-    let contains_move = board
+
+    let contains_en_passant_capture = board
         .moves()
         .collect::<Vec<_>>()
         .contains(&"f5g6".parse().unwrap());
-    assert!(contains_move);
+    assert!(contains_en_passant_capture);
+
     board.feed("f5g6".parse().unwrap());
     assert!(board.side(Side::Black).king_in_check);
+
+    // Make sure the occupancy is right: the pawn is taken.
+    assert_eq!(board.side(Side::Black).occupancy, BoardMask::from(H7));
+}
+
+#[test]
+fn test_en_passant_as_black() {
+    // https://lichess.org/analysis/8/8/8/2k5/1p6/3K4/2P5/8_w_-_-_0_1?color=white
+    let mut board = Board::from_fen("8/8/8/2k5/1p6/3K4/2P5/8 w - - 0 1").unwrap();
+    board.feed("c2c4".parse().unwrap());
+
+    let contains_en_passant_capture = board
+        .moves()
+        .collect::<Vec<_>>()
+        .contains(&"b4c3".parse().unwrap());
+
+    assert!(contains_en_passant_capture);
+
+    board.feed("b4c3".parse().unwrap());
+
+    // Make sure the occupancy is right: the pawn is taken.
+    assert_eq!(board.side(Side::White).occupancy, BoardMask::from(D3));
+    assert_eq!(
+        board.side(Side::White).pieces.piece(Piece::Pawn),
+        BoardMask::default()
+    );
+
+    assert_eq!(
+        board.side(Side::Black).occupancy,
+        BoardMask::from([C3, C5].as_slice())
+    );
+}
+
+#[test]
+fn test_only_pawns_take_en_passant() {
+    // https://lichess.org/analysis/8/8/8/8/5k2/8/6P1/4K3_w_-_-_0_1?color=white
+    let mut board = Board::from_fen("8/8/8/8/5k2/8/6P1/4K3 w - - 0 1").unwrap();
+    board.feed("g2g4".parse().unwrap());
+    board.feed("f4g3".parse().unwrap());
+
+    assert_eq!(
+        board.side(Side::White).occupancy,
+        BoardMask::from([E1, G4].as_slice())
+    );
+
+    assert_eq!(board.side(Side::Black).occupancy, BoardMask::from(G3));
 }

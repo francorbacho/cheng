@@ -17,7 +17,7 @@ fn perft(board: &Board, depth: usize) -> usize {
 }
 
 #[test]
-fn perft_position_initial() {
+fn test_perft_0_to_4_initial_position() {
     cheng::init();
     let board = Board::default();
     assert_eq!(perft(&board, 0), 1);
@@ -25,5 +25,18 @@ fn perft_position_initial() {
     assert_eq!(perft(&board, 2), 400);
     assert_eq!(perft(&board, 3), 8902);
     assert_eq!(perft(&board, 4), 197_281);
+}
+
+#[test]
+fn test_perft_5_initial_position() {
+    cheng::init();
+    let board = Board::default();
     assert_eq!(perft(&board, 5), 4_865_609);
+}
+
+#[test]
+fn test_perft_6_initial_position() {
+    cheng::init();
+    let board = Board::default();
+    assert_eq!(perft(&board, 6), 119_060_324);
 }

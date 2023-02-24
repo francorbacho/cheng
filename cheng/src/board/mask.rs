@@ -11,6 +11,20 @@ impl BoardMask {
     }
 
     #[inline]
+    pub const fn const_from_slice(squares: &[Square]) -> Self {
+        let mut mask = 0u64;
+        let mut idx = 0;
+
+        // Rust doesn't allow for loops in const functions.
+        while idx < squares.len() {
+            mask |= 1 << squares[idx].to_index();
+            idx += 1;
+        }
+
+        BoardMask(mask)
+    }
+
+    #[inline]
     pub fn get(&self, square: Square) -> bool {
         self.0 & (1 << square.to_index()) != 0
     }
@@ -51,7 +65,7 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn first(&self) -> Option<Square> {
+    pub const fn first(&self) -> Option<Square> {
         let index = self.0.trailing_zeros();
         if index < 64 {
             Some(Square::from_index(index as usize))
@@ -149,10 +163,6 @@ impl From<Square> for BoardMask {
 
 impl From<&[Square]> for BoardMask {
     fn from(squares: &[Square]) -> Self {
-        let mut mask = BoardMask::default();
-        for square in squares {
-            mask.set(*square);
-        }
-        mask
+        Self::const_from_slice(squares)
     }
 }

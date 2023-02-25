@@ -1,7 +1,109 @@
 #[cfg(feature = "simd")]
 use std::simd::{Simd, SimdOrd, SimdPartialEq, SimdUint};
 
-use crate::{board::BoardMask, movegen, Piece, PseudoMove, Side, SidedPiece, Square};
+use crate::{
+    board::BoardMask,
+    movegen,
+    movement::{Castle, MoveKind},
+    Piece, PseudoMove, Side, SidedPiece, Square,
+};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum CastlingRights {
+    None,
+    QueenSide,
+    KingSide,
+    #[default]
+    Both,
+}
+
+impl CastlingRights {
+    #[inline]
+    pub fn checked_add(&mut self, rhs: CastlingRights) -> Result<(), CastlingRights> {
+        match (*self, rhs) {
+            (lhs, rhs) if lhs == rhs => Err(lhs),
+            (CastlingRights::None, rhs) => {
+                *self = rhs;
+                Ok(())
+            }
+            (CastlingRights::Both, err) => Err(err),
+            (CastlingRights::QueenSide, CastlingRights::KingSide)
+            | (CastlingRights::KingSide, CastlingRights::QueenSide) => {
+                *self = CastlingRights::Both;
+                Ok(())
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    pub fn without(self, rhs: CastlingRights) -> CastlingRights {
+        match (self, rhs) {
+            (CastlingRights::None, _) => self,
+            (lhs, rhs) if lhs == rhs => CastlingRights::None,
+            (CastlingRights::Both, CastlingRights::KingSide) => CastlingRights::QueenSide,
+            (CastlingRights::Both, CastlingRights::QueenSide) => CastlingRights::KingSide,
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    pub fn queen_side(self) -> bool {
+        match self {
+            Self::None | Self::KingSide => false,
+            Self::QueenSide | Self::Both => true,
+        }
+    }
+
+    #[inline]
+    pub fn king_side(self) -> bool {
+        match self {
+            Self::None | Self::QueenSide => false,
+            Self::KingSide | Self::Both => true,
+        }
+    }
+
+    pub fn to_fen_str(self) -> &'static str {
+        match self {
+            Self::None => "",
+            Self::QueenSide => "q",
+            Self::KingSide => "k",
+            Self::Both => "kq",
+        }
+    }
+
+    /// Parses FEN castling rights for white and black.
+    pub fn parse_fen_from_str(
+        castling_rights: &str,
+    ) -> Result<(CastlingRights, CastlingRights), ()> {
+        if castling_rights == "-" {
+            return Ok((CastlingRights::None, CastlingRights::None));
+        }
+
+        let mut white_cr = CastlingRights::None;
+        let mut black_cr = CastlingRights::None;
+
+        for chr in castling_rights.chars() {
+            match chr {
+                'K' => white_cr
+                    .checked_add(CastlingRights::KingSide)
+                    .map_err(|_| ())?,
+                'Q' => white_cr
+                    .checked_add(CastlingRights::QueenSide)
+                    .map_err(|_| ())?,
+                'k' => black_cr
+                    .checked_add(CastlingRights::KingSide)
+                    .map_err(|_| ())?,
+                'q' => black_cr
+                    .checked_add(CastlingRights::QueenSide)
+                    .map_err(|_| ())?,
+                _ => return Err(()),
+            }
+        }
+
+        Ok((white_cr, black_cr))
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SideState {
@@ -12,6 +114,7 @@ pub struct SideState {
     pub pieces_threats: SidePiecesThreats,
     pub en_passant: Option<Square>,
     pub king_in_check: bool,
+    pub castling_rights: CastlingRights,
 }
 
 impl SideState {
@@ -25,6 +128,7 @@ impl SideState {
             pieces_threats: SidePiecesThreats::default(),
             en_passant: None,
             king_in_check: false,
+            castling_rights: CastlingRights::None,
         }
     }
 
@@ -70,7 +174,40 @@ impl SideState {
 
         self.occupancy.reset(*origin);
         self.occupancy.set(*destination);
-        self.pieces.update(movement);
+
+        if let MoveKind::Castle(castle) = movement.kind {
+            self.castling_rights = CastlingRights::None;
+
+            self.occupancy
+                .reset(castle.rook_position_before_castle(self.side));
+            self.occupancy
+                .set(castle.rook_position_after_castle(self.side));
+        } else if let MoveKind::Move = movement.kind {
+            self.update_castling_rights(movement.clone());
+        }
+
+        self.pieces.update(self.side, movement);
+    }
+
+    fn update_castling_rights(&mut self, movement: PseudoMove) {
+        let PseudoMove { origin, .. } = movement;
+
+        let is_king_move = self.pieces.piece(Piece::King).get(origin);
+        if is_king_move {
+            self.castling_rights = CastlingRights::None;
+            return;
+        }
+
+        let is_rook_move = self.pieces.piece(Piece::Rook).get(origin);
+        if !is_rook_move {
+            return;
+        }
+
+        if origin == Castle::QueenSide.rook_position_before_castle(self.side) {
+            self.castling_rights = self.castling_rights.without(CastlingRights::QueenSide);
+        } else if origin == Castle::KingSide.rook_position_before_castle(self.side) {
+            self.castling_rights = self.castling_rights.without(CastlingRights::KingSide);
+        }
     }
 
     pub fn update_threats(&mut self, opposite: &SideState) {
@@ -138,9 +275,7 @@ impl SidePieces {
         Some(Piece::try_from(result as usize).ok()).flatten()
     }
 
-    pub fn update(&mut self, movement: PseudoMove) {
-        use crate::movement::MoveKind;
-
+    pub fn update(&mut self, side: Side, movement: PseudoMove) {
         let PseudoMove {
             origin,
             destination,
@@ -159,7 +294,15 @@ impl SidePieces {
                 self.piece_mut(Piece::Pawn).reset(origin);
                 self.piece_mut(piece).set(destination);
             }
-            MoveKind::ShortCastle | MoveKind::LongCastle => {}
+            MoveKind::Castle(castle) => {
+                let king_mask = self.piece_mut(Piece::King);
+                king_mask.reset(origin);
+                king_mask.set(destination);
+
+                let rook_mask = self.piece_mut(Piece::Rook);
+                rook_mask.reset(castle.rook_position_before_castle(side));
+                rook_mask.set(castle.rook_position_after_castle(side));
+            }
         }
     }
 

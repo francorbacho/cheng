@@ -20,7 +20,7 @@ impl Square {
     }
 
     #[inline]
-    pub fn to_index(self) -> usize {
+    pub const fn to_index(self) -> usize {
         self.0
     }
 

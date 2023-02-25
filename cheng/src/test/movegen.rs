@@ -1,6 +1,8 @@
 use crate::{
     board::BoardMask,
     movegen::{self, steady, Bishop, King, PieceExt, Rook},
+    movement::{Castle, MoveKind},
+    side_state::CastlingRights,
     square::consts::*,
     Board, Piece, Side,
 };
@@ -228,4 +230,45 @@ fn test_only_pawns_take_en_passant() {
     );
 
     assert_eq!(board.side(Side::Black).occupancy, BoardMask::from(G3));
+}
+
+#[test]
+fn test_castling() {
+    crate::init();
+
+    // https://lichess.org/analysis/4k3/8/8/8/2r5/8/1R6/R3K2R_w_KQ_-_0_1?color=white
+    let mut board = Board::from_fen("4k3/8/8/8/2r5/8/1R6/R3K2R w KQ - 0 1").unwrap();
+
+    fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
+        board
+            .moves()
+            .find(|movement| movement.kind == MoveKind::Castle(castle_kind))
+            .is_some()
+    }
+
+    board.white_side.update_threats(&board.black_side);
+    board.black_side.update_threats(&board.white_side);
+
+    assert!(board_contains_castle(&board, Castle::KingSide));
+    assert!(!board_contains_castle(&board, Castle::QueenSide));
+
+    board.feed("b2g2".parse().unwrap());
+    board.feed("c4g4".parse().unwrap());
+
+    assert!(board_contains_castle(&board, Castle::KingSide));
+    assert!(board_contains_castle(&board, Castle::QueenSide));
+
+    board.feed("e1g1".parse().unwrap());
+
+    assert_eq!(
+        board.white_side.occupancy,
+        BoardMask::from([A1, F1, G1, G2].as_slice())
+    );
+
+    assert_eq!(
+        board.white_side.pieces.piece(Piece::Rook),
+        BoardMask::from([A1, F1, G2].as_slice())
+    );
+
+    assert_eq!(board.white_side.castling_rights, CastlingRights::None);
 }

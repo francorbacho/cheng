@@ -4,7 +4,11 @@ pub use mask::BoardMask;
 mod movegen;
 
 use crate::{
-    movement::PseudoMove, pieces::Piece, side_state::SideState, sides::Side, square::Square,
+    movement::{Castle, MoveKind, PseudoMove},
+    pieces::Piece,
+    side_state::{CastlingRights, SideState},
+    sides::Side,
+    square::Square,
     SidedPiece,
 };
 
@@ -19,6 +23,7 @@ pub enum FENParsingError {
     UnknownPiece,
     InvalidTurn,
     InvalidAlignment,
+    InvalidCastleRights,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -70,7 +75,15 @@ impl Board {
         }
     }
 
-    pub fn feed(&mut self, movement: PseudoMove) {
+    pub fn feed(&mut self, mut movement: PseudoMove) {
+        let side = self.side(self.turn);
+        let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
+        if moved_piece_is_king {
+            if let Some(c) = Castle::move_could_be_castle(self.turn, movement.clone()) {
+                movement.kind = MoveKind::Castle(c);
+            }
+        }
+
         self.feed_unchecked(movement);
         self.update_result();
     }
@@ -190,8 +203,23 @@ impl Board {
             .map(|sq| format!("{sq:?}"))
             .unwrap_or("-".to_string());
 
+        let castling_rights = {
+            let white_castling_rights = self
+                .white_side
+                .castling_rights
+                .to_fen_str()
+                .to_ascii_uppercase();
+            let black_castling_rights = self.black_side.castling_rights.to_fen_str();
+
+            if white_castling_rights.is_empty() && black_castling_rights.is_empty() {
+                String::from("-")
+            } else {
+                format!("{white_castling_rights}{black_castling_rights}")
+            }
+        };
+
         write!(fen, " {}", char::from(self.turn)).unwrap();
-        write!(fen, " KQkq {en_passant_str} 0 1").unwrap();
+        write!(fen, " {castling_rights} {en_passant_str} 0 1").unwrap();
 
         fen
     }
@@ -248,7 +276,17 @@ impl Board {
             None => return Err(MissingPart),
         };
 
-        let _castle_permission = parts.next().ok_or(MissingPart)?;
+        let (white_castle_rights, black_castle_rights) = {
+            let castle_rights_str = parts.next().ok_or(MissingPart)?;
+            match CastlingRights::parse_fen_from_str(castle_rights_str) {
+                Ok(castle_rights) => castle_rights,
+                Err(_) => return Err(InvalidCastleRights),
+            }
+        };
+
+        white_side.castling_rights = white_castle_rights;
+        black_side.castling_rights = black_castle_rights;
+
         let _en_passant_target_square = parts.next().ok_or(MissingPart)?;
         let _halfmove_clock = parts.next().ok_or(MissingPart)?;
         let _fullmove_clock = parts.next().ok_or(MissingPart)?;

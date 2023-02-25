@@ -1,23 +1,10 @@
 use cheng::Board;
 
-fn perft(board: &Board, depth: usize) -> usize {
-    if depth == 0 {
-        return 1;
-    }
-
-    let moves = board.moves();
-    let mut nodes = 0;
-    for movement in moves {
-        let mut clone = board.clone();
-        clone.feed(movement);
-        nodes += perft(&clone, depth - 1);
-    }
-
-    nodes
-}
+mod perft;
+use perft::perft;
 
 #[test]
-fn test_perft_0_to_4_initial_position() {
+fn test_perft_initial_position_0_to_4() {
     cheng::init();
     let board = Board::default();
     assert_eq!(perft(&board, 0), 1);
@@ -28,14 +15,14 @@ fn test_perft_0_to_4_initial_position() {
 }
 
 #[test]
-fn test_perft_5_initial_position() {
+fn test_perft_initial_position_5() {
     cheng::init();
     let board = Board::default();
     assert_eq!(perft(&board, 5), 4_865_609);
 }
 
 #[test]
-fn test_perft_6_initial_position() {
+fn test_perft_initial_position_6() {
     cheng::init();
     let board = Board::default();
     assert_eq!(perft(&board, 6), 119_060_324);

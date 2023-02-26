@@ -142,11 +142,14 @@ impl SideState {
     }
 
     pub fn remove(&mut self, square: Square) {
+        if !self.occupancy.get(square) {
+            return;
+        }
+
         let piece = match self.pieces.find(square) {
             Some(piece) => piece,
-            None => return,
+            None => unreachable!(),
         };
-        // .expect("Tried to remove non-existing piece");
 
         self.pieces.piece_mut(piece).reset(square);
         self.occupancy.reset(square);

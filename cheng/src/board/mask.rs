@@ -24,6 +24,10 @@ impl BoardMask {
         BoardMask(mask)
     }
 
+    pub const fn from_array<const N: usize>(squares: [Square; N]) -> BoardMask {
+        Self::const_from_slice(squares.as_slice())
+    }
+
     #[inline]
     pub fn get(&self, square: Square) -> bool {
         self.0 & (1 << square.to_index()) != 0

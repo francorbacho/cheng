@@ -83,7 +83,16 @@ impl Castle {
         }
     }
 
-    pub const fn relevant_squares(self, side: Side) -> BoardMask {
+    pub fn relevant_square_occupancy(self, side: Side) -> BoardMask {
+        use crate::consts::*;
+        match (side, self) {
+            (side, Castle::KingSide) => self.relevant_square_threats(side),
+            (Side::White, Castle::QueenSide) => BoardMask::from_array([B1, C1, D1]),
+            (Side::Black, Castle::QueenSide) => BoardMask::from_array([B8, C8, D8]),
+        }
+    }
+
+    pub const fn relevant_square_threats(self, side: Side) -> BoardMask {
         use crate::consts::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => BoardMask::const_from_slice([F1, G1].as_slice()),

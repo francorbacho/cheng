@@ -42,12 +42,13 @@ impl<'a> MoveGenerator<'a> {
         // The squares that must be unoccupied and unthreathened to be able
         // to castle. For example, in white's king side castle, F1 and G1.
         fn can_castle(
-            relevant_squares: BoardMask,
-            friendly_occupancy: BoardMask,
+            relevant_squares_occupancy: BoardMask,
+            relevant_squares_threats: BoardMask,
+            occupancy: BoardMask,
             opposite_threats: BoardMask,
         ) -> bool {
-            !relevant_squares.has_coincidences(friendly_occupancy)
-                && !relevant_squares.has_coincidences(opposite_threats)
+            !relevant_squares_occupancy.has_coincidences(occupancy)
+                && !relevant_squares_threats.has_coincidences(opposite_threats)
         }
 
         use crate::consts::*;
@@ -57,10 +58,18 @@ impl<'a> MoveGenerator<'a> {
             Side::Black => (C8, G8),
         };
 
-        if side.castling_rights.queen_side() {
-            let relevant_squares = Castle::QueenSide.relevant_squares(side.side);
+        let occupancy = side.occupancy.intersection(opposite_side.occupancy);
 
-            if can_castle(relevant_squares, side.occupancy, opposite_side.threats) {
+        if side.castling_rights.queen_side() {
+            let relevant_square_occupancy = Castle::QueenSide.relevant_square_occupancy(side.side);
+            let relevant_square_threats = Castle::QueenSide.relevant_square_threats(side.side);
+
+            if can_castle(
+                relevant_square_occupancy,
+                relevant_square_threats,
+                occupancy,
+                opposite_side.threats,
+            ) {
                 let queen_side_castle = PseudoMove {
                     origin: king_square,
                     destination: queen_side_castle_square,
@@ -72,9 +81,15 @@ impl<'a> MoveGenerator<'a> {
         }
 
         if side.castling_rights.king_side() {
-            let relevant_squares = Castle::KingSide.relevant_squares(side.side);
+            let relevant_squares_occupancy = Castle::KingSide.relevant_square_occupancy(side.side);
+            let relevant_squares_threats = Castle::KingSide.relevant_square_threats(side.side);
 
-            if can_castle(relevant_squares, side.occupancy, opposite_side.threats) {
+            if can_castle(
+                relevant_squares_occupancy,
+                relevant_squares_threats,
+                occupancy,
+                opposite_side.threats,
+            ) {
                 let king_side_castle = PseudoMove {
                     origin: king_square,
                     destination: king_side_castle_square,

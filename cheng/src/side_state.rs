@@ -39,10 +39,12 @@ impl CastlingRights {
     #[inline]
     pub fn without(self, rhs: CastlingRights) -> CastlingRights {
         match (self, rhs) {
-            (CastlingRights::None, _) => self,
+            (CastlingRights::None, _) => CastlingRights::None,
             (lhs, rhs) if lhs == rhs => CastlingRights::None,
             (CastlingRights::Both, CastlingRights::KingSide) => CastlingRights::QueenSide,
             (CastlingRights::Both, CastlingRights::QueenSide) => CastlingRights::KingSide,
+            (CastlingRights::KingSide, CastlingRights::QueenSide) => CastlingRights::KingSide,
+            (CastlingRights::QueenSide, CastlingRights::KingSide) => CastlingRights::QueenSide,
             _ => unreachable!(),
         }
     }

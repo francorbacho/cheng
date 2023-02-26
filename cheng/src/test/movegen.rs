@@ -272,3 +272,45 @@ fn test_castling() {
 
     assert_eq!(board.white_side.castling_rights, CastlingRights::None);
 }
+
+#[test]
+fn test_castling_cant_castle_through_pieces() {
+    crate::init();
+
+    // https://lichess.org/analysis/4k3/8/8/8/8/8/8/Rb2K2R_w_KQ_-_0_1?color=white
+    let mut board = Board::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
+
+    fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
+        board
+            .moves()
+            .find(|movement| movement.kind == MoveKind::Castle(castle_kind))
+            .is_some()
+    }
+
+    assert!(board_contains_castle(&board, Castle::KingSide));
+    assert!(!board_contains_castle(&board, Castle::QueenSide));
+
+    board.feed("a1b1".parse().unwrap());
+
+    assert!(!board_contains_castle(&board, Castle::KingSide));
+    assert!(!board_contains_castle(&board, Castle::QueenSide));
+
+    board.feed("e8e7".parse().unwrap());
+
+    assert!(board_contains_castle(&board, Castle::KingSide));
+    assert!(!board_contains_castle(&board, Castle::QueenSide));
+}
+
+#[test]
+fn test_castling_canceled_after_rook_is_taken() {
+    crate::init();
+
+    // https://lichess.org/analysis/4k3/8/8/8/8/8/8/Rb2K2R_w_KQ_-_0_1?color=white
+    let mut board = Board::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
+    board.feed("a1a2".parse().unwrap());
+    board.feed("b1e4".parse().unwrap());
+    board.feed("a2a1".parse().unwrap());
+    board.feed("e4h1".parse().unwrap());
+
+    assert_eq!(board.white_side.castling_rights, CastlingRights::None);
+}

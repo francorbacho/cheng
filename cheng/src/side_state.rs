@@ -150,6 +150,16 @@ impl SideState {
 
         self.pieces.piece_mut(piece).reset(square);
         self.occupancy.reset(square);
+
+        if piece != Piece::Rook {
+            return;
+        }
+
+        if square == Castle::KingSide.rook_position_before_castle(self.side) {
+            self.castling_rights = self.castling_rights.without(CastlingRights::KingSide);
+        } else if square == Castle::QueenSide.rook_position_before_castle(self.side) {
+            self.castling_rights = self.castling_rights.without(CastlingRights::QueenSide);
+        }
     }
 
     fn is_two_square_pawn_move(&self, movement: PseudoMove) -> bool {

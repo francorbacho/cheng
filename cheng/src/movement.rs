@@ -87,18 +87,18 @@ impl Castle {
         use crate::consts::*;
         match (side, self) {
             (side, Castle::KingSide) => self.relevant_square_threats(side),
-            (Side::White, Castle::QueenSide) => BoardMask::from_array([B1, C1, D1]),
-            (Side::Black, Castle::QueenSide) => BoardMask::from_array([B8, C8, D8]),
+            (Side::White, Castle::QueenSide) => BoardMask::from([B1, C1, D1]),
+            (Side::Black, Castle::QueenSide) => BoardMask::from([B8, C8, D8]),
         }
     }
 
-    pub const fn relevant_square_threats(self, side: Side) -> BoardMask {
+    pub fn relevant_square_threats(self, side: Side) -> BoardMask {
         use crate::consts::*;
         match (side, self) {
-            (Side::White, Castle::KingSide) => BoardMask::const_from_slice([F1, G1].as_slice()),
-            (Side::Black, Castle::KingSide) => BoardMask::const_from_slice([F8, G8].as_slice()),
-            (Side::White, Castle::QueenSide) => BoardMask::const_from_slice([C1, D1].as_slice()),
-            (Side::Black, Castle::QueenSide) => BoardMask::const_from_slice([C8, D8].as_slice()),
+            (Side::White, Castle::KingSide) => BoardMask::from([F1, G1]),
+            (Side::Black, Castle::KingSide) => BoardMask::from([F8, G8]),
+            (Side::White, Castle::QueenSide) => BoardMask::from([C1, D1]),
+            (Side::Black, Castle::QueenSide) => BoardMask::from([C8, D8]),
         }
     }
 }

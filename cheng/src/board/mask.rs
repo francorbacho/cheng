@@ -24,10 +24,6 @@ impl BoardMask {
         BoardMask(mask)
     }
 
-    pub const fn from_array<const N: usize>(squares: [Square; N]) -> BoardMask {
-        Self::const_from_slice(squares.as_slice())
-    }
-
     #[inline]
     pub fn get(&self, square: Square) -> bool {
         self.0 & (1 << square.to_index()) != 0
@@ -168,5 +164,12 @@ impl From<Square> for BoardMask {
 impl From<&[Square]> for BoardMask {
     fn from(squares: &[Square]) -> Self {
         Self::const_from_slice(squares)
+    }
+}
+
+// Executed at compile time on release according to godbolt.
+impl<const N: usize> From<[Square; N]> for BoardMask {
+    fn from(squares: [Square; N]) -> Self {
+        Self::const_from_slice(squares.as_slice())
     }
 }

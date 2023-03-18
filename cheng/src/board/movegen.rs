@@ -2,6 +2,7 @@ use crate::{
     movement::{Castle, MoveKind},
     pieces::Piece,
     side_state::CastlingRights,
+    square::Square,
     Board, PseudoMove, Side, SidedPiece,
 };
 
@@ -29,6 +30,15 @@ impl<'a> MoveGenerator<'a> {
     fn generate_all_moves(&mut self) {
         self.generate_moves();
         self.generate_castles();
+    }
+
+    fn checked_add_move(&mut self, movement: PseudoMove) {
+        let mut clone = self.board.clone();
+        clone.feed_unchecked(movement.clone());
+        if clone.side(self.board.turn).king_in_check {
+            return;
+        }
+        self.cached_moves.push(movement);
     }
 
     fn generate_castles(&mut self) {
@@ -108,14 +118,10 @@ impl<'a> MoveGenerator<'a> {
 
         for piece in Piece::iter() {
             for piece_square in self.board.side(self.board.turn).pieces.piece(piece) {
-                let opposite = if piece == Piece::Pawn {
-                    match self.board.side(self.board.turn.opposite()).en_passant {
-                        Some(square) => opposite.intersection(BoardMask::from(square)),
-                        None => opposite,
-                    }
-                } else {
-                    opposite
-                };
+                if piece == Piece::Pawn {
+                    self.generate_pawn_moves(piece_square);
+                    continue;
+                }
 
                 let moves = crate::movegen::moves(
                     SidedPiece(self.board.turn, piece),
@@ -131,18 +137,60 @@ impl<'a> MoveGenerator<'a> {
                 };
 
                 for destination in moves {
-                    let mut clone = self.board.clone();
                     let movement = PseudoMove {
                         origin: piece_square,
                         destination,
                         kind: MoveKind::Move,
                     };
-                    clone.feed_unchecked(movement.clone());
-                    if clone.side(self.board.turn).king_in_check {
-                        continue;
-                    }
-                    self.cached_moves.push(movement);
+
+                    self.checked_add_move(movement);
                 }
+            }
+        }
+    }
+
+    fn generate_pawn_moves(&mut self, square: Square) {
+        use crate::consts::{A2, A7};
+
+        let friendly = self.board.side(self.board.turn).occupancy;
+        let opposite = self.board.side(self.board.turn.opposite()).occupancy;
+
+        let opposite = match self.board.side(self.board.turn.opposite()).en_passant {
+            Some(square) => opposite.intersection(BoardMask::from(square)),
+            None => opposite,
+        };
+
+        let moves = crate::movegen::moves(
+            SidedPiece(self.board.turn, Piece::Pawn),
+            square,
+            friendly,
+            opposite,
+        );
+
+        let moves_are_promotion = match self.board.turn {
+            Side::White => A7.rank() == square.rank(),
+            Side::Black => A2.rank() == square.rank(),
+        };
+
+        if moves_are_promotion {
+            for destination in moves {
+                for piece in Piece::iter_promotable_pieces() {
+                    let movement = PseudoMove {
+                        origin: square,
+                        destination,
+                        kind: MoveKind::Promote(piece),
+                    };
+                    self.checked_add_move(movement);
+                }
+            }
+        } else {
+            for destination in moves {
+                let movement = PseudoMove {
+                    origin: square,
+                    destination,
+                    kind: MoveKind::Move,
+                };
+                self.checked_add_move(movement);
             }
         }
     }

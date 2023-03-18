@@ -306,3 +306,13 @@ fn test_castling_canceled_after_rook_is_taken() {
 
     assert_eq!(board.white_side.castling_rights, CastlingRights::None);
 }
+
+#[test]
+fn test_promotions() {
+    let board = Board::from_fen("4k3/P7/8/8/8/8/8/4K3 w - - 0 1").unwrap();
+
+    assert!(board
+        .moves()
+        .find(|movement| movement.kind == MoveKind::Promote(Piece::Queen))
+        .is_some());
+}

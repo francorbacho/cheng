@@ -27,6 +27,12 @@ impl Piece {
         .iter()
         .copied()
     }
+
+    pub fn iter_promotable_pieces() -> impl Iterator<Item = Piece> {
+        [Piece::Knight, Piece::Bishop, Piece::Rook, Piece::Queen]
+            .iter()
+            .copied()
+    }
 }
 
 impl From<Piece> for usize {

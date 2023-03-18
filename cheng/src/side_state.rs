@@ -226,13 +226,12 @@ impl SideState {
     }
 
     pub fn update_threats(&mut self, opposite: &SideState) {
-        self.pieces_threats.recalculate(
+        self.threats = self.pieces_threats.recalculate(
             self.side,
             &self.pieces,
             self.occupancy,
             opposite.occupancy,
         );
-        self.threats = self.pieces_threats.threats();
     }
 
     pub fn update_king_in_check(&mut self, opposite: &SideState) {
@@ -336,7 +335,8 @@ impl SidePiecesThreats {
         my_pieces: &SidePieces,
         friendly_occupancy: BoardMask,
         opposite_occupancy: BoardMask,
-    ) {
+    ) -> BoardMask {
+        let mut result = BoardMask::default();
         let (friendly, opposite) = (friendly_occupancy, opposite_occupancy);
         for (threats, (squares, piece)) in
             self.0.iter_mut().zip(my_pieces.iter().zip(Piece::iter()))
@@ -350,14 +350,9 @@ impl SidePiecesThreats {
                     opposite,
                 ));
             }
+            result = result.intersection(*threats);
         }
-    }
 
-    fn threats(&self) -> BoardMask {
-        self.0
-            .iter()
-            .copied()
-            .reduce(|acc, e| acc.intersection(e))
-            .unwrap()
+        result
     }
 }

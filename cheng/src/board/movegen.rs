@@ -38,6 +38,11 @@ impl<'a> MoveGenerator<'a> {
         if clone.side(self.board.turn).king_in_check {
             return;
         }
+        self.unchecked_add_move(movement);
+    }
+
+    #[inline]
+    fn unchecked_add_move(&mut self, movement: PseudoMove) {
         self.cached_moves.push(movement);
     }
 
@@ -86,7 +91,7 @@ impl<'a> MoveGenerator<'a> {
                     kind: MoveKind::Castle(Castle::QueenSide),
                 };
 
-                self.cached_moves.push(queen_side_castle);
+                self.unchecked_add_move(queen_side_castle);
             }
         }
 
@@ -106,7 +111,7 @@ impl<'a> MoveGenerator<'a> {
                     kind: MoveKind::Castle(Castle::KingSide),
                 };
 
-                self.cached_moves.push(king_side_castle);
+                self.unchecked_add_move(king_side_castle);
             }
         }
     }

@@ -39,3 +39,8 @@ pub fn init() {
     Rook::init();
     Bishop::init();
 }
+
+pub mod internal {
+    pub use crate::movegen::BISHOP_MOVES;
+    pub use crate::movegen::ROOK_MOVES;
+}

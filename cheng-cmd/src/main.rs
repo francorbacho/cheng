@@ -4,7 +4,7 @@ use perft_bisect::perft_bisect;
 
 use std::ops::ControlFlow::{self, Break, Continue};
 
-use cheng::{Board, PseudoMove};
+use cheng::{Board, PseudoMove, Square};
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
@@ -31,6 +31,7 @@ fn main() -> rustyline::Result<()> {
                     "fen" => fen(&mut context, &parts),
                     "feed" => feed(&mut context, &parts),
                     "d" => display_board(&mut context, &parts),
+                    "dump-tables" => dump_tables(),
                     other => Err(format!("command not found: {other}")),
                 };
 
@@ -120,6 +121,31 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         .map_err(|_| "invalid move")?;
 
     context.board.feed(pseudomove);
+
+    Ok(())
+}
+
+fn dump_tables() -> Result<(), String> {
+    for sq in Square::iter_all() {
+        println!("{sq:?}");
+        let table_of_moves = unsafe { cheng::internal::ROOK_MOVES[sq.to_index()] };
+        let mut amount_zeros = 0;
+        for moves in table_of_moves.iter() {
+            let value = u64::from(*moves);
+            if value == 0 {
+                amount_zeros += 1;
+            } else {
+                if amount_zeros > 0 {
+                    println!("\t{amount_zeros} zeros");
+                    amount_zeros = 0;
+                }
+
+                println!("\t{value:016X}");
+            }
+        }
+
+        println!();
+    }
 
     Ok(())
 }

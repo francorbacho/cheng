@@ -4,7 +4,7 @@ use crate::{
     board::{Board, BoardMask},
     movement::{MoveKind, PseudoMove, PseudoMoveParseError},
     pieces::Piece,
-    square::consts::*,
+    square::prelude::*,
 };
 
 #[test]

@@ -45,6 +45,7 @@ impl Board {
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     #[inline]
+    #[must_use]
     pub fn empty() -> Self {
         Self {
             white_side: SideState::empty(Side::White),
@@ -55,11 +56,13 @@ impl Board {
     }
 
     #[inline]
+    #[must_use]
     pub fn result(&self) -> Option<GameResult> {
         self.result
     }
 
     #[inline]
+    #[must_use]
     pub fn side(&self, side: Side) -> &SideState {
         match side {
             Side::White => &self.white_side,
@@ -139,10 +142,12 @@ impl Board {
         });
     }
 
+    #[must_use]
     pub fn moves(&self) -> MoveGenerator {
         MoveGenerator::new(self)
     }
 
+    #[must_use]
     pub fn generate_array(&self) -> [Option<SidedPiece>; 64] {
         let mut board_vec = [None; 64];
 
@@ -167,6 +172,7 @@ impl Board {
         board_vec
     }
 
+    #[must_use]
     pub fn into_fen(&self) -> String {
         use std::fmt::Write;
 
@@ -200,8 +206,7 @@ impl Board {
         let en_passant_str = self
             .side(self.turn.opposite())
             .en_passant
-            .map(|sq| format!("{sq:?}"))
-            .unwrap_or("-".to_string());
+            .map_or("-".to_string(), |sq| format!("{sq:?}"));
 
         let castling_rights = {
             let white_castling_rights = self
@@ -225,7 +230,10 @@ impl Board {
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
-        use FENParsingError::*;
+        use FENParsingError::{
+            InvalidAlignment, InvalidCastleRights, InvalidTurn, MissingPart, SquareOverflow,
+            SquareUnderflow, TooManyParts, UnknownPiece,
+        };
 
         let fen = fen.trim();
         let mut parts = fen.split(' ');

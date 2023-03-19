@@ -6,6 +6,7 @@ pub enum Side {
 
 impl Side {
     #[inline]
+    #[must_use]
     pub fn opposite(self) -> Self {
         match self {
             Self::White => Self::Black,

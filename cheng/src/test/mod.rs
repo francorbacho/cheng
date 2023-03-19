@@ -7,12 +7,12 @@ use crate::{
     pieces::Piece,
     side_state::SideState,
     sides::Side,
-    square::consts::*,
+    square::prelude::*,
     square::Square,
 };
 
 #[test]
-fn test_square_consts() {
+fn test_square_prelude() {
     assert_eq!(A1, Square::from_rank_file(0, 0));
     assert_eq!(B2, Square::from_rank_file(1, 1));
     assert_eq!(A8, Square::from_rank_file(7, 0));

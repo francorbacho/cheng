@@ -1,5 +1,6 @@
 use cheng::Board;
 
+#[must_use]
 pub fn perft(board: &Board, depth: usize) -> usize {
     if depth == 0 {
         return 1;

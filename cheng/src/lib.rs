@@ -15,7 +15,7 @@ pub use crate::{
     movement::PseudoMove,
     pieces::Piece,
     sides::Side,
-    square::{consts, Square},
+    square::{prelude, Square},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

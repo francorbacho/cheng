@@ -42,7 +42,7 @@ fn main() -> rustyline::Result<()> {
                 break;
             }
             Err(err) => {
-                println!("Error: {:?}", err);
+                println!("Error: {err:?}");
                 break;
             }
         }
@@ -62,6 +62,7 @@ fn fen(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
     Ok(())
 }
 
+#[must_use]
 pub fn continue_<E>(_movement: &PseudoMove, _nodes: usize) -> ControlFlow<E, ()> {
     Continue(())
 }

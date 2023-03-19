@@ -46,7 +46,7 @@ impl Castle {
     }
 
     pub fn rook_position_before_castle(self, side: Side) -> Square {
-        use crate::consts::*;
+        use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => H1,
             (Side::Black, Castle::KingSide) => H8,
@@ -56,7 +56,7 @@ impl Castle {
     }
 
     pub const fn rook_position_after_castle(self, side: Side) -> Square {
-        use crate::consts::*;
+        use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => F1,
             (Side::Black, Castle::KingSide) => F8,
@@ -66,7 +66,7 @@ impl Castle {
     }
 
     pub const fn king_square_before_castle(side: Side) -> Square {
-        use crate::consts::*;
+        use crate::prelude::*;
         match side {
             Side::White => E1,
             Side::Black => E8,
@@ -74,7 +74,7 @@ impl Castle {
     }
 
     pub const fn king_square_after_castle(self, side: Side) -> Square {
-        use crate::consts::*;
+        use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => G1,
             (Side::Black, Castle::KingSide) => G8,
@@ -84,7 +84,7 @@ impl Castle {
     }
 
     pub fn relevant_square_occupancy(self, side: Side) -> BoardMask {
-        use crate::consts::*;
+        use crate::prelude::*;
         match (side, self) {
             (side, Castle::KingSide) => self.relevant_square_threats(side),
             (Side::White, Castle::QueenSide) => BoardMask::from([B1, C1, D1]),
@@ -93,7 +93,7 @@ impl Castle {
     }
 
     pub fn relevant_square_threats(self, side: Side) -> BoardMask {
-        use crate::consts::*;
+        use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => BoardMask::from([F1, G1]),
             (Side::Black, Castle::KingSide) => BoardMask::from([F8, G8]),

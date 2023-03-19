@@ -3,7 +3,7 @@ use crate::{
     movegen::{self, steady, Bishop, King, PieceExt, Rook},
     movement::{Castle, MoveKind},
     side_state::CastlingRights,
-    square::consts::*,
+    square::prelude::*,
     Board, Piece, Side,
 };
 
@@ -20,7 +20,7 @@ fn test_movegen_king() {
 
 #[test]
 fn test_movegen_pawn() {
-    use Side::*;
+    use Side::{Black, White};
     macro_rules! f {
         [$($squares:expr),*] => {
             BoardMask::from([$($squares),*])
@@ -47,7 +47,7 @@ fn test_movegen_pawn() {
         let expected_moves = entry.4;
 
         eprintln!("{side:?},{square:?}");
-        eprintln!("{}", BoardMask::from(0x2000000));
+        eprintln!("{}", BoardMask::from(0x0200_0000));
 
         let moves = movegen::pawn_moves(side, square, friendly_occupancy, opposite_occupancy);
         assert_eq!(moves, expected_moves);
@@ -234,8 +234,7 @@ fn test_castling() {
     fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
         board
             .moves()
-            .find(|movement| movement.kind == MoveKind::Castle(castle_kind))
-            .is_some()
+            .any(|movement| movement.kind == MoveKind::Castle(castle_kind))
     }
 
     board.white_side.update_threats(&board.black_side);
@@ -275,8 +274,7 @@ fn test_castling_cant_castle_through_pieces() {
     fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
         board
             .moves()
-            .find(|movement| movement.kind == MoveKind::Castle(castle_kind))
-            .is_some()
+            .any(|movement| movement.kind == MoveKind::Castle(castle_kind))
     }
 
     assert!(board_contains_castle(&board, Castle::KingSide));
@@ -313,6 +311,5 @@ fn test_promotions() {
 
     assert!(board
         .moves()
-        .find(|movement| movement.kind == MoveKind::Promote(Piece::Queen))
-        .is_some());
+        .any(|movement| movement.kind == MoveKind::Promote(Piece::Queen)));
 }

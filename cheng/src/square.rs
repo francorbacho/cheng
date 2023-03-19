@@ -7,12 +7,14 @@ pub struct Square(usize);
 
 impl Square {
     #[inline]
+    #[must_use]
     pub const fn from_index(v: usize) -> Self {
         assert!(v < 64);
         Self(v)
     }
 
     #[inline]
+    #[must_use]
     pub const fn from_rank_file(rank: usize, file: usize) -> Self {
         assert!(rank < 8);
         assert!(file < 8);
@@ -20,31 +22,37 @@ impl Square {
     }
 
     #[inline]
+    #[must_use]
     pub const fn to_index(self) -> usize {
         self.0
     }
 
     #[inline]
+    #[must_use]
     pub fn rank(self) -> usize {
         self.0 / 8
     }
 
     #[inline]
+    #[must_use]
     pub fn file(self) -> usize {
         self.0 % 8
     }
 
+    #[must_use]
     pub fn iter_all() -> SquareIterator {
         SquareIterator::default()
     }
 
     #[inline]
+    #[must_use]
     pub fn next_rank(self, view: Side) -> Square {
         assert!(self.0 + 8 < 64);
         self.checked_next_rank(view).unwrap()
     }
 
     #[inline]
+    #[must_use]
     pub fn checked_next_rank(self, view: Side) -> Option<Square> {
         let (idx, bad) = match view {
             Side::White => (self.0 + 8, self.0 + 8 >= 64),
@@ -118,7 +126,7 @@ impl Iterator for SquareIterator {
     }
 }
 
-pub mod consts {
+pub mod prelude {
     #![allow(unused)]
 
     use super::Square;

@@ -66,7 +66,7 @@ impl<'a> MoveGenerator<'a> {
                 && !relevant_squares_threats.has_coincidences(opposite_threats)
         }
 
-        use crate::consts::*;
+        use crate::prelude::*;
         let king_square = Castle::king_square_before_castle(side.side);
         let (queen_side_castle_square, king_side_castle_square) = match side.side {
             Side::White => (C1, G1),
@@ -155,7 +155,7 @@ impl<'a> MoveGenerator<'a> {
     }
 
     fn generate_pawn_moves(&mut self, square: Square) {
-        use crate::consts::{A2, A7};
+        use crate::prelude::{A2, A7};
 
         let friendly = self.board.side(self.board.turn).occupancy;
         let opposite = self.board.side(self.board.turn.opposite()).occupancy;

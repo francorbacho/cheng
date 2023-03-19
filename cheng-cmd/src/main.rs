@@ -26,11 +26,11 @@ fn main() -> rustyline::Result<()> {
             Ok(line) => {
                 let parts: Vec<&str> = line.split(' ').collect();
                 let err = match parts[0] {
-                    "perft" => perft(&mut context, parts).map_err(String::from),
-                    "perft-bisect" => perft_bisect(&mut context, parts).map_err(String::from),
-                    "fen" => fen(&mut context, parts),
-                    "feed" => feed(&mut context, parts),
-                    "d" => display_board(&mut context, parts),
+                    "perft" => perft(&mut context, &parts).map_err(String::from),
+                    "perft-bisect" => perft_bisect(&mut context, &parts).map_err(String::from),
+                    "fen" => fen(&mut context, &parts),
+                    "feed" => feed(&mut context, &parts),
+                    "d" => display_board(&mut context, &parts),
                     other => Err(format!("command not found: {other}")),
                 };
 
@@ -50,13 +50,13 @@ fn main() -> rustyline::Result<()> {
     Ok(())
 }
 
-fn display_board(context: &mut Context, _parts: Vec<&str>) -> Result<(), String> {
+fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     println!("{}", BoardDisplay(&context.board));
 
     Ok(())
 }
 
-fn fen(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
+fn fen(context: &mut Context, parts: &[&str]) -> Result<(), String> {
     let fen = parts.get(1..).ok_or("Expected fen argument")?.join(" ");
     context.board = Board::from_fen(&fen).map_err(|err| format!("{err:?}"))?;
     Ok(())
@@ -94,7 +94,7 @@ where
     Ok(nodes)
 }
 
-fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
+fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
     let depth: usize = parts
         .get(1)
         .ok_or("missing depth")?
@@ -112,7 +112,7 @@ fn perft(context: &mut Context, parts: Vec<&str>) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn feed(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
+fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
     let pseudomove: PseudoMove = parts
         .get(1)
         .ok_or("missing move")?

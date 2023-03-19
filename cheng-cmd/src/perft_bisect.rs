@@ -23,7 +23,7 @@ pub enum PerftBisectErr {
     },
 }
 
-pub fn perft_bisect(context: &mut Context, parts: Vec<&str>) -> Result<(), String> {
+pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String> {
     let depth: usize = parts
         .get(1)
         .ok_or("missing depth")?

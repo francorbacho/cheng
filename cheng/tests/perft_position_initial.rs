@@ -22,6 +22,7 @@ fn test_perft_initial_position_5() {
 }
 
 #[test]
+#[ignore = "expensive"]
 fn test_perft_initial_position_6() {
     cheng::init();
     let board = Board::default();

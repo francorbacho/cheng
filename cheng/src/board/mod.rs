@@ -227,6 +227,7 @@ impl Board {
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
         use FENParsingError::*;
 
+        let fen = fen.trim();
         let mut parts = fen.split(' ');
         let board = parts.next().ok_or(MissingPart)?;
 

@@ -100,6 +100,10 @@ fn test_fen_parsing() {
         misaligned_board.unwrap_err(),
         FENParsingError::InvalidAlignment
     );
+
+    let board_fen_with_extra_spaces =
+        Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+    assert!(board_fen_with_extra_spaces.is_ok());
 }
 
 #[test]

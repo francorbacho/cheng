@@ -70,23 +70,20 @@ fn perft_bisect_iteration(
     let bisect_result = incremental_perft(board, depth, |movement, nodes| {
         let movement_str = format!("{movement}");
         let expected_nodes = move_perft_table.remove(&movement_str);
-        match expected_nodes {
-            Some(expected) => {
-                if expected != nodes {
-                    return Break(PerftBisectErr::WrongNodeCount {
-                        movement: movement.to_string(),
-                        expected,
-                        got: nodes,
-                    });
-                }
-                Continue(())
-            }
-            None => {
-                println!("{move_perft_table:?}");
-                Break(PerftBisectErr::UnexpectedMove {
+        if let Some(expected) = expected_nodes {
+            if expected != nodes {
+                return Break(PerftBisectErr::WrongNodeCount {
                     movement: movement.to_string(),
-                })
+                    expected,
+                    got: nodes,
+                });
             }
+            Continue(())
+        } else {
+            println!("{move_perft_table:?}");
+            Break(PerftBisectErr::UnexpectedMove {
+                movement: movement.to_string(),
+            })
         }
     });
 

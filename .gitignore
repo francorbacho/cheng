@@ -1,2 +1,3 @@
 /target
 cheng/src/movegen/precomputed.rs
+web/wasm/*

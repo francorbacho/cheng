@@ -2,4 +2,9 @@
 members = [
     "cheng",
     "cheng-cmd",
+    "chess-wasm",
 ]
+
+
+[profile.release]
+lto = true

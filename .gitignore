@@ -1,3 +1,5 @@
 /target
 cheng/src/movegen/precomputed.rs
-web/wasm/*
+
+web/pkg
+web/wasm

@@ -5,12 +5,24 @@
     <title>Chess Board</title>
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/chessboard.css">
+
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
 </head>
 
 <body>
-    <script src="js/load_wasm.js"></script>
     <script src="js/chessboard.js"></script>
     <chessboard id="chessboard" draggable="false"></chessboard>
+
+    <script type="module">
+        import init, { get_pawn_count } from './pkg/cheng.js';
+
+        async function run() {
+            await init();
+            console.log(`${get_pawn_count()}`);
+        }
+
+        run();
+    </script>
 </body>
 
 </html>

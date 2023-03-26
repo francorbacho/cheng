@@ -1,16 +1,18 @@
+use wasm_bindgen::prelude::*;
+
 use cheng::{Board, Piece};
 
 static mut BOARD: Option<Board> = None;
 
-#[no_mangle]
-fn initialize() {
+#[wasm_bindgen(start)]
+pub fn main() {
     unsafe {
         BOARD = Some(Board::default());
     }
 }
 
-#[no_mangle]
-fn get_pawn_count() -> u32 {
+#[wasm_bindgen]
+pub fn get_pawn_count() -> u32 {
     let board = unsafe { BOARD.as_ref().expect("BOARD was not initialized!") };
     let pawns = board.white_side.pieces.piece(Piece::Pawn);
 

@@ -9,6 +9,7 @@ function onWasmLoad(wasmModule) {
     wasm_get_pawn_count = wasmModule.instance.exports.get_pawn_count;
 }
 
-function onWasmLoadRejected() {
+function onWasmLoadRejected(error) {
     console.error('Failed to load WASM');
+    console.error(error);
 }

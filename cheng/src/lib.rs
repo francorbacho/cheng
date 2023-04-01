@@ -19,7 +19,7 @@ pub use crate::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SidedPiece(Side, Piece);
+pub struct SidedPiece(pub Side, pub Piece);
 
 impl From<SidedPiece> for char {
     fn from(SidedPiece(side, piece): SidedPiece) -> Self {

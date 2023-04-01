@@ -1,6 +1,7 @@
 mod mask;
 pub use mask::BoardMask;
 
+mod iterator;
 mod movegen;
 
 use crate::{
@@ -151,22 +152,10 @@ impl Board {
     pub fn generate_array(&self) -> [Option<SidedPiece>; 64] {
         let mut board_vec = [None; 64];
 
-        for (mask, piece) in self.white_side.pieces.iter().zip(Piece::iter()) {
-            for square in mask {
-                let idx = square.to_index();
-                assert_eq!(board_vec[idx], None);
-
-                board_vec[idx] = Some(SidedPiece(Side::White, piece));
-            }
-        }
-
-        for (mask, piece) in self.black_side.pieces.iter().zip(Piece::iter()) {
-            for square in mask {
-                let idx = square.to_index();
-                assert_eq!(board_vec[idx], None);
-
-                board_vec[idx] = Some(SidedPiece(Side::Black, piece));
-            }
+        for (sided_piece, square) in self {
+            let idx = square.to_index();
+            assert_eq!(board_vec[idx], None);
+            board_vec[idx] = Some(sided_piece);
         }
 
         board_vec

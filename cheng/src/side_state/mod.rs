@@ -1,3 +1,5 @@
+pub mod iterator;
+
 #[cfg(feature = "simd")]
 use std::simd::{Simd, SimdOrd, SimdPartialEq, SimdUint};
 
@@ -319,10 +321,6 @@ impl SidePieces {
             }
         }
     }
-
-    pub fn iter(&self) -> impl Iterator<Item = BoardMask> {
-        self.0.into_iter()
-    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
@@ -337,17 +335,17 @@ impl SidePiecesThreats {
         opposite_occupancy: BoardMask,
     ) -> BoardMask {
         let mut result = BoardMask::default();
-        let (friendly, opposite) = (friendly_occupancy, opposite_occupancy);
+
         for (threats, (squares, piece)) in
-            self.0.iter_mut().zip(my_pieces.iter().zip(Piece::iter()))
+            self.0.iter_mut().zip(my_pieces.0.iter().zip(Piece::iter()))
         {
             *threats = BoardMask::default();
-            for square in squares {
+            for square in *squares {
                 *threats = threats.intersection(movegen::threats(
                     SidedPiece(side, piece),
                     square,
-                    friendly,
-                    opposite,
+                    friendly_occupancy,
+                    opposite_occupancy,
                 ));
             }
             result = result.intersection(*threats);

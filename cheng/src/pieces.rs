@@ -8,6 +8,8 @@ pub enum Piece {
     King,
 }
 
+pub type PieceIterator = std::iter::Copied<std::slice::Iter<'static, Piece>>;
+
 impl Piece {
     #[cfg(not(feature = "simd"))]
     pub const COUNT: usize = 6;
@@ -15,7 +17,7 @@ impl Piece {
     #[cfg(feature = "simd")]
     pub const COUNT: usize = 8;
 
-    pub fn iter() -> impl Iterator<Item = Piece> {
+    pub fn iter() -> PieceIterator {
         [
             Piece::Pawn,
             Piece::Knight,

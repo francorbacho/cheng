@@ -49,6 +49,7 @@ class Chessboard {
 
     constructHTML() {
         this.boardFrame = document.getElementById(this.boardFrameId);
+        this.boardFrame.textContent = "";
 
         if (!this.boardFrame) {
             throw new Error(`Element with id=${id} not found.`);

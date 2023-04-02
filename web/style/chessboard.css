@@ -11,6 +11,11 @@ chessboard {
     flex-flow: wrap-reverse;
     margin: 20px auto;
     border: 2px solid #333;
+
+    justify-content: center;
+    align-items: center;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 square {

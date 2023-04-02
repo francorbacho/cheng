@@ -259,7 +259,7 @@ impl SidePieces {
     }
 
     #[cfg(not(feature = "simd"))]
-    fn find(&self, square: Square) -> Option<Piece> {
+    pub fn find(&self, square: Square) -> Option<Piece> {
         for (i, mask) in self.0.iter().enumerate() {
             if mask.get(square) {
                 return Some(Piece::try_from(i).unwrap());
@@ -270,7 +270,7 @@ impl SidePieces {
     }
 
     #[cfg(feature = "simd")]
-    fn find(&self, square: Square) -> Option<Piece> {
+    pub fn find(&self, square: Square) -> Option<Piece> {
         let pieces: [u64; Piece::COUNT] = unsafe { std::mem::transmute(self.0) };
         let pieces_lanes = Simd::from(pieces);
         let search_mask = Simd::splat(BoardMask::from(square).into());

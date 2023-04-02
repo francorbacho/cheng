@@ -14,6 +14,8 @@ fn get_board_mut() -> &'static mut Board {
 
 #[wasm_bindgen(start)]
 pub fn main() {
+    cheng::init();
+
     unsafe {
         BOARD = Some(Board::default());
     }
@@ -59,8 +61,16 @@ pub fn get_pieces() -> js_sys::Array {
     result
 }
 
+#[wasm_bindgen(getter_with_clone)]
+pub struct MoveFeedback {
+    pub origin: String,
+    pub destination: String,
+    #[wasm_bindgen(js_name = moveIsCapture)]
+    pub move_is_capture: bool,
+}
+
 #[wasm_bindgen(js_name = feedMove)]
-pub fn feed_move(movement: js_sys::JsString) -> Result<(), String> {
+pub fn feed_move(movement: js_sys::JsString) -> Result<MoveFeedback, String> {
     let board = get_board_mut();
     let Some(movement_str) = movement.as_string() else {
         return Err("Argument must be string".to_string());
@@ -71,7 +81,31 @@ pub fn feed_move(movement: js_sys::JsString) -> Result<(), String> {
         Err(e) => return Err(format!("Invalid movement: {e:?}")),
     };
 
-    board.feed(movement);
+    let move_is_capture = board
+        .side(board.turn.opposite())
+        .occupancy
+        .get(movement.destination);
 
-    Ok(())
+    let move_feedback = MoveFeedback {
+        origin: format!("{:?}", movement.origin),
+        destination: format!("{:?}", movement.destination),
+        move_is_capture,
+    };
+
+    board.feed(movement).map_err(|e| format!("{e:?}"))?;
+
+    Ok(move_feedback)
+}
+
+#[wasm_bindgen(js_name = validMoves)]
+pub fn valid_moves() -> js_sys::Array {
+    let board = get_board();
+    let result = js_sys::Array::default();
+
+    for movement in board.moves() {
+        let movement_str = format!("{movement}");
+        result.push(&js_sys::JsString::from(movement_str));
+    }
+
+    result
 }

@@ -132,14 +132,22 @@ class Chessboard {
             return;
         }
 
-        destSquareElement.appendChild(movedPiece);
-
         const now = new Date();
         document.getElementById('state').textContent = `dragging piece ended @ ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
     }
 
     feedMove(movement) {
-        wasm.feedMove(movement);
+        const moveFeedback = wasm.feedMove(movement);
+
+        const originSquareElement = document.querySelector(`square[position=${moveFeedback.origin}]`);
+        const destSquareElement = document.querySelector(`square[position=${moveFeedback.destination}]`);
+        const movedPiece = originSquareElement.children[0];
+
+        if (moveFeedback.moveIsCapture) {
+            destSquareElement.children[0].remove();
+        }
+
+        destSquareElement.appendChild(movedPiece);
     }
 }
 

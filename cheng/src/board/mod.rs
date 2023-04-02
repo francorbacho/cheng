@@ -27,6 +27,11 @@ pub enum FENParsingError {
     InvalidCastleRights,
 }
 
+#[derive(Debug)]
+pub enum FeedError {
+    MoveIsNotValid,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GameResult {
     Draw,
@@ -79,7 +84,15 @@ impl Board {
         }
     }
 
-    pub fn feed(&mut self, mut movement: PseudoMove) {
+    pub fn check_valid_move(&self, movement: &PseudoMove) -> bool {
+        self.moves().any(|m| &m == movement)
+    }
+
+    pub fn feed(&mut self, mut movement: PseudoMove) -> Result<(), FeedError> {
+        if !self.check_valid_move(&movement) {
+            return Err(FeedError::MoveIsNotValid);
+        }
+
         let side = self.side(self.turn);
         let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
         if moved_piece_is_king {
@@ -90,6 +103,8 @@ impl Board {
 
         self.feed_unchecked(movement);
         self.update_result();
+
+        Ok(())
     }
 
     pub fn feed_unchecked(&mut self, movement: PseudoMove) {
@@ -132,7 +147,7 @@ impl Board {
         let movegen = MoveGenerator::new(self);
         for movement in movegen {
             let mut clone = self.clone();
-            clone.feed(movement);
+            clone.feed(movement).unwrap();
 
             if !clone.side(self.turn).king_in_check {
                 return;

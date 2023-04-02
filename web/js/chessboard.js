@@ -70,15 +70,15 @@ class Chessboard {
 
     handlePieceDrag(event) {
         if (!this.draggingPiece) return;
-        const clientX = event.clientX ?? event.touches[0].clientX;
-        const clientY = event.clientY ?? event.touches[0].clientY;
+        const pageX = event.pageX ?? event.touches[0].pageX;
+        const pageY = event.pageY ?? event.touches[0].pageY;
 
         const elementStyle = getComputedStyle(this.draggingPiece);
         const elementWidth = Number.parseFloat(elementStyle.width);
         const elementHeight = Number.parseFloat(elementStyle.height);
 
-        const newX = clientX - elementWidth / 2;
-        const newY = clientY - elementHeight / 2;
+        const newX = pageX - elementWidth / 2;
+        const newY = pageY - elementHeight / 2;
 
         this.draggingPiece.style.left = `${newX}px`;
         this.draggingPiece.style.top = `${newY}px`;
@@ -92,6 +92,9 @@ class Chessboard {
         movedPiece.style.top = "";
         movedPiece.style.left = "";
 
+        // Fields clientX and clientY are used here because it is checked
+        // against the result of getBoundingClientRect, which is also relative
+        // to the window.
         const clientX = event.clientX || event.changedTouches[0].clientX;
         const clientY = event.clientY || event.changedTouches[0].clientY;
 

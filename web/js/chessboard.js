@@ -105,7 +105,7 @@ class Chessboard {
             return;
         }
 
-        if (boardRect.left > clientX || boardRect.right < clientY) {
+        if (boardRect.left > clientX || boardRect.right < clientX) {
             return;
         }
 

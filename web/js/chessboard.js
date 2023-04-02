@@ -147,6 +147,14 @@ class Chessboard {
             destSquareElement.children[0].remove();
         }
 
+        if (moveFeedback.castleSide) {
+            const rookOriginSquareElement = document.querySelector(`square[position=${moveFeedback.rookSquareBeforeCastle}]`);
+            const rookElement = rookOriginSquareElement.children[0];
+
+            const rookDestSquareElement = document.querySelector(`square[position=${moveFeedback.rookSquareAfterCastle}]`);
+            rookDestSquareElement.appendChild(rookElement);
+        }
+
         destSquareElement.appendChild(movedPiece);
     }
 }

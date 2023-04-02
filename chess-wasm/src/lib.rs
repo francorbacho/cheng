@@ -67,6 +67,12 @@ pub struct MoveFeedback {
     pub destination: String,
     #[wasm_bindgen(js_name = moveIsCapture)]
     pub move_is_capture: bool,
+    #[wasm_bindgen(js_name = "castleSide")]
+    pub castle_side: Option<String>,
+    #[wasm_bindgen(js_name = "rookSquareBeforeCastle")]
+    pub rook_square_before_castle: Option<String>,
+    #[wasm_bindgen(js_name = "rookSquareAfterCastle")]
+    pub rook_square_after_castle: Option<String>,
 }
 
 #[wasm_bindgen(js_name = feedMove)]
@@ -86,10 +92,39 @@ pub fn feed_move(movement: js_sys::JsString) -> Result<MoveFeedback, String> {
         .occupancy
         .get(movement.destination);
 
+    // TODO: This is code from the feed function. Obviously this is less than ideal.
+    // We should be using a different interface other than PseudoMove.
+    let moved_piece_is_king = board
+        .side(board.turn)
+        .pieces
+        .piece(Piece::King)
+        .get(movement.origin);
+    let castle_side = if moved_piece_is_king {
+        cheng::Castle::move_could_be_castle(board.turn, movement.clone())
+    } else {
+        None
+    };
+
+    let (castle_side, rook_square_before_castle, rook_square_after_castle) =
+        if let Some(castle_side) = castle_side {
+            let rook_square_before_castle = castle_side.rook_position_before_castle(board.turn);
+            let rook_square_after_castle = castle_side.rook_position_after_castle(board.turn);
+            (
+                Some(format!("{castle_side:?}")),
+                Some(format!("{rook_square_before_castle:?}")),
+                Some(format!("{rook_square_after_castle:?}")),
+            )
+        } else {
+            (None, None, None)
+        };
+
     let move_feedback = MoveFeedback {
         origin: format!("{:?}", movement.origin),
         destination: format!("{:?}", movement.destination),
         move_is_capture,
+        castle_side,
+        rook_square_before_castle,
+        rook_square_after_castle,
     };
 
     board.feed(movement).map_err(|e| format!("{e:?}"))?;

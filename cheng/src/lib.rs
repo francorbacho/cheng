@@ -12,7 +12,7 @@ use movegen::{Bishop, PieceExt, Rook};
 
 pub use crate::{
     board::Board,
-    movement::PseudoMove,
+    movement::{Castle, PseudoMove},
     pieces::Piece,
     sides::Side,
     square::{prelude, Square},

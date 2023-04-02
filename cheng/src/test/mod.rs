@@ -111,12 +111,12 @@ fn test_fen_generation() {
     let mut board = Board::default();
     assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
 
-    board.feed("e2e4".parse().unwrap());
+    board.feed("e2e4".parse().unwrap()).unwrap();
     let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
     assert_eq!(board.into_fen(), expected_fen);
 
-    board.feed("e7e5".parse().unwrap());
-    board.feed("e1e2".parse().unwrap());
+    board.feed("e7e5".parse().unwrap()).unwrap();
+    board.feed("e1e2".parse().unwrap()).unwrap();
 
     let expected_fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 0 1";
     assert_eq!(board.into_fen(), expected_fen);

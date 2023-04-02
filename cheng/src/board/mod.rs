@@ -97,6 +97,7 @@ impl Board {
             }
         }
 
+        // XXX: This is ultra bad for performance.
         if !self.check_valid_move(&movement) {
             return Err(FeedError::MoveIsNotValid);
         }

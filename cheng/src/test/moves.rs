@@ -52,8 +52,8 @@ fn test_move_parsing() {
 fn test_move_simple_opening() {
     let mut board = Board::default();
 
-    board.feed("e2e4".parse().unwrap());
-    board.feed("c7c5".parse().unwrap());
+    board.feed("e2e4".parse().unwrap()).unwrap();
+    board.feed("c7c5".parse().unwrap()).unwrap();
 
     assert_eq!(
         board.white_side.occupancy,
@@ -79,8 +79,8 @@ fn test_move_simple_opening() {
 #[test]
 fn test_move_promotion() {
     let mut board = Board::from_fen("8/6P1/6K1/8/8/5k2/5p2/8 w - - 0 1").unwrap();
-    board.feed("g7g8q".parse().unwrap());
-    board.feed("f2f1r".parse().unwrap());
+    board.feed("g7g8q".parse().unwrap()).unwrap();
+    board.feed("f2f1r".parse().unwrap()).unwrap();
 
     assert_eq!(
         board.white_side.pieces.piece(Piece::Pawn),

@@ -10,7 +10,7 @@ pub fn perft(board: &Board, depth: usize) -> usize {
     let mut nodes = 0;
     for movement in moves {
         let mut clone = board.clone();
-        clone.feed(movement);
+        clone.feed(movement).unwrap();
         nodes += perft(&clone, depth - 1);
     }
 

@@ -51,7 +51,7 @@ pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String>
                 got,
             } => {
                 println!("Wrong node count in {movement} (got: {got}, expected: {expected})...");
-                board.feed(movement.parse().unwrap());
+                board.feed(movement.parse().unwrap()).unwrap();
                 stockfish.set_position(&board.into_fen()).unwrap();
                 depth_remaining -= 1;
             }

@@ -81,7 +81,7 @@ where
     for movement in moves {
         let mut clone = board.clone();
 
-        clone.feed(movement.clone());
+        clone.feed(movement.clone()).unwrap();
         let move_nodes = incremental_perft(&clone, depth - 1, continue_)?;
         nodes += move_nodes;
 
@@ -120,9 +120,10 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         .parse()
         .map_err(|_| "invalid move")?;
 
-    context.board.feed(pseudomove);
-
-    Ok(())
+    context
+        .board
+        .feed(pseudomove)
+        .map_err(|err| format!("Invalid move: {err:?}"))
 }
 
 fn dump_tables() -> Result<(), String> {

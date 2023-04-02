@@ -13,7 +13,7 @@ class Chessboard {
                 squareElement.setAttribute('position', position);
                 squareElement.draggable = false;
 
-                if ((i + j) % 2 == 0) {
+                if ((i + j) % 2 == 1) {
                     squareElement.classList.add('white');
                 } else {
                     squareElement.classList.add('black');

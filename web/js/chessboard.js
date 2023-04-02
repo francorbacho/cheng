@@ -70,8 +70,8 @@ class Chessboard {
 
     handlePieceDrag(event) {
         if (!this.draggingPiece) return;
-        const clientX = event.clientX || event.touches[0].clientX;
-        const clientY = event.clientY || event.touches[0].clientY;
+        const clientX = event.clientX ?? event.touches[0].clientX;
+        const clientY = event.clientY ?? event.touches[0].clientY;
 
         const elementStyle = getComputedStyle(this.draggingPiece);
         const elementWidth = Number.parseFloat(elementStyle.width);
@@ -97,6 +97,14 @@ class Chessboard {
 
         const board = document.querySelector("chessboard");
         const boardRect = board.getBoundingClientRect();
+
+        if (boardRect.top > clientY || boardRect.bottom < clientY) {
+            return;
+        }
+
+        if (boardRect.left > clientX || boardRect.right < clientY) {
+            return;
+        }
 
         const x = clientX - boardRect.left;
         const y = boardRect.height - (clientY - boardRect.top);

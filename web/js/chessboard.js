@@ -1,99 +1,92 @@
-function pieceName(piece) {
-    const pieces = {
-        'p': 'pawn',
-        'n': 'knight',
-        'b': 'bishop',
-        'r': 'rook',
-        'q': 'queen',
-        'k': 'king',
-    };
-
-    return pieces[piece.toLowerCase()];
-}
-
-function pieceColor(piece) {
-    if ('pnbrqk'.includes(piece)) {
-        return 'black';
-    } else if ('PNBRQK'.includes(piece)) {
-        return 'white';
-    } else {
-        return 'unknown';
-    }
-}
-
 class Chessboard {
-    constructor() {
-        this.board = [
-            ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-            ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['', '', '', '', '', '', '', ''],
-            ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-            ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'],
-        ];
+    constructor(id) {
+        this.boardFrameId = id;
+        this.squares = {};
     }
 
-    constructHTMLBoard() {
-        const chessboard = document.getElementById('chessboard');
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                const square = document.createElement('square');
-                square.draggable = "false";
+    constructBoard() {
+        for (let i = 1; i <= 8; i++) {
+            for (let j = 1; j <= 8; j++) {
+                let position = `${String.fromCharCode(j + 96)}${i}`;
 
-                if ((i + j) % 2 === 0) {
-                    square.className = 'white';
+                const squareElement = document.createElement('square');
+                squareElement.setAttribute('position', position);
+                squareElement.draggable = false;
+
+                if ((i + j) % 2 == 0) {
+                    squareElement.classList.add('white');
                 } else {
-                    square.className = 'black';
+                    squareElement.classList.add('black');
                 }
 
-                const piece = this.board[i][j];
-                if (piece) {
-                    const pieceElem = document.createElement('piece');
-                    pieceElem.className = `${pieceColor(piece)} ${pieceName(piece)}`;
+                this.squares[position] = squareElement;
+                this.boardFrame.appendChild(squareElement);
 
-                    pieceElem.addEventListener('mousedown', onPieceMouseDown);
-
-                    square.appendChild(pieceElem);
-                }
-                chessboard.appendChild(square);
+                squareElement.addEventListener('drop', this.handleSquareDrop);
+                squareElement.addEventListener('dragover', this.handleSquareDragOver);
             }
         }
+    }
 
-        chessboard.addEventListener('mousemove', onMouseMove);
-        chessboard.addEventListener('mouseup', onPieceMouseRelease);
+    constructPieces() {
+        const pieces = cheng.get_pieces();
+
+        for (let piece of pieces) {
+            const pieceElement = document.createElement('piece');
+            pieceElement.classList.add(piece.piece);
+            pieceElement.classList.add(piece.side);
+            pieceElement.draggable = true;
+
+            pieceElement.addEventListener('dragstart', this.handlePieceDragStart);
+            pieceElement.addEventListener('dragend', this.handlePieceDragEnd);
+
+            const square = document.querySelector(`square[position=${piece.position}]`);
+            square.appendChild(pieceElement);
+        }
+    }
+
+    constructHTML() {
+        this.boardFrame = document.getElementById(this.boardFrameId);
+
+        if (!this.boardFrame) {
+            throw new Error(`Element with id=${id} not found.`);
+        }
+
+        this.constructBoard();
+        this.constructPieces();
+    }
+
+    handlePieceDragStart(event) {
+        const position = event.target.parentElement.getAttribute('position');
+        event.dataTransfer.setData('text/plain', position);
+        event.target.classList.add('dragging');
+    }
+
+    handlePieceDragEnd(event) {
+        event.target.classList.remove('dragging');
+    }
+
+    handleSquareDragOver(event) {
+        event.preventDefault();
+    }
+
+    handleSquareDrop(event) {
+        event.preventDefault();
+
+        const piecePosition = event.dataTransfer.getData('text/plain');
+        const targetSquare = event.target.closest('square');
+        const targetPosition = targetSquare.getAttribute('position');
+
+        const originSquareObj = document.querySelector(`square[position=${piecePosition}]`);
+        const targetSquareObj = document.querySelector(`square[position=${targetPosition}]`);
+
+        const pieceElement = originSquareObj.children[0];
+        const targetElement = targetSquareObj.children[0];
+
+        if (pieceElement && !targetElement) {
+            targetSquare.appendChild(pieceElement);
+        }
     }
 }
 
-window.onload = function () {
-    const chessboard = new Chessboard();
-    chessboard.constructHTMLBoard();
-};
-
-let followingTarget = null;
-let mouseDragStartingPosition = null;
-
-function onPieceMouseDown(event) {
-    followingTarget = event.target;
-
-    mouseDragStartingPosition = {};
-    mouseDragStartingPosition.clientX = event.clientX;
-    mouseDragStartingPosition.clientY = event.clientY;
-}
-
-function onPieceMouseRelease(event) {
-    followingTarget.style = 'transform: translate(0px);';
-    followingTarget = null;
-    mouseDragStartingPosition = null;
-}
-
-function onMouseMove(event) {
-    if (!followingTarget) {
-        return;
-    }
-
-    const x = event.clientX - mouseDragStartingPosition.clientX;
-    const y = event.clientY - mouseDragStartingPosition.clientY;
-    followingTarget.style = `transform: translate(${x}px, ${y}px);`;
-}
+const mainBoard = new Chessboard('chessboard');

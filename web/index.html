@@ -11,18 +11,9 @@
 
 <body>
     <script src="js/chessboard.js"></script>
+    <script src="js/load_wasm.js" type="module"></script>
+
     <chessboard id="chessboard" draggable="false"></chessboard>
-
-    <script type="module">
-        import init, { get_pawn_count } from './pkg/cheng.js';
-
-        async function run() {
-            await init();
-            console.log(`${get_pawn_count()}`);
-        }
-
-        run();
-    </script>
 </body>
 
 </html>

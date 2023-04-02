@@ -48,6 +48,7 @@ name = "chess-wasm"
 version = "0.1.0"
 dependencies = [
  "cheng",
+ "js-sys",
  "wasm-bindgen",
  "web-sys",
 ]

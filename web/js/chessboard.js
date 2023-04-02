@@ -64,6 +64,10 @@ class Chessboard {
             event.preventDefault();
         }
 
+        if (wasm.getResult() != "none") {
+            return;
+        }
+
         if (!event.target.classList.contains(wasm.getSideToMove())) {
             return;
         }

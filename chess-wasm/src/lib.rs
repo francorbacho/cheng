@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{Board, GameResult, Piece, PseudoMove, Side, SidedPiece};
 
 static mut BOARD: Option<Board> = None;
 
@@ -30,6 +30,23 @@ pub fn get_side_to_move() -> js_sys::JsString {
     };
 
     js_sys::JsString::from(side_to_move)
+}
+
+#[wasm_bindgen(js_name = getResult)]
+pub fn get_result() -> js_sys::JsString {
+    let board = get_board();
+    let result = match board.result() {
+        Some(GameResult::Draw) => "draw",
+        Some(GameResult::Checkmate {
+            winner: Side::White,
+        }) => "white-win",
+        Some(GameResult::Checkmate {
+            winner: Side::Black,
+        }) => "black-win",
+        None => "none",
+    };
+
+    js_sys::JsString::from(result)
 }
 
 #[wasm_bindgen(js_name = getPieces)]

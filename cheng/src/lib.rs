@@ -11,7 +11,7 @@ mod square;
 use movegen::{Bishop, PieceExt, Rook};
 
 pub use crate::{
-    board::Board,
+    board::{Board, GameResult},
     movement::{Castle, PseudoMove},
     pieces::Piece,
     sides::Side,

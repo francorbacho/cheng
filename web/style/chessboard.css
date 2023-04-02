@@ -1,7 +1,12 @@
+:root {
+    --board-size: calc(min(95vw, 95vh));
+}
+
 chessboard {
     display: flex;
-    width: 400px;
-    height: 400px;
+    width: var(--board-size);
+    height: auto;
+    aspect-ratio: 1;
     flex-flow: wrap-reverse;
     margin: 20px auto;
     border: 2px solid #333;
@@ -9,8 +14,9 @@ chessboard {
 
 square {
     display: inherit;
-    width: 50px;
-    height: 50px;
+    width: calc(var(--board-size) / 8);
+    height: auto;
+    aspect-ratio: 1;
 }
 
 square.white {
@@ -27,8 +33,9 @@ piece {
     display: inherit;
     cursor: pointer;
     position: absolute;
-    width: 50px;
-    height: 50px;
+    width: inherit;
+    height: auto;
+    aspect-ratio: 1;
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;

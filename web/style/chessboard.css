@@ -42,6 +42,10 @@ piece {
     background-size: 100%;
 }
 
+.dragging {
+    z-index: 1;
+}
+
 .white.pawn {
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/45/Chess_plt45.svg');
 }

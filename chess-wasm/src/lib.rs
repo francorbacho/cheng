@@ -1,8 +1,16 @@
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, Piece, Side, SidedPiece};
+use cheng::{Board, Piece, PseudoMove, Side, SidedPiece};
 
 static mut BOARD: Option<Board> = None;
+
+fn get_board() -> &'static Board {
+    unsafe { BOARD.as_ref() }.expect("BOARD was not initialized")
+}
+
+fn get_board_mut() -> &'static mut Board {
+    unsafe { BOARD.as_mut() }.expect("BOARD was not initialized")
+}
 
 #[wasm_bindgen(start)]
 pub fn main() {
@@ -11,9 +19,9 @@ pub fn main() {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = getPieces)]
 pub fn get_pieces() -> js_sys::Array {
-    let board = unsafe { BOARD.as_ref().expect("BOARD was not initialized!") };
+    let board = get_board();
     let result = js_sys::Array::default();
 
     let side_field = js_sys::JsString::from("side");
@@ -49,4 +57,21 @@ pub fn get_pieces() -> js_sys::Array {
     }
 
     result
+}
+
+#[wasm_bindgen(js_name = feedMove)]
+pub fn feed_move(movement: js_sys::JsString) -> Result<(), String> {
+    let board = get_board_mut();
+    let Some(movement_str) = movement.as_string() else {
+        return Err("Argument must be string".to_string());
+    };
+
+    let movement: PseudoMove = match movement_str.parse() {
+        Ok(movement) => movement,
+        Err(e) => return Err(format!("Invalid movement: {e:?}")),
+    };
+
+    board.feed(movement);
+
+    Ok(())
 }

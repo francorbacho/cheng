@@ -27,7 +27,7 @@ class Chessboard {
     }
 
     constructPieces() {
-        const pieces = cheng.get_pieces();
+        const pieces = wasm.getPieces();
 
         for (let piece of pieces) {
             const pieceElement = document.createElement('piece');
@@ -116,15 +116,30 @@ class Chessboard {
         const column = Math.floor(x / width) + 1;
         const row = Math.floor(y / height) + 1;
 
-        const position = `${String.fromCharCode(column + 96)}${row}`;
-        const destSquare = document.querySelector(`square[position=${position}]`);
+        const destSquare = `${String.fromCharCode(column + 96)}${row}`;
+        const destSquareElement = document.querySelector(`square[position=${destSquare}]`);
 
-        if (!destSquare) { return; }
+        const sourceSquareElement = movedPiece.parentElement;
+        const sourceSquare = sourceSquareElement.getAttribute('position');
 
-        destSquare.appendChild(movedPiece);
+        if (!destSquareElement || sourceSquareElement == destSquareElement) { return; }
+
+        const movement = `${sourceSquare}${destSquare}`;
+        try {
+            this.feedMove(movement);
+        } catch (exception) {
+            console.error(exception);
+            return;
+        }
+
+        destSquareElement.appendChild(movedPiece);
 
         const now = new Date();
         document.getElementById('state').textContent = `dragging piece ended @ ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
+    }
+
+    feedMove(movement) {
+        wasm.feedMove(movement);
     }
 }
 

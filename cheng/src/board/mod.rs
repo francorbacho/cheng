@@ -89,16 +89,16 @@ impl Board {
     }
 
     pub fn feed(&mut self, mut movement: PseudoMove) -> Result<(), FeedError> {
-        if !self.check_valid_move(&movement) {
-            return Err(FeedError::MoveIsNotValid);
-        }
-
         let side = self.side(self.turn);
         let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
         if moved_piece_is_king {
             if let Some(c) = Castle::move_could_be_castle(self.turn, movement.clone()) {
                 movement.kind = MoveKind::Castle(c);
             }
+        }
+
+        if !self.check_valid_move(&movement) {
+            return Err(FeedError::MoveIsNotValid);
         }
 
         self.feed_unchecked(movement);

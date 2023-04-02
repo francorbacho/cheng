@@ -64,6 +64,10 @@ class Chessboard {
             event.preventDefault();
         }
 
+        if (!event.target.classList.contains(wasm.getSideToMove())) {
+            return;
+        }
+
         this.draggingPiece = event.target;
         this.draggingPiece.classList.add("dragging");
     }

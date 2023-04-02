@@ -21,6 +21,17 @@ pub fn main() {
     }
 }
 
+#[wasm_bindgen(js_name = getSideToMove)]
+pub fn get_side_to_move() -> js_sys::JsString {
+    let board = get_board();
+    let side_to_move = match board.turn {
+        Side::White => "white",
+        Side::Black => "black",
+    };
+
+    js_sys::JsString::from(side_to_move)
+}
+
 #[wasm_bindgen(js_name = getPieces)]
 pub fn get_pieces() -> js_sys::Array {
     let board = get_board();

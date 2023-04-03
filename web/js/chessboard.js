@@ -64,7 +64,8 @@ class Chessboard {
             event.preventDefault();
         }
 
-        if (wasm.getResult() != "none") {
+        const boardState = wasm.getState();
+        if (boardState.result) {
             return;
         }
 
@@ -165,6 +166,23 @@ class Chessboard {
         }
 
         destSquareElement.appendChild(movedPiece);
+
+        const boardState = wasm.getState();
+        if (boardState.result == 'checkmate') {
+            const checkmateMark = document.createElement('mark');
+            const kingElement = document.querySelector(`.${wasm.getSideToMove()}.king`);
+
+            checkmateMark.classList.add('checkmate');
+            kingElement.appendChild(checkmateMark);
+        } else if (boardState.kingInCheck) {
+            const checkMark = document.createElement('mark');
+            const kingElement = document.querySelector(`.${wasm.getSideToMove()}.king`);
+            checkMark.classList.add('check');
+            kingElement.appendChild(checkMark);
+        } else {
+            const markElement = document.querySelector(`mark.check`);
+            if (markElement) markElement.remove();
+        }
     }
 }
 

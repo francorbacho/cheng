@@ -1,3 +1,4 @@
+use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
 use cheng::{Board, GameResult, Piece, PseudoMove, Side, SidedPiece};
@@ -12,6 +13,13 @@ fn get_board_mut() -> &'static mut Board {
     unsafe { BOARD.as_mut() }.expect("BOARD was not initialized")
 }
 
+fn side_to_js_string(side: Side) -> JsString {
+    JsString::from(match side {
+        Side::White => "white",
+        Side::Black => "black",
+    })
+}
+
 #[wasm_bindgen(start)]
 pub fn main() {
     cheng::init();
@@ -22,31 +30,39 @@ pub fn main() {
 }
 
 #[wasm_bindgen(js_name = getSideToMove)]
-pub fn get_side_to_move() -> js_sys::JsString {
-    let board = get_board();
-    let side_to_move = match board.turn {
-        Side::White => "white",
-        Side::Black => "black",
-    };
-
-    js_sys::JsString::from(side_to_move)
+pub fn get_side_to_move() -> JsString {
+    side_to_js_string(get_board().turn)
 }
 
-#[wasm_bindgen(js_name = getResult)]
-pub fn get_result() -> js_sys::JsString {
-    let board = get_board();
-    let result = match board.result() {
-        Some(GameResult::Draw) => "draw",
-        Some(GameResult::Checkmate {
-            winner: Side::White,
-        }) => "white-win",
-        Some(GameResult::Checkmate {
-            winner: Side::Black,
-        }) => "black-win",
-        None => "none",
-    };
+#[wasm_bindgen(getter_with_clone)]
+pub struct GameState {
+    pub result: String,
+    pub winner: Option<String>,
+    #[wasm_bindgen(js_name = kingInCheck)]
+    pub king_in_check: bool,
+}
 
-    js_sys::JsString::from(result)
+#[wasm_bindgen(js_name = getState)]
+pub fn get_state() -> GameState {
+    let board = get_board();
+    let result = board.result();
+    GameState {
+        result: match result {
+            Some(GameResult::Checkmate { .. }) => "checkmate".to_string(),
+            Some(GameResult::Draw { .. }) => "draw".to_string(),
+            None => "".to_string(),
+        },
+        winner: result
+            .map(|result| {
+                if let GameResult::Checkmate { winner } = result {
+                    Some(format!("{winner:?}"))
+                } else {
+                    None
+                }
+            })
+            .flatten(),
+        king_in_check: board.side(board.turn).king_in_check,
+    }
 }
 
 #[wasm_bindgen(js_name = getPieces)]
@@ -54,28 +70,25 @@ pub fn get_pieces() -> js_sys::Array {
     let board = get_board();
     let result = js_sys::Array::default();
 
-    let side_field = js_sys::JsString::from("side");
-    let piece_field = js_sys::JsString::from("piece");
-    let position_field = js_sys::JsString::from("position");
+    let side_field = JsString::from("side");
+    let piece_field = JsString::from("piece");
+    let position_field = JsString::from("position");
 
     for (piece, square) in board {
         let SidedPiece(side, piece) = piece;
 
         let piece_field_js_value = match piece {
-            Piece::Pawn => js_sys::JsString::from("pawn"),
-            Piece::Knight => js_sys::JsString::from("knight"),
-            Piece::Bishop => js_sys::JsString::from("bishop"),
-            Piece::Rook => js_sys::JsString::from("rook"),
-            Piece::Queen => js_sys::JsString::from("queen"),
-            Piece::King => js_sys::JsString::from("king"),
+            Piece::Pawn => JsString::from("pawn"),
+            Piece::Knight => JsString::from("knight"),
+            Piece::Bishop => JsString::from("bishop"),
+            Piece::Rook => JsString::from("rook"),
+            Piece::Queen => JsString::from("queen"),
+            Piece::King => JsString::from("king"),
         };
 
-        let side_field_js_value = match side {
-            Side::White => js_sys::JsString::from("white"),
-            Side::Black => js_sys::JsString::from("black"),
-        };
+        let side_field_js_value = side_to_js_string(side);
 
-        let position_field_js_value = js_sys::JsString::from(format!("{square:?}"));
+        let position_field_js_value = JsString::from(format!("{square:?}"));
 
         let js_obj = js_sys::Object::new();
 
@@ -104,7 +117,7 @@ pub struct MoveFeedback {
 }
 
 #[wasm_bindgen(js_name = feedMove)]
-pub fn feed_move(movement: js_sys::JsString) -> Result<MoveFeedback, String> {
+pub fn feed_move(movement: JsString) -> Result<MoveFeedback, String> {
     let board = get_board_mut();
     let Some(movement_str) = movement.as_string() else {
         return Err("Argument must be string".to_string());
@@ -167,7 +180,7 @@ pub fn valid_moves() -> js_sys::Array {
 
     for movement in board.moves() {
         let movement_str = format!("{movement}");
-        result.push(&js_sys::JsString::from(movement_str));
+        result.push(&JsString::from(movement_str));
     }
 
     result

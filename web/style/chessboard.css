@@ -1,6 +1,7 @@
 :root {
     --zoom: 1;
     --board-size: min(calc(95vw * var(--zoom)), calc(95vh) * var(--zoom));
+    --square-size: calc(var(--board-size) / 8);
 }
 
 chessboard {
@@ -20,7 +21,7 @@ chessboard {
 
 square {
     display: inherit;
-    width: calc(var(--board-size) / 8);
+    width: var(--square-size);
     height: auto;
     aspect-ratio: 1;
 }
@@ -45,6 +46,26 @@ piece {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 100%;
+}
+
+mark {
+    position: relative;
+    display: inherit;
+    width: calc(var(--square-size) / 2);
+    height: auto;
+    z-index: 2;
+    transform: translate(calc(var(--square-size) / 2));
+    background-repeat: no-repeat;
+    background-color: transparent;
+    pointer-events: none;
+}
+
+mark.checkmate {
+    background-image: url('/assets/checkmate.svg');
+}
+
+mark.check {
+    background-image: url('/assets/check.svg');
 }
 
 .dragging {

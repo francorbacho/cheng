@@ -106,8 +106,11 @@ pub fn get_pieces() -> js_sys::Array {
 pub struct MoveFeedback {
     pub origin: String,
     pub destination: String,
+
     #[wasm_bindgen(js_name = moveIsCapture)]
     pub move_is_capture: bool,
+    #[wasm_bindgen(js_name = passedEnPassantPawnSquare)]
+    pub passed_en_passant_pawn_square: Option<String>,
     #[wasm_bindgen(js_name = "castleSide")]
     pub castle_side: Option<String>,
     #[wasm_bindgen(js_name = "rookSquareBeforeCastle")]
@@ -128,10 +131,16 @@ pub fn feed_move(movement: JsString) -> Result<MoveFeedback, String> {
         Err(e) => return Err(format!("Invalid movement: {e:?}")),
     };
 
-    let move_is_capture = board
-        .side(board.turn.opposite())
-        .occupancy
-        .get(movement.destination);
+    let en_passant_square = board.side(board.turn.opposite()).en_passant;
+    let passed_en_passant_pawn_square = en_passant_square
+        .filter(|&square| square == movement.destination)
+        .map(|square| format!("{:?}", square.next_rank(board.turn.opposite())));
+
+    let move_is_capture = passed_en_passant_pawn_square.is_some()
+        || board
+            .side(board.turn.opposite())
+            .occupancy
+            .get(movement.destination);
 
     // TODO: This is code from the feed function. Obviously this is less than ideal.
     // We should be using a different interface other than PseudoMove.
@@ -163,6 +172,7 @@ pub fn feed_move(movement: JsString) -> Result<MoveFeedback, String> {
         origin: format!("{:?}", movement.origin),
         destination: format!("{:?}", movement.destination),
         move_is_capture,
+        passed_en_passant_pawn_square,
         castle_side,
         rook_square_before_castle,
         rook_square_after_castle,

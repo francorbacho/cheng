@@ -156,7 +156,12 @@ class Chessboard {
         const movedPiece = originSquareElement.children[0];
 
         if (moveFeedback.moveIsCapture) {
-            destSquareElement.children[0].remove();
+            if (moveFeedback.passedEnPassantPawnSquare) {
+                const passedEnPassantPawnSquareElement = document.querySelector(`square[position=${moveFeedback.passedEnPassantPawnSquare}]`);
+                passedEnPassantPawnSquareElement.children[0].remove();
+            } else {
+                destSquareElement.children[0].remove();
+            }
         }
 
         if (moveFeedback.castleSide) {

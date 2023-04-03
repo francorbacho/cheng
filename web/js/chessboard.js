@@ -95,6 +95,8 @@ class Chessboard {
     }
 
     handlePieceDragEnd(event) {
+        if (!this.draggingPiece) return;
+
         const movedPiece = this.draggingPiece;
         this.draggingPiece.classList.remove('dragging');
         this.draggingPiece = null;

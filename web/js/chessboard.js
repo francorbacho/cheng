@@ -213,3 +213,13 @@ class Chessboard {
 }
 
 const mainBoard = new Chessboard('chessboard');
+
+window.onload = function () {
+    const boardFrame = document.getElementById(mainBoard.boardFrameId);
+    boardFrame.textContent = "Waiting for WebAssembly to load...";
+
+    setTimeout(() => {
+        if (typeof wasm == 'undefined')
+            boardFrame.textContent = "Failed to load WebAssembly.";
+    }, 2_000);
+};

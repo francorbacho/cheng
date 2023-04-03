@@ -30,6 +30,7 @@ pub fn main() {
 }
 
 #[wasm_bindgen(js_name = getSideToMove)]
+#[must_use]
 pub fn get_side_to_move() -> JsString {
     side_to_js_string(get_board().turn)
 }
@@ -43,6 +44,7 @@ pub struct GameState {
 }
 
 #[wasm_bindgen(js_name = getState)]
+#[must_use]
 pub fn get_state() -> GameState {
     let board = get_board();
     let result = board.result();
@@ -50,22 +52,21 @@ pub fn get_state() -> GameState {
         result: match result {
             Some(GameResult::Checkmate { .. }) => "checkmate".to_string(),
             Some(GameResult::Draw { .. }) => "draw".to_string(),
-            None => "".to_string(),
+            None => String::new(),
         },
-        winner: result
-            .map(|result| {
-                if let GameResult::Checkmate { winner } = result {
-                    Some(format!("{winner:?}"))
-                } else {
-                    None
-                }
-            })
-            .flatten(),
+        winner: result.and_then(|result| {
+            if let GameResult::Checkmate { winner } = result {
+                Some(format!("{winner:?}"))
+            } else {
+                None
+            }
+        }),
         king_in_check: board.side(board.turn).king_in_check,
     }
 }
 
 #[wasm_bindgen(js_name = getPieces)]
+#[must_use]
 pub fn get_pieces() -> js_sys::Array {
     let board = get_board();
     let result = js_sys::Array::default();
@@ -120,7 +121,7 @@ pub struct MoveFeedback {
 }
 
 #[wasm_bindgen(js_name = feedMove)]
-pub fn feed_move(movement: JsString) -> Result<MoveFeedback, String> {
+pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
     let board = get_board_mut();
     let Some(movement_str) = movement.as_string() else {
         return Err("Argument must be string".to_string());
@@ -184,6 +185,7 @@ pub fn feed_move(movement: JsString) -> Result<MoveFeedback, String> {
 }
 
 #[wasm_bindgen(js_name = validMoves)]
+#[must_use]
 pub fn valid_moves() -> js_sys::Array {
     let board = get_board();
     let result = js_sys::Array::default();

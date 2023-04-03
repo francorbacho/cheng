@@ -84,6 +84,7 @@ impl Board {
         }
     }
 
+    #[must_use]
     pub fn check_valid_move(&self, movement: &PseudoMove) -> bool {
         self.moves().any(|m| &m == movement)
     }

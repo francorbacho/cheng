@@ -23,6 +23,7 @@ pub enum Castle {
 }
 
 impl Castle {
+    #[must_use]
     pub fn move_could_be_castle(side: Side, movement: PseudoMove) -> Option<Castle> {
         let origin_matches_castle = movement.origin == Self::king_square_before_castle(side);
 
@@ -45,6 +46,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub fn rook_position_before_castle(self, side: Side) -> Square {
         use crate::prelude::*;
         match (side, self) {
@@ -55,6 +57,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub const fn rook_position_after_castle(self, side: Side) -> Square {
         use crate::prelude::*;
         match (side, self) {
@@ -65,6 +68,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub const fn king_square_before_castle(side: Side) -> Square {
         use crate::prelude::*;
         match side {
@@ -73,6 +77,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub const fn king_square_after_castle(self, side: Side) -> Square {
         use crate::prelude::*;
         match (side, self) {
@@ -83,6 +88,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub fn relevant_square_occupancy(self, side: Side) -> BoardMask {
         use crate::prelude::*;
         match (side, self) {
@@ -92,6 +98,7 @@ impl Castle {
         }
     }
 
+    #[must_use]
     pub fn relevant_square_threats(self, side: Side) -> BoardMask {
         use crate::prelude::*;
         match (side, self) {

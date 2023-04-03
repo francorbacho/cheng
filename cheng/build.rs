@@ -49,7 +49,7 @@ fn main() -> io::Result<()> {
         let rank_diff = (target.rank() as i32 - square.rank() as i32).abs();
         let file_diff = (target.file() as i32 - square.file() as i32).abs();
 
-        matches!((rank_diff, file_diff), (0, 1) | (1, 0) | (1, 1))
+        matches!((rank_diff, file_diff), (0 | 1, 1) | (1, 0))
     })?;
 
     write_to_file(&mut file, "PAWN_MOVES_WHITE", |square, target| {

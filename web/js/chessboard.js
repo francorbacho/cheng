@@ -183,6 +183,22 @@ class Chessboard {
             const markElement = document.querySelector(`mark.check`);
             if (markElement) markElement.remove();
         }
+
+        this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
+    }
+
+    updatePreviousMoveIndicator(newMoveOrigin, newMoveDestination) {
+        const lastMoveSquareElement = document.querySelectorAll('square.last-move');
+
+        for (const squareElement of lastMoveSquareElement) {
+            squareElement.classList.remove('last-move');
+        }
+
+        const originSquareElement = document.querySelector(`square[position=${newMoveOrigin}]`);
+        const destSquareElement = document.querySelector(`square[position=${newMoveDestination}]`);
+
+        originSquareElement.classList.add('last-move');
+        destSquareElement.classList.add('last-move');
     }
 }
 

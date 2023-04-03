@@ -36,6 +36,15 @@ square.black {
     /* background-color: #86a666; */
 }
 
+square.white.last-move {
+    background-color: #cdd26a;
+}
+
+square.black.last-move {
+    background-color: #aaa23a;
+
+}
+
 piece {
     display: inherit;
     cursor: pointer;

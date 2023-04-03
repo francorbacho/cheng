@@ -167,6 +167,14 @@ class Chessboard {
 
         destSquareElement.appendChild(movedPiece);
 
+        this.updateCheckIndicator();
+        this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
+    }
+
+    updateCheckIndicator() {
+        const markElement = document.querySelector(`mark.check`);
+        if (markElement) markElement.remove();
+
         const boardState = wasm.getState();
         if (boardState.result == 'checkmate') {
             const checkmateMark = document.createElement('mark');
@@ -179,12 +187,7 @@ class Chessboard {
             const kingElement = document.querySelector(`.${wasm.getSideToMove()}.king`);
             checkMark.classList.add('check');
             kingElement.appendChild(checkMark);
-        } else {
-            const markElement = document.querySelector(`mark.check`);
-            if (markElement) markElement.remove();
         }
-
-        this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
     }
 
     updatePreviousMoveIndicator(newMoveOrigin, newMoveDestination) {

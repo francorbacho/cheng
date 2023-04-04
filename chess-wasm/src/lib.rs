@@ -132,9 +132,17 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
         Err(e) => return Err(format!("Invalid movement: {e:?}")),
     };
 
+    let moved_piece_is_pawn = board
+        .side(board.turn)
+        .pieces
+        .piece(Piece::Pawn)
+        .get(movement.origin);
+
     let en_passant_square = board.side(board.turn.opposite()).en_passant;
-    let passed_en_passant_pawn_square = en_passant_square
-        .filter(|&square| square == movement.destination)
+    let passed_en_passant_pawn_square = moved_piece_is_pawn
+        .then_some(en_passant_square)
+        .filter(|&square| square == Some(movement.destination))
+        .flatten()
         .map(|square| format!("{:?}", square.next_rank(board.turn.opposite())));
 
     let move_is_capture = passed_en_passant_pawn_square.is_some()

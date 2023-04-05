@@ -71,11 +71,11 @@ mark {
 }
 
 mark.checkmate {
-    background-image: url('/assets/checkmate.svg');
+    background-image: url('../assets/checkmate.svg');
 }
 
 mark.check {
-    background-image: url('/assets/check.svg');
+    background-image: url('../assets/check.svg');
 }
 
 .dragging {

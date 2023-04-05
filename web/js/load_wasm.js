@@ -1,4 +1,4 @@
-import init, * as wasm from '/pkg/cheng.js';
+import init, * as wasm from '../pkg/cheng.js';
 
 async function run() {
     await init();

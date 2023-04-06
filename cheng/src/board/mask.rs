@@ -108,28 +108,6 @@ impl BoardMask {
     }
 }
 
-impl IntoIterator for BoardMask {
-    type Item = Square;
-
-    type IntoIter = BoardMaskIterator;
-
-    fn into_iter(self) -> Self::IntoIter {
-        BoardMaskIterator(self)
-    }
-}
-
-pub struct BoardMaskIterator(BoardMask);
-
-impl Iterator for BoardMaskIterator {
-    type Item = Square;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let square = self.0.first()?;
-        self.0.reset(square);
-        Some(square)
-    }
-}
-
 impl Debug for BoardMask {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "BoardMask(0x{:16x?})", self.0)

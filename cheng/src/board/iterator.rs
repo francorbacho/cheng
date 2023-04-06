@@ -1,4 +1,6 @@
-use crate::{side_state::iterator::SidePiecesIterator, Board, Side, SidedPiece, Square};
+use crate::{
+    board::BoardMask, side_state::iterator::SidePiecesIterator, Board, Side, SidedPiece, Square,
+};
 
 impl<'a> IntoIterator for &'a Board {
     type Item = (SidedPiece, Square);
@@ -45,5 +47,27 @@ impl Iterator for BoardIterator<'_> {
         }
 
         None
+    }
+}
+
+impl IntoIterator for BoardMask {
+    type Item = Square;
+
+    type IntoIter = BoardMaskIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        BoardMaskIterator(self)
+    }
+}
+
+pub struct BoardMaskIterator(BoardMask);
+
+impl Iterator for BoardMaskIterator {
+    type Item = Square;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let square = self.0.first()?;
+        self.0.reset(square);
+        Some(square)
     }
 }

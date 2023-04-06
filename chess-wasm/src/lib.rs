@@ -214,3 +214,12 @@ pub fn evalute() -> i32 {
 
     Evaluable::evaluate(board).0
 }
+
+#[wasm_bindgen(js_name = flimsybirdRun)]
+#[must_use]
+pub async fn flimsybird_run() -> String {
+    let board = get_board();
+    let movement = board.moves().next().unwrap();
+
+    format!("{movement}")
+}

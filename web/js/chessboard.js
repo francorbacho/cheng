@@ -3,6 +3,22 @@ class Chessboard {
         this.boardFrameId = id;
         this.squares = {};
         this.draggingPiece = null;
+        this.playerConfiguration = {
+            'white': 'human',
+            'black': 'computer',
+        };
+    }
+
+    constructHTML() {
+        this.boardFrame = document.getElementById(this.boardFrameId);
+        this.boardFrame.textContent = "";
+
+        if (!this.boardFrame) {
+            throw new Error(`Element with id=${id} not found.`);
+        }
+
+        this.constructBoard();
+        this.constructPieces();
     }
 
     constructBoard() {
@@ -47,18 +63,6 @@ class Chessboard {
         this.boardFrame.addEventListener("touchmove", event => this.handlePieceDrag(event));
     }
 
-    constructHTML() {
-        this.boardFrame = document.getElementById(this.boardFrameId);
-        this.boardFrame.textContent = "";
-
-        if (!this.boardFrame) {
-            throw new Error(`Element with id=${id} not found.`);
-        }
-
-        this.constructBoard();
-        this.constructPieces();
-    }
-
     handlePieceDragStart(event) {
         if (event.type === "touchstart") {
             event.preventDefault();
@@ -69,7 +73,13 @@ class Chessboard {
             return;
         }
 
-        if (!event.target.classList.contains(wasm.getSideToMove())) {
+        const pieceSide = event.target.classList.contains("white") ? "white" : "black";
+
+        if (pieceSide != wasm.getSideToMove()) {
+            return;
+        }
+
+        if (this.playerConfiguration[pieceSide] == "computer") {
             return;
         }
 
@@ -176,6 +186,8 @@ class Chessboard {
 
         this.updateCheckIndicator();
         this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
+
+        setTimeout(() => this.scheduleComputerMove(), 500);
     }
 
     updateCheckIndicator() {
@@ -209,6 +221,14 @@ class Chessboard {
 
         originSquareElement.classList.add('last-move');
         destSquareElement.classList.add('last-move');
+    }
+
+    scheduleComputerMove() {
+        if (this.playerConfiguration[wasm.getSideToMove()] != "computer") {
+            return;
+        }
+
+        wasm.flimsybirdRun().then((move) => this.feedMove(move));
     }
 }
 

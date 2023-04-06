@@ -1,5 +1,5 @@
 pub mod parsing;
-pub use parsing::PseudoMoveParseError;
+pub use parsing::MoveParseError;
 
 use std::fmt::Display;
 

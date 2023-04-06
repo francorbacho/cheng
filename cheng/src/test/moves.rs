@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     board::{Board, BoardMask},
-    movement::{MoveKind, PseudoMove, PseudoMoveParseError},
+    movement::{MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
     square::prelude::*,
 };
@@ -20,7 +20,7 @@ fn test_move_parsing() {
 
     assert_eq!(
         PseudoMove::from_str("a7xb8").unwrap_err(),
-        PseudoMoveParseError::WrongDestinationSquare
+        MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
@@ -34,17 +34,17 @@ fn test_move_parsing() {
 
     assert_eq!(
         PseudoMove::from_str("c7xb8n").unwrap_err(),
-        PseudoMoveParseError::WrongDestinationSquare
+        MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
         PseudoMove::from_str("c7x8n").unwrap_err(),
-        PseudoMoveParseError::WrongDestinationSquare
+        MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
         PseudoMove::from_str("e4").unwrap_err(),
-        PseudoMoveParseError::TooShort
+        MoveParseError::TooShort
     );
 }
 

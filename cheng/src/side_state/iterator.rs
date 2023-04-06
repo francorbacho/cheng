@@ -30,11 +30,8 @@ impl<'a> SidePiecesIterator<'a> {
     }
 
     fn update_current_mask(&mut self) {
-        match self.current_piece.peek() {
-            Some(piece) => {
-                self.current_mask = self.pieces.piece(*piece);
-            }
-            None => {}
+        if let Some(piece) = self.current_piece.peek() {
+            self.current_mask = self.pieces.piece(*piece);
         }
     }
 }
@@ -48,13 +45,10 @@ impl<'a> Iterator for SidePiecesIterator<'a> {
             None => return None,
         };
 
-        let square = match self.current_mask.first() {
-            Some(square) => square,
-            None => {
-                self.current_piece.next();
-                self.update_current_mask();
-                return self.next();
-            }
+        let Some(square) = self.current_mask.first() else {
+            self.current_piece.next();
+            self.update_current_mask();
+            return self.next();
         };
 
         self.current_mask.reset(square);

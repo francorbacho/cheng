@@ -20,7 +20,7 @@ mod sides;
 
 use std::{
     collections::{hash_map::Entry, HashMap},
-    fs,
+    fmt, fs,
     io::{self, Write},
 };
 
@@ -39,25 +39,25 @@ fn main() -> io::Result<()> {
     write_prelude(&mut file)?;
 
     write_to_file(&mut file, "KNIGHT_MOVES", |square, target| {
-        let rank_diff = (target.rank() as i32 - square.rank() as i32).abs();
-        let file_diff = (target.file() as i32 - square.file() as i32).abs();
+        let rank_diff = (target.rank::<i32>() - square.rank::<i32>()).abs();
+        let file_diff = (target.file::<i32>() - square.file::<i32>()).abs();
 
         matches!((rank_diff, file_diff), (2, 1) | (1, 2))
     })?;
 
     write_to_file(&mut file, "KING_MOVES", |square, target| {
-        let rank_diff = (target.rank() as i32 - square.rank() as i32).abs();
-        let file_diff = (target.file() as i32 - square.file() as i32).abs();
+        let rank_diff = (target.rank::<i32>() - square.rank::<i32>()).abs();
+        let file_diff = (target.file::<i32>() - square.file::<i32>()).abs();
 
         matches!((rank_diff, file_diff), (0 | 1, 1) | (1, 0))
     })?;
 
     write_to_file(&mut file, "PAWN_MOVES_WHITE", |square, target| {
-        if square.file() != target.file() {
+        if square.file::<usize>() != target.file() {
             return false;
         }
 
-        let rank_diff = target.rank() as i32 - square.rank() as i32;
+        let rank_diff = target.rank::<i32>() - square.rank::<i32>();
 
         match square.rank() {
             0 => false,
@@ -67,11 +67,11 @@ fn main() -> io::Result<()> {
     })?;
 
     write_to_file(&mut file, "PAWN_MOVES_BLACK", |square, target| {
-        if square.file() != target.file() {
+        if square.file::<usize>() != target.file() {
             return false;
         }
 
-        let rank_diff = target.rank() as i32 - square.rank() as i32;
+        let rank_diff = target.rank::<i32>() - square.rank::<i32>();
 
         match square.rank() {
             7 => false,
@@ -81,8 +81,8 @@ fn main() -> io::Result<()> {
     })?;
 
     write_to_file(&mut file, "PAWN_CAPTURES_WHITE", |square, target| {
-        let file_diff = (target.file() as i32 - square.file() as i32).abs();
-        let rank_diff = target.rank() as i32 - square.rank() as i32;
+        let file_diff = (target.file::<i32>() - square.file::<i32>()).abs();
+        let rank_diff = target.rank::<i32>() - square.rank::<i32>();
 
         match square.rank() {
             0 => false,
@@ -91,8 +91,8 @@ fn main() -> io::Result<()> {
     })?;
 
     write_to_file(&mut file, "PAWN_CAPTURES_BLACK", |square, target| {
-        let file_diff = (target.file() as i32 - square.file() as i32).abs();
-        let rank_diff = target.rank() as i32 - square.rank() as i32;
+        let file_diff = (target.file::<i32>() - square.file::<i32>()).abs();
+        let rank_diff = target.rank::<i32>() - square.rank::<i32>();
 
         match square.rank() {
             7 => false,
@@ -127,7 +127,7 @@ where
             }
         }
 
-        writeln!(f, "    BoardMask::const_from(0x{:016X}),", u64::from(mask),)?;
+        writeln!(f, "    BoardMask::const_from({}),", BoardFormatter(mask),)?;
     }
 
     writeln!(f, "];")?;
@@ -151,7 +151,7 @@ fn write_sliding_piece_occupancy<P: SlidingPiece>(f: &mut fs::File, name: &str) 
 
     for square in Square::iter_all() {
         let mask = P::relevant_occupancy(square);
-        writeln!(f, "    BoardMask::const_from(0x{:016X}),", u64::from(mask))?;
+        writeln!(f, "    BoardMask::const_from({}),", BoardFormatter(mask))?;
     }
 
     writeln!(f, "];")?;
@@ -168,7 +168,8 @@ where
 
     for square in Square::iter_all() {
         let (mask, collisions) = find_magic::<P>(square).expect("Could not find magic");
-        writeln!(f, "    0x{mask:016X}, // #{collisions} collisions")?;
+        let board_formatter = BoardFormatter(BoardMask::from(mask));
+        writeln!(f, "    {board_formatter}, // #{collisions} collisions",)?;
     }
 
     writeln!(f, "];")?;
@@ -225,4 +226,23 @@ where
     }
 
     Err(())
+}
+
+struct BoardFormatter(BoardMask);
+
+impl fmt::Display for BoardFormatter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let bytes = u64::from(self.0).to_be_bytes();
+        write!(f, "0x")?;
+
+        for (i, byte) in bytes.iter().enumerate() {
+            if i != 0 {
+                write!(f, "_")?;
+            }
+
+            write!(f, "{byte:02X}")?;
+        }
+
+        Ok(())
+    }
 }

@@ -93,7 +93,7 @@ impl Board {
         let side = self.side(self.turn);
         let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
         if moved_piece_is_king {
-            if let Some(c) = Castle::move_could_be_castle(self.turn, movement.clone()) {
+            if let Some(c) = Castle::move_could_be_castle(self.turn, &movement) {
                 movement.kind = MoveKind::Castle(c);
             }
         }
@@ -103,13 +103,13 @@ impl Board {
             return Err(FeedError::MoveIsNotValid);
         }
 
-        self.feed_unchecked(movement);
+        self.feed_unchecked(&movement);
         self.update_result();
 
         Ok(())
     }
 
-    pub fn feed_unchecked(&mut self, movement: PseudoMove) {
+    pub fn feed_unchecked(&mut self, movement: &PseudoMove) {
         let piece_is_pawn = self
             .side(self.turn)
             .pieces
@@ -274,7 +274,7 @@ impl Board {
 
             if squares
                 .next_non_consuming()
-                .map_or(false, |sq| sq.file() != 0)
+                .map_or(false, |sq| sq.file::<usize>() != 0)
             {
                 return Err(InvalidAlignment);
             }

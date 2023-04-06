@@ -40,6 +40,8 @@ impl CastlingRights {
 
     #[inline]
     pub fn without(self, rhs: CastlingRights) -> CastlingRights {
+        // Clippy's recommedation is IMO less readable.
+        #[allow(clippy::match_same_arms)]
         match (self, rhs) {
             (CastlingRights::None, _) => CastlingRights::None,
             (lhs, rhs) if lhs == rhs => CastlingRights::None,
@@ -148,10 +150,10 @@ impl SideState {
             return;
         }
 
-        let piece = match self.pieces.find(square) {
-            Some(piece) => piece,
-            None => unreachable!(),
-        };
+        let piece = self
+            .pieces
+            .find(square)
+            .expect("Couldn't remove piece: not found");
 
         self.pieces.piece_mut(piece).reset(square);
         self.occupancy.reset(square);
@@ -167,9 +169,9 @@ impl SideState {
         }
     }
 
-    fn is_two_square_pawn_move(&self, movement: PseudoMove) -> bool {
+    fn is_two_square_pawn_move(&self, movement: &PseudoMove) -> bool {
         self.pieces.piece(Piece::Pawn).get(movement.origin)
-            && (movement.destination.rank() as i32 - movement.origin.rank() as i32).abs() == 2
+            && (movement.destination.rank::<i32>() - movement.origin.rank::<i32>()).abs() == 2
     }
 
     pub fn update(&mut self, movement: PseudoMove) {
@@ -183,7 +185,7 @@ impl SideState {
         assert!(self.occupancy.get(*origin));
         assert!(!self.occupancy.get(*destination));
 
-        if self.is_two_square_pawn_move(movement.clone()) {
+        if self.is_two_square_pawn_move(&movement) {
             self.en_passant = Some(origin.next_rank(self.side));
         } else {
             self.en_passant = None;
@@ -200,14 +202,14 @@ impl SideState {
             self.occupancy
                 .set(castle.rook_position_after_castle(self.side));
         } else if let MoveKind::Move = movement.kind {
-            self.update_castling_rights(movement.clone());
+            self.update_castling_rights(&movement);
         }
 
         self.pieces.update(self.side, movement);
     }
 
-    fn update_castling_rights(&mut self, movement: PseudoMove) {
-        let PseudoMove { origin, .. } = movement;
+    fn update_castling_rights(&mut self, movement: &PseudoMove) {
+        let origin = movement.origin;
 
         let is_king_move = self.pieces.piece(Piece::King).get(origin);
         if is_king_move {

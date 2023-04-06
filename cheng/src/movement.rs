@@ -24,7 +24,7 @@ pub enum Castle {
 
 impl Castle {
     #[must_use]
-    pub fn move_could_be_castle(side: Side, movement: PseudoMove) -> Option<Castle> {
+    pub fn move_could_be_castle(side: Side, movement: &PseudoMove) -> Option<Castle> {
         let origin_matches_castle = movement.origin == Self::king_square_before_castle(side);
 
         let destination_matches_king_side_castle =

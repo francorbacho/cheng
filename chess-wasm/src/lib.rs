@@ -159,7 +159,7 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
         .piece(Piece::King)
         .get(movement.origin);
     let castle_side = if moved_piece_is_king {
-        cheng::Castle::move_could_be_castle(board.turn, movement.clone())
+        cheng::Castle::move_could_be_castle(board.turn, &movement)
     } else {
         None
     };

@@ -34,7 +34,7 @@ impl<'a> MoveGenerator<'a> {
 
     fn checked_add_move(&mut self, movement: PseudoMove) {
         let mut clone = self.board.clone();
-        clone.feed_unchecked(movement.clone());
+        clone.feed_unchecked(&movement);
         if clone.side(self.board.turn).king_in_check {
             return;
         }
@@ -47,13 +47,7 @@ impl<'a> MoveGenerator<'a> {
     }
 
     fn generate_castles(&mut self) {
-        let side = self.board.side(self.board.turn);
-        let opposite_side = self.board.side(self.board.turn.opposite());
-
-        if side.castling_rights == CastlingRights::None || side.king_in_check {
-            return;
-        }
-
+        use crate::prelude::*;
         // The squares that must be unoccupied and unthreathened to be able
         // to castle. For example, in white's king side castle, F1 and G1.
         fn can_castle(
@@ -66,7 +60,13 @@ impl<'a> MoveGenerator<'a> {
                 && !relevant_squares_threats.has_coincidences(opposite_threats)
         }
 
-        use crate::prelude::*;
+        let side = self.board.side(self.board.turn);
+        let opposite_side = self.board.side(self.board.turn.opposite());
+
+        if side.castling_rights == CastlingRights::None || side.king_in_check {
+            return;
+        }
+
         let king_square = Castle::king_square_before_castle(side.side);
         let (queen_side_castle_square, king_side_castle_square) = match side.side {
             Side::White => (C1, G1),
@@ -173,8 +173,8 @@ impl<'a> MoveGenerator<'a> {
         );
 
         let moves_are_promotion = match self.board.turn {
-            Side::White => A7.rank() == square.rank(),
-            Side::Black => A2.rank() == square.rank(),
+            Side::White => A7.rank::<usize>() == square.rank(),
+            Side::Black => A2.rank::<usize>() == square.rank(),
         };
 
         if moves_are_promotion {

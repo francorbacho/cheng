@@ -32,8 +32,8 @@ impl SlidingPiece for Rook {
     fn relevant_occupancy(square: Square) -> BoardMask {
         filter_squares(|target| match (target.rank(), target.file()) {
             (0 | 7, 0 | 7) => false,
-            (_, 0 | 7) => target.file() == square.file(),
-            (0 | 7, _) => target.rank() == square.rank(),
+            (_, 0 | 7) => target.file::<usize>() == square.file(),
+            (0 | 7, _) => target.rank::<usize>() == square.rank(),
             (rank, file) => (rank == square.rank()) ^ (file == square.file()),
         })
     }
@@ -86,20 +86,16 @@ impl SlidingPiece for Bishop {
     const NBITS: u32 = 14;
 
     fn relevant_occupancy(square: Square) -> BoardMask {
-        let sqrank = square.rank();
-        let sqfile = square.file();
+        let sqrank = square.rank::<i32>();
+        let sqfile = square.file::<i32>();
         filter_squares(|target| match (target.rank(), target.file()) {
-            (_, 0 | 7) => false,
-            (0 | 7, _) => false,
-            (rank, file) => {
-                (sqrank as i32 - rank as i32).abs() == (sqfile as i32 - file as i32).abs()
-                    && sqrank != rank
-            }
+            (_, 0 | 7) | (0 | 7, _) => false,
+            (rank, file) => (sqrank - rank).abs() == (sqfile - file).abs() && sqrank != rank,
         })
     }
 
     fn moves(square: Square, occupancy: BoardMask) -> BoardMask {
-        let (rank, file) = (square.rank(), square.file());
+        let (rank, file): (i32, i32) = (square.rank(), square.file());
         let mut result = BoardMask::default();
 
         let distance_to_top = 8 - rank;

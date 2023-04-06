@@ -25,7 +25,7 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn get(&self, square: Square) -> bool {
+    pub fn get(self, square: Square) -> bool {
         self.0 & (1 << square.to_index()) != 0
     }
 
@@ -40,32 +40,32 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn count(&self) -> u32 {
+    pub fn count(self) -> u32 {
         self.0.count_ones()
     }
 
     #[inline]
-    pub fn opposite(&self) -> BoardMask {
+    pub fn opposite(self) -> BoardMask {
         BoardMask(!self.0)
     }
 
     #[inline]
-    pub fn only(&self, mask: BoardMask) -> BoardMask {
+    pub fn only(self, mask: BoardMask) -> BoardMask {
         BoardMask(self.0 & mask.0)
     }
 
     #[inline]
-    pub fn without(&self, mask: BoardMask) -> BoardMask {
+    pub fn without(self, mask: BoardMask) -> BoardMask {
         BoardMask(self.0 & !mask.0)
     }
 
     #[inline]
-    pub fn intersection(&self, mask: BoardMask) -> BoardMask {
+    pub fn intersection(self, mask: BoardMask) -> BoardMask {
         BoardMask(self.0 | mask.0)
     }
 
     #[inline]
-    pub const fn first(&self) -> Option<Square> {
+    pub const fn first(self) -> Option<Square> {
         let index = self.0.trailing_zeros();
         if index < 64 {
             Some(Square::from_index(index as usize))
@@ -83,18 +83,18 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn has_coincidences(&self, other: BoardMask) -> bool {
+    pub fn has_coincidences(self, other: BoardMask) -> bool {
         self.only(other).0 != 0
     }
 
-    pub fn variations(&self) -> usize {
+    pub fn variations(self) -> usize {
         1 << self.count()
     }
 
     /// Returns a copy of this mask that unsets as many bits as indicated by
     /// index, generating variations.
-    pub fn variation(&self, index: usize) -> BoardMask {
-        let mut occupancy = u64::from(*self);
+    pub fn variation(self, index: usize) -> BoardMask {
+        let mut occupancy = u64::from(self);
         let nbits = occupancy.count_ones();
         let mut result = 0u64;
         for i in 0..nbits {
@@ -108,12 +108,24 @@ impl BoardMask {
     }
 }
 
-impl Iterator for BoardMask {
+impl IntoIterator for BoardMask {
+    type Item = Square;
+
+    type IntoIter = BoardMaskIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        BoardMaskIterator(self)
+    }
+}
+
+pub struct BoardMaskIterator(BoardMask);
+
+impl Iterator for BoardMaskIterator {
     type Item = Square;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let square = self.first()?;
-        self.reset(square);
+        let square = self.0.first()?;
+        self.0.reset(square);
         Some(square)
     }
 }

@@ -15,7 +15,14 @@ impl Square {
 
     #[inline]
     #[must_use]
-    pub const fn from_rank_file(rank: usize, file: usize) -> Self {
+    pub fn from_rank_file<U, V>(rank: U, file: V) -> Self
+    where
+        U: TryInto<usize>,
+        V: TryInto<usize>,
+    {
+        let rank: usize = rank.try_into().ok().unwrap();
+        let file: usize = file.try_into().ok().unwrap();
+
         assert!(rank < 8);
         assert!(file < 8);
         Self(rank * 8 + file)
@@ -29,14 +36,24 @@ impl Square {
 
     #[inline]
     #[must_use]
-    pub fn rank(self) -> usize {
-        self.0 / 8
+    pub fn rank<T>(self) -> T
+    where
+        T: TryFrom<usize>,
+    {
+        T::try_from(self.0 / 8)
+            .ok()
+            .expect("Internal error: values should always fit")
     }
 
     #[inline]
     #[must_use]
-    pub fn file(self) -> usize {
-        self.0 % 8
+    pub fn file<T>(self) -> T
+    where
+        T: TryFrom<usize>,
+    {
+        T::try_from(self.0 % 8)
+            .ok()
+            .expect("Internal error: values should always fit")
     }
 
     #[must_use]
@@ -87,8 +104,8 @@ impl FromStr for Square {
 
 impl Debug for Square {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let file = char::from(b'a' + self.file() as u8);
-        let rank = 1 + self.rank();
+        let file = char::from(b'a' + self.file::<u8>());
+        let rank = 1 + self.rank::<u8>();
         write!(f, "{file}{rank}")
     }
 }

@@ -182,6 +182,10 @@ class Chessboard {
             rookDestSquareElement.appendChild(rookElement);
         }
 
+        if (moveFeedback.promotion) {
+            movedPiece.classList.replace("pawn", moveFeedback.promotion);
+        }
+
         destSquareElement.appendChild(movedPiece);
 
         this.updateCheckIndicator();

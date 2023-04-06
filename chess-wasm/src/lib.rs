@@ -2,7 +2,7 @@ use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, GameResult, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{Board, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
 
 static mut BOARD: Option<Board> = None;
 
@@ -109,6 +109,7 @@ pub struct MoveFeedback {
     pub origin: String,
     pub destination: String,
 
+    pub promotion: Option<String>,
     #[wasm_bindgen(js_name = moveIsCapture)]
     pub move_is_capture: bool,
     #[wasm_bindgen(js_name = passedEnPassantPawnSquare)]
@@ -181,6 +182,13 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
     let move_feedback = MoveFeedback {
         origin: format!("{:?}", movement.origin),
         destination: format!("{:?}", movement.destination),
+        promotion: if let MoveKind::Promote(piece) = movement.kind {
+            let mut piece = format!("{piece:?}");
+            piece.make_ascii_lowercase();
+            Some(piece)
+        } else {
+            None
+        },
         move_is_capture,
         passed_en_passant_pawn_square,
         castle_side,

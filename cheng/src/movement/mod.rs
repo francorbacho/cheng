@@ -1,4 +1,7 @@
-use std::{fmt::Display, str::FromStr};
+pub mod parsing;
+pub use parsing::PseudoMoveParseError;
+
+use std::fmt::Display;
 
 use crate::{board::BoardMask, pieces::Piece, square::Square, Side};
 
@@ -7,6 +10,21 @@ pub struct PseudoMove {
     pub origin: Square,
     pub destination: Square,
     pub kind: MoveKind,
+}
+
+impl Display for PseudoMove {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self {
+            origin,
+            destination,
+            ..
+        } = self;
+
+        match self.kind {
+            MoveKind::Move | MoveKind::Castle(_) => write!(f, "{origin:?}{destination:?}"),
+            MoveKind::Promote(piece) => write!(f, "{origin:?}{destination:?}{}", char::from(piece)),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -106,69 +124,6 @@ impl Castle {
             (Side::Black, Castle::KingSide) => BoardMask::from([F8, G8]),
             (Side::White, Castle::QueenSide) => BoardMask::from([C1, D1]),
             (Side::Black, Castle::QueenSide) => BoardMask::from([C8, D8]),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum PseudoMoveParseError {
-    TooShort,
-    WrongOriginSquare,
-    WrongDestinationSquare,
-    WrongPiece,
-}
-
-impl FromStr for PseudoMove {
-    type Err = PseudoMoveParseError;
-
-    /// Parses a move in the format `{origin}{destination}{promotion}`, where `promotion`
-    /// is a single character that can be omitted. Do not add `x` to mark whether the
-    /// move takes a piece.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() < 4 {
-            return Err(PseudoMoveParseError::TooShort);
-        }
-
-        let origin: Square = s
-            .get(0..2)
-            .and_then(|sq| sq.parse().ok())
-            .ok_or(PseudoMoveParseError::WrongOriginSquare)?;
-        let destination = s
-            .get(2..4)
-            .and_then(|sq| sq.parse().ok())
-            .ok_or(PseudoMoveParseError::WrongDestinationSquare)?;
-
-        let kind = if s.ends_with(|chr: char| chr.is_ascii_alphabetic()) {
-            MoveKind::Promote(
-                s.chars()
-                    .last()
-                    .unwrap()
-                    .try_into()
-                    .map_err(|_| PseudoMoveParseError::WrongPiece)?,
-            )
-        } else {
-            MoveKind::Move
-        };
-
-        Ok(PseudoMove {
-            origin,
-            destination,
-            kind,
-        })
-    }
-}
-
-impl Display for PseudoMove {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Self {
-            origin,
-            destination,
-            ..
-        } = self;
-
-        match self.kind {
-            MoveKind::Move | MoveKind::Castle(_) => write!(f, "{origin:?}{destination:?}"),
-            MoveKind::Promote(piece) => write!(f, "{origin:?}{destination:?}{}", char::from(piece)),
         }
     }
 }

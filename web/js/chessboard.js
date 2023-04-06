@@ -14,7 +14,7 @@ class Chessboard {
         this.boardFrame.textContent = "";
 
         if (!this.boardFrame) {
-            throw new Error(`Element with id=${id} not found.`);
+            throw new Error(`Element with id=${this.boardFrameId} not found.`);
         }
 
         this.constructBoard();

@@ -30,7 +30,7 @@ pub fn main() {
     }
 }
 
-#[wasm_bindgen(js_name = getSideToMove)]
+#[wasm_bindgen(js_name = "getSideToMove")]
 #[must_use]
 pub fn get_side_to_move() -> JsString {
     side_to_js_string(get_board().turn)
@@ -40,11 +40,11 @@ pub fn get_side_to_move() -> JsString {
 pub struct GameState {
     pub result: String,
     pub winner: Option<String>,
-    #[wasm_bindgen(js_name = kingInCheck)]
+    #[wasm_bindgen(js_name = "kingInCheck")]
     pub king_in_check: bool,
 }
 
-#[wasm_bindgen(js_name = getState)]
+#[wasm_bindgen(js_name = "getState")]
 #[must_use]
 pub fn get_state() -> GameState {
     let board = get_board();
@@ -66,7 +66,7 @@ pub fn get_state() -> GameState {
     }
 }
 
-#[wasm_bindgen(js_name = getPieces)]
+#[wasm_bindgen(js_name = "getPieces")]
 #[must_use]
 pub fn get_pieces() -> js_sys::Array {
     let board = get_board();
@@ -110,9 +110,9 @@ pub struct MoveFeedback {
     pub destination: String,
 
     pub promotion: Option<String>,
-    #[wasm_bindgen(js_name = moveIsCapture)]
+    #[wasm_bindgen(js_name = "moveIsCapture")]
     pub move_is_capture: bool,
-    #[wasm_bindgen(js_name = passedEnPassantPawnSquare)]
+    #[wasm_bindgen(js_name = "passedEnPassantPawnSquare")]
     pub passed_en_passant_pawn_square: Option<String>,
     #[wasm_bindgen(js_name = "castleSide")]
     pub castle_side: Option<String>,
@@ -122,7 +122,7 @@ pub struct MoveFeedback {
     pub rook_square_after_castle: Option<String>,
 }
 
-#[wasm_bindgen(js_name = feedMove)]
+#[wasm_bindgen(js_name = "feedMove")]
 pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
     let board = get_board_mut();
     let Some(movement_str) = movement.as_string() else {
@@ -201,7 +201,7 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
     Ok(move_feedback)
 }
 
-#[wasm_bindgen(js_name = validMoves)]
+#[wasm_bindgen(js_name = "validMoves")]
 #[must_use]
 pub fn valid_moves() -> js_sys::Array {
     let board = get_board();
@@ -223,7 +223,7 @@ pub fn evalute() -> i32 {
     Evaluable::evaluate(board).0
 }
 
-#[wasm_bindgen(js_name = flimsybirdRun)]
+#[wasm_bindgen(js_name = "flimsybirdRun")]
 #[must_use]
 pub async fn flimsybird_run() -> Result<String, String> {
     let board = get_board();

@@ -217,9 +217,12 @@ pub fn evalute() -> i32 {
 
 #[wasm_bindgen(js_name = flimsybirdRun)]
 #[must_use]
-pub async fn flimsybird_run() -> String {
+pub async fn flimsybird_run() -> Result<String, String> {
     let board = get_board();
-    let movement = board.moves().next().unwrap();
+    let movement = board
+        .moves()
+        .next()
+        .ok_or("No move is possible".to_string())?;
 
-    format!("{movement}")
+    Ok(format!("{movement}"))
 }

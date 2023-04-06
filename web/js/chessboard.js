@@ -228,7 +228,7 @@ class Chessboard {
             return;
         }
 
-        wasm.flimsybirdRun().then((move) => this.feedMove(move));
+        wasm.flimsybirdRun().then(move => this.feedMove(move)).catch(() => { });
     }
 }
 

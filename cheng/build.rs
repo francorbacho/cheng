@@ -164,6 +164,7 @@ fn write_sliding_piece_magic<P: SlidingPiece>(f: &mut fs::File, name: &str) -> i
 where
     [(); 1 << P::NBITS]: Sized,
 {
+    writeln!(f, "#[allow(clippy::mistyped_literal_suffixes)]")?;
     writeln!(f, "pub const {name}_MAGICS: [u64; 64] = [")?;
 
     for square in Square::iter_all() {

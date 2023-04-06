@@ -1,3 +1,4 @@
+use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
@@ -204,4 +205,12 @@ pub fn valid_moves() -> js_sys::Array {
     }
 
     result
+}
+
+#[wasm_bindgen]
+#[must_use]
+pub fn evalute() -> i32 {
+    let board = get_board_mut();
+
+    Evaluable::evaluate(board).0
 }

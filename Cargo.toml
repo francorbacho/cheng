@@ -4,6 +4,7 @@ members = [
     "cheng",
     "cheng-cmd",
     "chess-wasm",
+    "flimsybird",
 ]
 
 

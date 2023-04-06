@@ -9,3 +9,13 @@ body {
     max-width: 800px;
     margin: 0 auto;
 }
+
+.chess-interface {
+    display: flex;
+}
+
+.chess-eval {
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+}

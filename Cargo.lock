@@ -57,6 +57,7 @@ name = "chess-wasm"
 version = "0.1.0"
 dependencies = [
  "cheng",
+ "flimsybird",
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
@@ -142,6 +143,13 @@ dependencies = [
  "cfg-if",
  "rustix",
  "windows-sys",
+]
+
+[[package]]
+name = "flimsybird"
+version = "0.1.0"
+dependencies = [
+ "cheng",
 ]
 
 [[package]]

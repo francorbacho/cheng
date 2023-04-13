@@ -64,10 +64,11 @@ mark {
     width: calc(var(--square-size) / 2);
     height: auto;
     z-index: 2;
-    transform: translate(calc(var(--square-size) / 2));
     background-repeat: no-repeat;
     background-color: transparent;
     pointer-events: none;
+    left: calc(var(--square-size) * 3 / 4);
+    bottom: calc(var(--square-size) / 4);
 }
 
 mark.checkmate {

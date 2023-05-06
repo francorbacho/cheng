@@ -226,11 +226,29 @@ pub fn evalute() -> i32 {
 #[wasm_bindgen(js_name = "flimsybirdRun")]
 #[must_use]
 pub async fn flimsybird_run() -> Result<String, String> {
-    let board = get_board();
-    let movement = board
-        .moves()
-        .next()
-        .ok_or("No move is possible".to_string())?;
+    use flimsybird::{Evaluable, Evaluation};
 
+    let board = get_board();
+    let side = board.turn;
+
+    let mut best_move: Option<PseudoMove> = None;
+    let mut best_evaluation: Option<Evaluation> = None;
+
+    for movement in board.moves() {
+        let mut board_after_move = board.clone();
+        board_after_move.feed(movement.clone()).unwrap();
+
+        let evaluation = board_after_move.evaluate();
+
+        if best_evaluation
+            .map(|be| !be.is_better_than(side, evaluation))
+            .unwrap_or(true)
+        {
+            best_evaluation = Some(evaluation);
+            best_move = Some(movement);
+        }
+    }
+
+    let movement = best_move.ok_or("No move is possible".to_string())?;
     Ok(format!("{movement}"))
 }

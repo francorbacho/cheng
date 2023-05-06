@@ -14,6 +14,14 @@ impl Evaluation {
             Side::White
         }
     }
+
+    pub fn is_better_than(self, side: Side, ev2: Self) -> bool {
+        if side == Side::White {
+            self.0 > ev2.0
+        } else {
+            self.0 < ev2.0
+        }
+    }
 }
 
 pub trait Evaluable {

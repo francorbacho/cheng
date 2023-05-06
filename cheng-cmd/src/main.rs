@@ -3,6 +3,7 @@ mod perft_bisect;
 use perft_bisect::perft_bisect;
 
 use std::ops::ControlFlow::{self, Break, Continue};
+use std::time::Instant;
 
 use cheng::{Board, PseudoMove, Square};
 use rustyline::error::ReadlineError;
@@ -96,6 +97,8 @@ where
 }
 
 fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
+    let perft_start = Instant::now();
+
     let depth: usize = parts
         .get(1)
         .ok_or("missing depth")?
@@ -108,7 +111,14 @@ fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
     })
     .unwrap();
 
+    let perft_end = Instant::now();
+    let perft_duration = perft_end - perft_start;
+
     println!("total nodes: {total_nodes}");
+    println!(
+        "total time: {perft_duration:?} ({} n/s)",
+        total_nodes as f32 / perft_duration.as_secs_f32()
+    );
 
     Ok(())
 }

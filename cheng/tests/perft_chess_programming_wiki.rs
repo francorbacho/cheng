@@ -17,7 +17,7 @@ fn test_kiwipete_0_to_3() {
 }
 
 #[test]
-#[ignore = "doesn't pass yet"]
+#[ignore = "expensive"]
 fn test_perft_kiwipete_4() {
     // https://www.chessprogramming.org/Perft_Results#Position_2
     cheng::init();

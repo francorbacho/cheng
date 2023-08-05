@@ -4,6 +4,7 @@ use perft_bisect::perft_bisect;
 
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
+use std::env;
 
 use cheng::{Board, PseudoMove, Square};
 use rustyline::error::ReadlineError;
@@ -16,9 +17,20 @@ pub struct Context {
     board: Board,
 }
 
-fn main() -> rustyline::Result<()> {
+fn main() -> Result<(), String> {
     cheng::init();
 
+    let argv: Vec<_> = env::args().collect();
+    let argv: Vec<&str> = argv.iter().map(|x| x.as_ref()).collect();
+
+    if argv.len() > 1 {
+        interpret(&mut Context::default(), &argv[1..])
+    } else {
+        repl().map_err(|err| err.to_string())
+    }
+}
+
+fn repl() -> rustyline::Result<()> {
     let mut rl = DefaultEditor::new()?;
     let mut context = Context::default();
     loop {
@@ -26,16 +38,7 @@ fn main() -> rustyline::Result<()> {
         match readline {
             Ok(line) => {
                 let parts: Vec<&str> = line.split(' ').collect();
-                let err = match parts[0] {
-                    "perft" => perft(&mut context, &parts).map_err(String::from),
-                    "perft-bisect" => perft_bisect(&mut context, &parts).map_err(String::from),
-                    "fen" => fen(&mut context, &parts),
-                    "feed" => feed(&mut context, &parts),
-                    "d" => display_board(&mut context, &parts),
-                    "dump-tables" => dump_tables(),
-                    other => Err(format!("command not found: {other}")),
-                };
-
+                let err = interpret(&mut context, &parts);
                 if let Err(msg) = err {
                     eprintln!("error: {msg}");
                 }
@@ -50,6 +53,18 @@ fn main() -> rustyline::Result<()> {
         }
     }
     Ok(())
+}
+
+fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
+    match parts[0] {
+        "perft" => perft(context, parts).map_err(String::from),
+        "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
+        "fen" => fen(context, parts),
+        "feed" => feed(context, parts),
+        "d" => display_board(context, parts),
+        "dump-tables" => dump_tables(),
+        other => Err(format!("command not found: {other}")),
+    }
 }
 
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {

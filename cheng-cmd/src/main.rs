@@ -5,6 +5,7 @@ use perft_bisect::perft_bisect;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 use std::env;
+use std::convert::AsRef;
 
 use cheng::{Board, PseudoMove, Square};
 use rustyline::error::ReadlineError;
@@ -21,7 +22,7 @@ fn main() -> Result<(), String> {
     cheng::init();
 
     let argv: Vec<_> = env::args().collect();
-    let argv: Vec<&str> = argv.iter().map(|x| x.as_ref()).collect();
+    let argv: Vec<&str> = argv.iter().map(AsRef::as_ref).collect();
 
     if argv.len() > 1 {
         interpret(&mut Context::default(), &argv[1..])

@@ -4,11 +4,10 @@
 # - cargo
 # - wasm-gc
 # - wasm-bindgen
-# - jq
 
 set -e
 
-workspace_root=$(cargo metadata --format-version 1 | jq -r '.workspace_root')
+workspace_root=$(git rev-parse --show-toplevel)
 cd $workspace_root
 
 mkdir -p web/wasm web/pkg

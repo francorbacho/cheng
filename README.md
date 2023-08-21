@@ -14,7 +14,9 @@ To run the CLI utility, run:
 $ cargo run --release -p cheng-cmd
 ```
 
-To run the web front-end, run:
+To run the web front-end, you'll need
+[wasm-pack](https://rustwasm.github.io/docs/wasm-pack/), which can be
+installed with `cargo install wasm-pack`. Add it to `$PATH`, then run:
 ```bash
 $ cd web/ && ./deploy.sh && python -m http.server
 ```

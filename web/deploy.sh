@@ -1,17 +1,19 @@
 #!/bin/bash
-#
-# Dependencies:
-# - cargo
-# - wasm-gc
-# - wasm-bindgen
+
+require_command() {
+    cmd=$1
+    if ! command -v $1 >/dev/null; then
+        echo >&2 "error: '$1' command is missing"
+        exit 1
+    fi
+}
 
 set -e
 
+require_command git
+require_command wasm-pack
+
 workspace_root=$(git rev-parse --show-toplevel)
-cd $workspace_root
 
-mkdir -p web/wasm web/pkg
-
-cargo build --release --package chess-wasm --target wasm32-unknown-unknown
-wasm-gc target/wasm32-unknown-unknown/release/chess_wasm.wasm -o web/wasm/cheng.wasm
-wasm-bindgen --target web --out-dir web/pkg web/wasm/cheng.wasm
+wasm-pack build --no-typescript --target web $workspace_root/chess-wasm
+ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg

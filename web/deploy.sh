@@ -1,14 +1,16 @@
 #!/bin/bash
 
+set -e
+
 require_command() {
     cmd=$1
     if ! command -v $1 >/dev/null; then
-        echo >&2 "error: '$1' command is missing"
+        echo >&2 "$base_name: error: '$1' command is missing"
         exit 1
     fi
 }
 
-set -e
+base_name=$0
 
 require_command git
 require_command wasm-pack

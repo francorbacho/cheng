@@ -5,8 +5,10 @@ pub use pieces::{Bishop, Rook};
 
 mod hash;
 mod pieces;
-mod precomputed;
 pub(crate) mod steady;
+
+#[rustfmt::skip]
+mod precomputed;
 
 pub static mut ROOK_MOVES: [[BoardMask; 1 << <Rook as steady::SlidingPiece>::NBITS]; 64] =
     [[BoardMask::const_from(0); 1 << <Rook as steady::SlidingPiece>::NBITS]; 64];

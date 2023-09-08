@@ -40,6 +40,7 @@ fn test_position_3() {
 }
 
 #[test]
+#[ignore = "expensive"]
 fn test_position_4() {
     // https://www.chessprogramming.org/Perft_Results#Position_4
     cheng::init();

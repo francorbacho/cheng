@@ -18,4 +18,10 @@ require_command wasm-pack
 workspace_root=$(git rev-parse --show-toplevel)
 
 wasm-pack build --no-typescript --target web $workspace_root/chess-wasm
-ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+
+rm -r $workspace_root/web/pkg
+if [[ "$1" = "--copy" ]]; then
+    cp -r $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+else
+    ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+fi

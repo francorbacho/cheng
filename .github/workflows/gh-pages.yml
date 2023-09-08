@@ -21,7 +21,9 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Install wasm-pack
-      run: cargo install wasm-pack
+      uses: baptiste0928/cargo-install@v2
+      with:
+        crate: wasm-pack
     - name: Build
       run: ./web/deploy.sh
     - name: Deploy

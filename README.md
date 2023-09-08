@@ -1,5 +1,6 @@
 # cheng - Chess Engine
 [![CI](https://github.com/francorbacho/cheng/actions/workflows/ci.yml/badge.svg)](https://github.com/francorbacho/cheng/actions/workflows/ci.yml)
+[![GitHub Pages](https://github.com/francorbacho/cheng/actions/workflows/gh-pages.yml/badge.svg)](https://github.com/francorbacho/cheng/actions/workflows/gh-pages.yml)
 
 Stupid Bad Chess Engine, in Rust.
 

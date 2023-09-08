@@ -11,7 +11,7 @@ which when combined with the sources in `web`, provide a simple web front-end.
 
 To run the CLI utility, run:
 ```bash
-$ cargo run --release -p cheng-cmd
+$ cargo +nightly run --release -p cheng-cmd
 ```
 
 To run the web front-end, you'll need

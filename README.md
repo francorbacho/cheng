@@ -13,8 +13,11 @@ which when combined with the sources in `web`, provide a simple web front-end.
 
 To run the CLI utility, run:
 ```bash
-$ cargo +nightly run --release -p cheng-cmd
+$ cargo run --release -p cheng-cmd
 ```
+
+Note that this requires a nightly compiler, which will be used by
+default due to `rust-toolchain.toml`.
 
 To run the web front-end, you'll need
 [wasm-pack](https://rustwasm.github.io/docs/wasm-pack/), which can be

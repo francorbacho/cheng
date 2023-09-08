@@ -28,7 +28,7 @@ jobs:
       with:
         crate: wasm-pack
     - name: Build
-      run: ./web/deploy.sh
+      run: ./web/deploy.sh --copy
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

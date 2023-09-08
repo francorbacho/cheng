@@ -19,7 +19,8 @@ workspace_root=$(git rev-parse --show-toplevel)
 
 wasm-pack build --no-typescript --target web $workspace_root/chess-wasm
 
-rm -r $workspace_root/web/pkg
+test -e $workspace_root/web/pkg && rm -r $workspace_root/web/pkg
+
 if [[ "$1" = "--copy" ]]; then
     cp -r $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
 else

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 require_command() {
     cmd=$1

@@ -14,9 +14,9 @@ jobs:
     permissions:
       contents: write
     steps:
+    - uses: actions/checkout@v3
     - name: Reconfigure gitignore
       run: sed -i '/web\/pkg/d' .gitignore
-    - uses: actions/checkout@v3
     - name: Install latest nightly
       uses: actions-rs/toolchain@v1
       with:

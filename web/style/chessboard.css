@@ -1,7 +1,7 @@
 :root {
     --zoom: 1;
     --board-size: min(calc(95vw * var(--zoom)), calc(95vh) * var(--zoom));
-    --square-size: calc(var(--board-size) / 8);
+    --square-size: calc(var(--board-size) / 8 - 0.001%);
 }
 
 chessboard {

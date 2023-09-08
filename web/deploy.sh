@@ -23,6 +23,7 @@ test -e $workspace_root/web/pkg && rm -r $workspace_root/web/pkg
 
 if [[ "$1" = "--copy" ]]; then
     cp -r $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+    rm $workspace_root/web/pkg/.gitignore
 else
     ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
 fi

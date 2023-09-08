@@ -2,10 +2,10 @@ mod board_display;
 mod perft_bisect;
 use perft_bisect::perft_bisect;
 
+use std::convert::AsRef;
+use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
-use std::env;
-use std::convert::AsRef;
 
 use cheng::{Board, PseudoMove, Square};
 use rustyline::error::ReadlineError;

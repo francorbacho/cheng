@@ -14,6 +14,8 @@ jobs:
     permissions:
       contents: write
     steps:
+    - name: Reconfigure gitignore
+      run: sed -i '/web\/pkg/d' .gitignore
     - uses: actions/checkout@v3
     - name: Install latest nightly
       uses: actions-rs/toolchain@v1
@@ -27,8 +29,6 @@ jobs:
         crate: wasm-pack
     - name: Build
       run: ./web/deploy.sh
-    - name: Reconfigure gitignore
-      run: sed -i '/web\/pkg/d' .gitignore
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
       with:

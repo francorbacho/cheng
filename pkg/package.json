@@ -1,0 +1,12 @@
+{
+  "name": "chess-wasm",
+  "version": "0.1.0",
+  "files": [
+    "chess_wasm_bg.wasm",
+    "chess_wasm.js"
+  ],
+  "module": "chess_wasm.js",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

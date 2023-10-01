@@ -217,7 +217,7 @@ pub fn valid_moves() -> js_sys::Array {
 
 #[wasm_bindgen]
 #[must_use]
-pub fn evalute() -> i32 {
+pub fn evaluate() -> i32 {
     let board = get_board_mut();
 
     Evaluable::evaluate(board).0

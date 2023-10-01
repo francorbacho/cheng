@@ -23,6 +23,7 @@ fn side_to_js_string(side: Side) -> JsString {
 
 #[wasm_bindgen(start)]
 pub fn main() {
+    wasm_logger::init(wasm_logger::Config::default());
     cheng::init();
 
     unsafe {
@@ -220,35 +221,17 @@ pub fn valid_moves() -> js_sys::Array {
 pub fn evaluate() -> i32 {
     let board = get_board_mut();
 
-    Evaluable::evaluate(board).0
+    Evaluable::evaluate(board).1.0
 }
 
 #[wasm_bindgen(js_name = "flimsybirdRun")]
 #[must_use]
 pub async fn flimsybird_run() -> Result<String, String> {
-    use flimsybird::{Evaluable, Evaluation};
+    let board = get_board_mut();
+    let (Some(best_move), ev) = Evaluable::evaluate(board) else {
+        return Err("No move is possible".to_string());
+    };
 
-    let board = get_board();
-    let side = board.turn;
-
-    let mut best_move: Option<PseudoMove> = None;
-    let mut best_evaluation: Option<Evaluation> = None;
-
-    for movement in board.moves() {
-        let mut board_after_move = board.clone();
-        board_after_move.feed(movement.clone()).unwrap();
-
-        let evaluation = board_after_move.evaluate();
-
-        if best_evaluation
-            .map(|be| !be.is_better_than(side, evaluation))
-            .unwrap_or(true)
-        {
-            best_evaluation = Some(evaluation);
-            best_move = Some(movement);
-        }
-    }
-
-    let movement = best_move.ok_or("No move is possible".to_string())?;
-    Ok(format!("{movement}"))
+    log::debug!("line: {best_move} :: {ev:?}");
+    Ok(format!("{best_move}"))
 }

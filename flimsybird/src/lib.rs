@@ -53,6 +53,7 @@ fn board_rec_evaluate(board: &mut Board, depth: u8) -> (Option<PseudoMove>, Eval
     let mut best_move = None;
     for movement in board.moves() {
         let mut board_clone = board.clone();
+        board_clone.feed(movement.clone()).unwrap();
         let new_evaluation = if depth == 0 {
             board_evaluate(&mut board_clone)
         } else {

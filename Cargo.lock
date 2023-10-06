@@ -47,6 +47,7 @@ name = "cheng-cmd"
 version = "0.1.0"
 dependencies = [
  "cheng",
+ "flimsybird",
  "owo-colors",
  "rustyline",
  "uci",

@@ -1,6 +1,9 @@
+use std::fmt::{self, Display};
+
+use cheng::prelude::*;
 use cheng::{Board, PseudoMove, Piece, Side, SidedPiece};
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
 
 impl Evaluation {
@@ -20,6 +23,16 @@ impl Evaluation {
             self.0 > ev2.0
         } else {
             self.0 < ev2.0
+        }
+    }
+}
+
+impl Display for Evaluation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Evaluation::WHITE_WIN => writeln!(f, "white has forced win"),
+            Evaluation::BLACK_WIN => writeln!(f, "black has forced win"),
+            Evaluation(other) => writeln!(f, "{other:+}"),
         }
     }
 }

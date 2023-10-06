@@ -8,6 +8,8 @@ use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
 use cheng::{Board, PseudoMove, Square};
+use flimsybird::Evaluable;
+
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
 
@@ -62,6 +64,7 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
         "fen" => fen(context, parts),
         "feed" => feed(context, parts),
+        "ev" => evaluate(context, parts),
         "d" => display_board(context, parts),
         "dump-tables" => dump_tables(),
         other => Err(format!("command not found: {other}")),
@@ -150,6 +153,18 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         .board
         .feed(pseudomove)
         .map_err(|err| format!("Invalid move: {err:?}"))
+}
+
+fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
+   let (best_move, evaluation) = context.board.evaluate();
+
+   if let Some(best_move) = best_move {
+       println!("best move found to be {best_move:?}");
+   }
+
+   println!("evaluation: {evaluation}");
+
+   Ok(())
 }
 
 fn dump_tables() -> Result<(), String> {

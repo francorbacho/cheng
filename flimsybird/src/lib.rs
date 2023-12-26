@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
 use cheng::prelude::*;
-use cheng::{Board, PseudoMove, Piece, Side, SidedPiece};
+use cheng::{Board, Piece, PseudoMove, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -49,7 +49,11 @@ impl Evaluable for Board {
 }
 
 fn board_rec_evaluate(board: &mut Board, depth: u8) -> (Option<PseudoMove>, Evaluation) {
-    let mut best_evaluation = if let Side::White = board.turn { Evaluation::BLACK_WIN } else { Evaluation::WHITE_WIN };
+    let mut best_evaluation = if let Side::White = board.turn {
+        Evaluation::BLACK_WIN
+    } else {
+        Evaluation::WHITE_WIN
+    };
     let mut best_move = None;
     for movement in board.moves() {
         let mut board_clone = board.clone();

@@ -232,6 +232,6 @@ pub async fn flimsybird_run() -> Result<String, String> {
         return Err("No move is possible".to_string());
     };
 
-    log::debug!("line: {best_move} :: {ev:?}");
+    log::debug!("line: {best_move} :: {ev}");
     Ok(format!("{best_move}"))
 }

@@ -156,15 +156,15 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 }
 
 fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
-   let (best_move, evaluation) = context.board.evaluate();
+    let (best_move, evaluation) = context.board.evaluate();
 
-   if let Some(best_move) = best_move {
-       println!("best move found to be {best_move:?}");
-   }
+    if let Some(best_move) = best_move {
+        println!("best move found to be {best_move:?}");
+    }
 
-   println!("evaluation: {evaluation}");
+    println!("evaluation: {evaluation}");
 
-   Ok(())
+    Ok(())
 }
 
 fn dump_tables() -> Result<(), String> {

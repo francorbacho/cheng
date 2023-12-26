@@ -221,7 +221,7 @@ pub fn valid_moves() -> js_sys::Array {
 pub fn evaluate() -> i32 {
     let board = get_board_mut();
 
-    Evaluable::evaluate(board).1.0
+    Evaluable::evaluate(board).1 .0
 }
 
 #[wasm_bindgen(js_name = "flimsybirdRun")]

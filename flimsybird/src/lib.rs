@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use std::fmt::{self, Display};
 
 use cheng::prelude::*;
@@ -75,28 +77,34 @@ fn board_rec_evaluate(
     let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
     let mut best_move = None;
 
+    let mut moves = board.moves();
+    moves.cached_moves.sort_unstable_by_key(|mv| {
+        let noise = rand::thread_rng().gen_range(0..10);
+        mv.destination.to_index() + noise
+    });
+
     if board.turn == Side::White {
-        for movement in board.moves() {
+        for movement in moves {
             let mut board_clone = board.clone();
             board_clone.feed(movement.clone()).unwrap();
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             alpha = Evaluation(alpha.0.max(new_ev.0));
 
-            if new_ev.is_better_than(board.turn, best_evaluation) {
+            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
                 best_move = Some(movement);
                 best_evaluation = new_ev;
             }
         }
     } else {
-        for movement in board.moves() {
+        for movement in moves {
             let mut board_clone = board.clone();
             board_clone.feed(movement.clone()).unwrap();
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             beta = Evaluation(beta.0.min(new_ev.0));
 
-            if new_ev.is_better_than(board.turn, best_evaluation) {
+            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
                 best_move = Some(movement);
                 best_evaluation = new_ev;
             }

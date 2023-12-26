@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
 use cheng::prelude::*;
-use cheng::{Board, PseudoMove, Piece, Side, SidedPiece};
+use cheng::{Board, Piece, PseudoMove, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -27,6 +27,14 @@ impl Evaluation {
             self.0 < ev2.0
         }
     }
+
+    pub fn worst_evaluation(side: Side) -> Self {
+        if let Side::White = side {
+            Evaluation::BLACK_WIN
+        } else {
+            Evaluation::WHITE_WIN
+        }
+    }
 }
 
 impl Display for Evaluation {
@@ -48,32 +56,57 @@ impl Evaluable for Board {
         unsafe { EVALUATED_NODES = 0 }
 
         let max_depth = 3;
-        board_rec_evaluate(self, max_depth)
+        let alpha = Evaluation::BLACK_WIN;
+        let beta = Evaluation::WHITE_WIN;
+        board_rec_evaluate(self, max_depth, alpha, beta)
     }
 }
 
-fn board_rec_evaluate(board: &mut Board, depth: u8) -> (Option<PseudoMove>, Evaluation) {
-    let mut best_evaluation = if let Side::White = board.turn { Evaluation::BLACK_WIN } else { Evaluation::WHITE_WIN };
-    let mut best_move = None;
-    for movement in board.moves() {
-        let mut board_clone = board.clone();
-        board_clone.feed(movement.clone()).unwrap();
-        let new_evaluation = if depth == 0 {
-            board_evaluate(&mut board_clone)
-        } else {
-            board_rec_evaluate(&mut board_clone, depth - 1).1
-        };
+fn board_rec_evaluate(
+    board: &mut Board,
+    depth: u8,
+    mut alpha: Evaluation,
+    mut beta: Evaluation,
+) -> (Option<PseudoMove>, Evaluation) {
+    if depth == 0 {
+        return (None, board_static_evaluation(board));
+    }
 
-        if new_evaluation.is_better_than(board.turn, best_evaluation) {
-            best_move = Some(movement);
-            best_evaluation = new_evaluation;
+    let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
+    let mut best_move = None;
+
+    if board.turn == Side::White {
+        for movement in board.moves() {
+            let mut board_clone = board.clone();
+            board_clone.feed(movement.clone()).unwrap();
+
+            let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
+            alpha = Evaluation(alpha.0.max(new_ev.0));
+
+            if new_ev.is_better_than(board.turn, best_evaluation) {
+                best_move = Some(movement);
+                best_evaluation = new_ev;
+            }
+        }
+    } else {
+        for movement in board.moves() {
+            let mut board_clone = board.clone();
+            board_clone.feed(movement.clone()).unwrap();
+
+            let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
+            beta = Evaluation(beta.0.min(new_ev.0));
+
+            if new_ev.is_better_than(board.turn, best_evaluation) {
+                best_move = Some(movement);
+                best_evaluation = new_ev;
+            }
         }
     }
 
     (best_move, best_evaluation)
 }
 
-fn board_evaluate(board: &Board) -> Evaluation {
+fn board_static_evaluation(board: &Board) -> Evaluation {
     unsafe { EVALUATED_NODES += 1 }
 
     let mut result = 0;

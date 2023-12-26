@@ -6,6 +6,8 @@ use cheng::{Board, PseudoMove, Piece, Side, SidedPiece};
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
 
+pub static mut EVALUATED_NODES: usize = 0;
+
 impl Evaluation {
     pub const BLACK_WIN: Self = Evaluation(std::i32::MIN);
     pub const WHITE_WIN: Self = Evaluation(std::i32::MAX);
@@ -43,6 +45,8 @@ pub trait Evaluable {
 
 impl Evaluable for Board {
     fn evaluate(&mut self) -> (Option<PseudoMove>, Evaluation) {
+        unsafe { EVALUATED_NODES = 0 }
+
         let max_depth = 3;
         board_rec_evaluate(self, max_depth)
     }
@@ -70,6 +74,8 @@ fn board_rec_evaluate(board: &mut Board, depth: u8) -> (Option<PseudoMove>, Eval
 }
 
 fn board_evaluate(board: &Board) -> Evaluation {
+    unsafe { EVALUATED_NODES += 1 }
+
     let mut result = 0;
     for (SidedPiece(side, piece), _) in board.into_iter() {
         let side_factor = if side == Side::Black { -1 } else { 1 };

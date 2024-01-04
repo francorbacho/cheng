@@ -146,16 +146,16 @@ class Chessboard {
 
         if (!destSquareElement || sourceSquareElement == destSquareElement) { return; }
 
-        const movement = `${sourceSquare}${destSquare}`;
+        const isPawn = movedPiece.classList.contains("pawn");
+        const promotion = (isPawn && (row == 8 || row == 0)) ? "q" : "";
+        const movement = `${sourceSquare}${destSquare}${promotion}`;
+
         try {
             this.feedMove(movement);
         } catch (exception) {
             console.error(exception);
             return;
         }
-
-        const now = new Date();
-        document.getElementById("state").textContent = `dragging piece ended @ ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}.${now.getMilliseconds()}`;
     }
 
     feedMove(movement) {
@@ -246,4 +246,16 @@ window.onload = function () {
         if (typeof wasm == "undefined")
             boardFrame.textContent = "Failed to load WebAssembly.";
     }, 2_000);
+
+    const playerSettings = document.getElementById("player-select")
+    playerSettings.addEventListener("change", function() {
+        const [white, black] = playerSettings.value.split("-");
+        console.assert(white === "human" || white == "computer");
+        console.assert(black === "human" || black == "computer");
+        mainBoard.playerConfiguration.white = white;
+        mainBoard.playerConfiguration.black = black;
+        if (mainBoard.playerConfiguration[wasm.getSideToMove()] === "computer") {
+            mainBoard.scheduleComputerMove();
+        }
+    });
 };

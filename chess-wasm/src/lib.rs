@@ -232,6 +232,8 @@ pub async fn flimsybird_run() -> Result<String, String> {
         return Err("No move is possible".to_string());
     };
 
-    log::debug!("line: {best_move} :: {ev}");
+    let nodes = unsafe { flimsybird::EVALUATED_NODES };
+
+    log::debug!("line: {best_move} :: {ev} ({nodes} nodes evaluated)");
     Ok(format!("{best_move}"))
 }

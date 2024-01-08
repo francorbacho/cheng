@@ -25,6 +25,7 @@ pub enum FENParsingError {
     InvalidTurn,
     InvalidAlignment,
     InvalidCastleRights,
+    InvalidHalfMoveClock,
 }
 
 #[derive(Debug)]
@@ -43,6 +44,7 @@ pub struct Board {
     pub white_side: SideState,
     pub black_side: SideState,
     pub turn: Side,
+    pub halfmove_clock: usize,
     result: Option<GameResult>,
 }
 
@@ -57,6 +59,7 @@ impl Board {
             white_side: SideState::empty(Side::White),
             black_side: SideState::empty(Side::Black),
             turn: Side::White,
+            halfmove_clock: 0,
             result: None,
         }
     }
@@ -137,10 +140,20 @@ impl Board {
         self.white_side.update_king_in_check(&self.black_side);
         self.black_side.update_king_in_check(&self.white_side);
 
+        if piece_is_pawn || self.side(self.turn.opposite()).occupancy.get(movement.destination) {
+            self.halfmove_clock = 0;
+        } else {
+            self.halfmove_clock += 1;
+        }
+
         self.turn = self.turn.opposite();
     }
 
     pub fn update_result(&mut self) {
+        if self.halfmove_clock >= 100 {
+            self.result = Some(GameResult::Draw);
+        }
+
         if !self.side(self.turn).king_in_check {
             // TODO: Check stalemate.
             return;
@@ -236,10 +249,7 @@ impl Board {
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
-        use FENParsingError::{
-            InvalidAlignment, InvalidCastleRights, InvalidTurn, MissingPart, SquareOverflow,
-            SquareUnderflow, TooManyParts, UnknownPiece,
-        };
+        use FENParsingError::*;
 
         let fen = fen.trim();
         let mut parts = fen.split(' ');
@@ -303,7 +313,7 @@ impl Board {
         black_side.castling_rights = black_castle_rights;
 
         let _en_passant_target_square = parts.next().ok_or(MissingPart)?;
-        let _halfmove_clock = parts.next().ok_or(MissingPart)?;
+        let halfmove_clock = parts.next().ok_or(MissingPart)?.parse().map_err(|_| InvalidHalfMoveClock)?;
         let _fullmove_clock = parts.next().ok_or(MissingPart)?;
 
         if parts.next().is_some() {
@@ -313,6 +323,7 @@ impl Board {
                 white_side,
                 black_side,
                 turn,
+                halfmove_clock,
                 result: None,
             })
         }

@@ -28,8 +28,12 @@ impl<'a> MoveGenerator<'a> {
     }
 
     fn generate_all_moves(&mut self) {
-        self.generate_moves();
-        self.generate_castles();
+        if self.board.result().is_some() {
+            return;
+        }
+
+        self.generate_moves_ignoring_game_ended();
+        self.generate_castles_ignoring_game_ended();
     }
 
     fn checked_add_move(&mut self, movement: LegalMove) {
@@ -46,7 +50,7 @@ impl<'a> MoveGenerator<'a> {
         self.cached_moves.push(movement);
     }
 
-    fn generate_castles(&mut self) {
+    fn generate_castles_ignoring_game_ended(&mut self) {
         use crate::prelude::*;
         // The squares that must be unoccupied and unthreathened to be able
         // to castle. For example, in white's king side castle, F1 and G1.
@@ -116,7 +120,7 @@ impl<'a> MoveGenerator<'a> {
         }
     }
 
-    fn generate_moves(&mut self) {
+    fn generate_moves_ignoring_game_ended(&mut self) {
         let friendly = self.board.side(self.board.turn).occupancy;
         let opposite = self.board.side(self.board.turn.opposite()).occupancy;
         let opposite_threats = self.board.side(self.board.turn.opposite()).threats;

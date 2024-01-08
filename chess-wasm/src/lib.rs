@@ -2,7 +2,7 @@ use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{Board, GameResult, MoveKind, Piece, LegalMove, Side, SidedPiece};
 
 static mut BOARD: Option<Board> = None;
 
@@ -146,7 +146,7 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
         return Err("Argument must be string".to_string());
     };
 
-    let movement: PseudoMove = match movement_str.parse() {
+    let movement: LegalMove = match movement_str.parse() {
         Ok(movement) => movement,
         Err(e) => return Err(format!("Invalid movement: {e:?}")),
     };
@@ -171,7 +171,7 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
             .get(movement.destination);
 
     // TODO: This is code from the feed function. Obviously this is less than ideal.
-    // We should be using a different interface other than PseudoMove.
+    // We should be using a different interface other than LegalMove.
     let moved_piece_is_king = board
         .side(board.turn)
         .pieces

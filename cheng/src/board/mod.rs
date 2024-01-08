@@ -5,7 +5,7 @@ mod iterator;
 mod movegen;
 
 use crate::{
-    movement::{Castle, MoveKind, PseudoMove},
+    movement::{Castle, MoveKind, LegalMove},
     pieces::Piece,
     side_state::{CastlingRights, SideState},
     sides::Side,
@@ -85,11 +85,11 @@ impl Board {
     }
 
     #[must_use]
-    pub fn check_valid_move(&self, movement: &PseudoMove) -> bool {
+    pub fn check_valid_move(&self, movement: &LegalMove) -> bool {
         self.moves().any(|m| &m == movement)
     }
 
-    pub fn feed(&mut self, mut movement: PseudoMove) -> Result<(), FeedError> {
+    pub fn feed(&mut self, mut movement: LegalMove) -> Result<(), FeedError> {
         let side = self.side(self.turn);
         let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
         if moved_piece_is_king {
@@ -109,7 +109,7 @@ impl Board {
         Ok(())
     }
 
-    pub fn feed_unchecked(&mut self, movement: &PseudoMove) {
+    pub fn feed_unchecked(&mut self, movement: &LegalMove) {
         let piece_is_pawn = self
             .side(self.turn)
             .pieces

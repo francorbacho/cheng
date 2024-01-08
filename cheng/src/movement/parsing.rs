@@ -1,4 +1,4 @@
-use super::{MoveKind, PseudoMove};
+use super::{MoveKind, LegalMove};
 use crate::Square;
 
 use std::str::FromStr;
@@ -11,7 +11,7 @@ pub enum MoveParseError {
     WrongPiece,
 }
 
-impl FromStr for PseudoMove {
+impl FromStr for LegalMove {
     type Err = MoveParseError;
 
     /// Parses a move in the format `{origin}{destination}{promotion}`, where `promotion`
@@ -43,7 +43,7 @@ impl FromStr for PseudoMove {
             MoveKind::Move
         };
 
-        Ok(PseudoMove {
+        Ok(LegalMove {
             origin,
             destination,
             kind,

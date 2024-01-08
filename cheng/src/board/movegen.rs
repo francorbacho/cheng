@@ -3,7 +3,7 @@ use crate::{
     pieces::Piece,
     side_state::CastlingRights,
     square::Square,
-    Board, PseudoMove, Side, SidedPiece,
+    Board, LegalMove, Side, SidedPiece,
 };
 
 use super::BoardMask;
@@ -11,7 +11,7 @@ use super::BoardMask;
 pub struct MoveGenerator<'a> {
     pub board: &'a Board,
 
-    pub cached_moves: Vec<PseudoMove>,
+    pub cached_moves: Vec<LegalMove>,
     pub idx: usize,
 }
 
@@ -32,7 +32,7 @@ impl<'a> MoveGenerator<'a> {
         self.generate_castles();
     }
 
-    fn checked_add_move(&mut self, movement: PseudoMove) {
+    fn checked_add_move(&mut self, movement: LegalMove) {
         let mut clone = self.board.clone();
         clone.feed_unchecked(&movement);
         if clone.side(self.board.turn).king_in_check {
@@ -42,7 +42,7 @@ impl<'a> MoveGenerator<'a> {
     }
 
     #[inline]
-    fn unchecked_add_move(&mut self, movement: PseudoMove) {
+    fn unchecked_add_move(&mut self, movement: LegalMove) {
         self.cached_moves.push(movement);
     }
 
@@ -85,7 +85,7 @@ impl<'a> MoveGenerator<'a> {
                 occupancy,
                 opposite_side.threats,
             ) {
-                let queen_side_castle = PseudoMove {
+                let queen_side_castle = LegalMove {
                     origin: king_square,
                     destination: queen_side_castle_square,
                     kind: MoveKind::Castle(Castle::QueenSide),
@@ -105,7 +105,7 @@ impl<'a> MoveGenerator<'a> {
                 occupancy,
                 opposite_side.threats,
             ) {
-                let king_side_castle = PseudoMove {
+                let king_side_castle = LegalMove {
                     origin: king_square,
                     destination: king_side_castle_square,
                     kind: MoveKind::Castle(Castle::KingSide),
@@ -142,7 +142,7 @@ impl<'a> MoveGenerator<'a> {
                 };
 
                 for destination in moves {
-                    let movement = PseudoMove {
+                    let movement = LegalMove {
                         origin: piece_square,
                         destination,
                         kind: MoveKind::Move,
@@ -180,7 +180,7 @@ impl<'a> MoveGenerator<'a> {
         if moves_are_promotion {
             for destination in moves {
                 for piece in Piece::iter_promotable_pieces() {
-                    let movement = PseudoMove {
+                    let movement = LegalMove {
                         origin: square,
                         destination,
                         kind: MoveKind::Promote(piece),
@@ -190,7 +190,7 @@ impl<'a> MoveGenerator<'a> {
             }
         } else {
             for destination in moves {
-                let movement = PseudoMove {
+                let movement = LegalMove {
                     origin: square,
                     destination,
                     kind: MoveKind::Move,
@@ -202,11 +202,11 @@ impl<'a> MoveGenerator<'a> {
 }
 
 impl<'a> Iterator for MoveGenerator<'a> {
-    type Item = PseudoMove;
+    type Item = LegalMove;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let pseudomove = self.cached_moves.get(self.idx)?;
+        let legalmove = self.cached_moves.get(self.idx)?;
         self.idx += 1;
-        Some(pseudomove.clone())
+        Some(legalmove.clone())
     }
 }

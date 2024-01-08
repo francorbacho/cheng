@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     board::{Board, BoardMask},
-    movement::{MoveKind, MoveParseError, PseudoMove},
+    movement::{MoveKind, MoveParseError, LegalMove},
     pieces::Piece,
     square::prelude::*,
 };
@@ -10,8 +10,8 @@ use crate::{
 #[test]
 fn test_move_parsing() {
     assert_eq!(
-        PseudoMove::from_str("e2e4").expect("Error parsing"),
-        PseudoMove {
+        LegalMove::from_str("e2e4").expect("Error parsing"),
+        LegalMove {
             origin: E2,
             destination: E4,
             kind: MoveKind::Move,
@@ -19,13 +19,13 @@ fn test_move_parsing() {
     );
 
     assert_eq!(
-        PseudoMove::from_str("a7xb8").unwrap_err(),
+        LegalMove::from_str("a7xb8").unwrap_err(),
         MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
-        PseudoMove::from_str("g7g8q").expect("Error parsing"),
-        PseudoMove {
+        LegalMove::from_str("g7g8q").expect("Error parsing"),
+        LegalMove {
             origin: G7,
             destination: G8,
             kind: MoveKind::Promote(Piece::Queen),
@@ -33,17 +33,17 @@ fn test_move_parsing() {
     );
 
     assert_eq!(
-        PseudoMove::from_str("c7xb8n").unwrap_err(),
+        LegalMove::from_str("c7xb8n").unwrap_err(),
         MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
-        PseudoMove::from_str("c7x8n").unwrap_err(),
+        LegalMove::from_str("c7x8n").unwrap_err(),
         MoveParseError::WrongDestinationSquare
     );
 
     assert_eq!(
-        PseudoMove::from_str("e4").unwrap_err(),
+        LegalMove::from_str("e4").unwrap_err(),
         MoveParseError::TooShort
     );
 }

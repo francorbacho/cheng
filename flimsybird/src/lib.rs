@@ -3,7 +3,7 @@ use rand::Rng;
 use std::fmt::{self, Display};
 
 use cheng::prelude::*;
-use cheng::{Board, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{Board, Piece, LegalMove, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -50,11 +50,11 @@ impl Display for Evaluation {
 }
 
 pub trait Evaluable {
-    fn evaluate(&mut self) -> (Option<PseudoMove>, Evaluation);
+    fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation);
 }
 
 impl Evaluable for Board {
-    fn evaluate(&mut self) -> (Option<PseudoMove>, Evaluation) {
+    fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation) {
         unsafe { EVALUATED_NODES = 0 }
 
         let max_depth = 3;
@@ -69,7 +69,7 @@ fn board_rec_evaluate(
     depth: u8,
     mut alpha: Evaluation,
     mut beta: Evaluation,
-) -> (Option<PseudoMove>, Evaluation) {
+) -> (Option<LegalMove>, Evaluation) {
     if depth == 0 {
         return (None, board_static_evaluation(board));
     }

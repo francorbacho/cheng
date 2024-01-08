@@ -7,7 +7,7 @@ use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
-use cheng::{Board, PseudoMove, Square};
+use cheng::{Board, LegalMove, Square};
 use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;
@@ -84,13 +84,13 @@ fn fen(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 }
 
 #[must_use]
-pub fn continue_<E>(_movement: &PseudoMove, _nodes: usize) -> ControlFlow<E, ()> {
+pub fn continue_<E>(_movement: &LegalMove, _nodes: usize) -> ControlFlow<E, ()> {
     Continue(())
 }
 
 fn incremental_perft<E, F>(board: &Board, depth: usize, mut callback: F) -> Result<usize, E>
 where
-    F: FnMut(&PseudoMove, usize) -> ControlFlow<E, ()>,
+    F: FnMut(&LegalMove, usize) -> ControlFlow<E, ()>,
 {
     if depth == 0 {
         return Ok(1);
@@ -143,7 +143,7 @@ fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
 }
 
 fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let pseudomove: PseudoMove = parts
+    let legalmove: LegalMove = parts
         .get(1)
         .ok_or("missing move")?
         .parse()
@@ -151,7 +151,7 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
     context
         .board
-        .feed(pseudomove)
+        .feed(legalmove)
         .map_err(|err| format!("Invalid move: {err:?}"))
 }
 

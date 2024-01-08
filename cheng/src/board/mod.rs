@@ -155,7 +155,9 @@ impl Board {
         }
 
         if !self.side(self.turn).king_in_check {
-            // TODO: Check stalemate.
+            if self.moves().len() == 0 {
+                self.result = Some(GameResult::Draw);
+            }
             return;
         }
 

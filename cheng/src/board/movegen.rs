@@ -27,6 +27,10 @@ impl<'a> MoveGenerator<'a> {
         gen
     }
 
+    pub fn len(&self) -> usize {
+        self.cached_moves.len()
+    }
+
     fn generate_all_moves(&mut self) {
         if self.board.result().is_some() {
             return;

@@ -13,3 +13,13 @@ fn test_50_move_draw() {
     assert_eq!(board.result(), Some(GameResult::Draw));
     board.feed("f5e5".parse().unwrap()).unwrap_err();
 }
+
+#[test]
+fn test_stalemate() {
+    // https://lichess.org/analysis/7k/8/8/6Q1/8/8/8/4K3_w_-_-_0_1?color=white
+    cheng::init();
+
+    let mut board = Board::from_fen("7k/8/8/6Q1/8/8/8/4K3 w - - 0 1").unwrap();
+    board.feed("g5g6".parse().unwrap()).unwrap();
+    assert_eq!(board.result(), Some(GameResult::Draw));
+}

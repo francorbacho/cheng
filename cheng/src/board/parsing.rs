@@ -13,6 +13,7 @@ pub enum FENParsingError {
     InvalidTurn,
     InvalidAlignment,
     InvalidCastleRights,
+    WrongEnPassantSquare,
     InvalidHalfMoveClock,
     InvalidFullMoveClock,
 }
@@ -142,7 +143,19 @@ impl Board {
         white_side.castling_rights = white_castle_rights;
         black_side.castling_rights = black_castle_rights;
 
-        let _en_passant_target_square = parts.next().ok_or(MissingPart)?;
+        let en_passant_square = parts.next().ok_or(MissingPart)?;
+        if en_passant_square != "-" {
+            let Ok(en_passant_square) = en_passant_square.parse() else {
+                return Err(WrongEnPassantSquare);
+            };
+
+            if turn == Side::White {
+                black_side.en_passant = Some(en_passant_square);
+            } else {
+                white_side.en_passant = Some(en_passant_square);
+            }
+        }
+
         let halfmove_clock = parts
             .next()
             .ok_or(MissingPart)?

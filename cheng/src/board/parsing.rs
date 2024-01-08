@@ -68,8 +68,10 @@ impl Board {
             }
         };
 
+        let halfmove_clock = self.halfmove_clock;
+
         write!(fen, " {}", char::from(self.turn)).unwrap();
-        write!(fen, " {castling_rights} {en_passant_str} 0 1").unwrap();
+        write!(fen, " {castling_rights} {en_passant_str} {halfmove_clock} 1").unwrap();
 
         fen
     }

@@ -5,6 +5,8 @@ mod iterator;
 mod movegen;
 mod parsing;
 
+pub use parsing::FENParsingError;
+
 use crate::{
     movement::{Castle, LegalMove, MoveKind},
     pieces::Piece,

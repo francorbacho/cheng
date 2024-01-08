@@ -42,6 +42,20 @@ class Chessboard {
         }
     }
 
+    syncToWasm() {
+        for (let i = 1; i <= 8; i++) {
+            for (let j = 1; j <= 8; j++) {
+                const position = `${String.fromCharCode(j + 96)}${i}`;
+
+                while (this.squares[position].children.length > 0) {
+                    this.squares[position].children[0].remove();
+                }
+            }
+        }
+
+        this.constructPieces();
+    }
+
     constructPieces() {
         const pieces = wasm.getPieces();
 
@@ -190,8 +204,14 @@ class Chessboard {
 
         this.updateCheckIndicator();
         this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
+        this.updateFenInputBox();
 
         setTimeout(() => this.scheduleComputerMove(), 500);
+    }
+
+    updateFenInputBox() {
+        const fenInput = document.getElementById("fen");
+        fenInput.value = wasm.boardToFen();
     }
 
     updateCheckIndicator() {
@@ -257,5 +277,11 @@ window.onload = function () {
         if (mainBoard.playerConfiguration[wasm.getSideToMove()] === "computer") {
             mainBoard.scheduleComputerMove();
         }
+    });
+
+    const fenInput = document.getElementById("fen");
+    fenInput.addEventListener("change", function()  {
+        wasm.loadBoardFromFen(fenInput.value);
+        mainBoard.syncToWasm();
     });
 };

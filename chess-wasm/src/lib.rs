@@ -31,6 +31,22 @@ pub fn main() {
     }
 }
 
+#[wasm_bindgen(js_name = "loadBoardFromFen")]
+pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
+    if let Ok(board) = Board::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
+        unsafe { BOARD = Some(board); };
+        Ok(())
+    } else {
+        Err("Invalid FEN".to_string())
+    }
+}
+
+#[wasm_bindgen(js_name = "boardToFen")]
+pub fn board_to_fen() -> JsString {
+    JsString::from(get_board().into_fen())
+}
+
+
 #[wasm_bindgen(js_name = "getSideToMove")]
 #[must_use]
 pub fn get_side_to_move() -> JsString {

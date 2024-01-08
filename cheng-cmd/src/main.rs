@@ -101,7 +101,7 @@ where
     for movement in moves {
         let mut clone = board.clone();
 
-        clone.feed(movement.clone()).unwrap();
+        clone.feed(movement.clone());
         let move_nodes = incremental_perft(&clone, depth - 1, continue_)?;
         nodes += move_nodes;
 
@@ -151,7 +151,7 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
     context
         .board
-        .feed(legalmove)
+        .try_feed(legalmove)
         .map_err(|err| format!("Invalid move: {err:?}"))
 }
 

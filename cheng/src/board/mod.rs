@@ -17,6 +17,12 @@ use crate::{
 
 use self::movegen::MoveGenerator;
 
+#[derive(Clone, Debug)]
+pub enum TryFeedError<E> {
+    Parsing(E),
+    InvalidMove,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GameResult {
     Draw,
@@ -78,24 +84,39 @@ impl Board {
         self.moves().any(|m| &m == movement)
     }
 
-    pub fn feed(&mut self, mut movement: LegalMove) -> Result<(), ()> {
-        let side = self.side(self.turn);
-        let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
+    pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>
+    where
+        M: TryInto<LegalMove>,
+    {
+        let mut movement = match movement.try_into() {
+            Ok(movement) => movement,
+            Err(err) => return Err(TryFeedError::Parsing(err)),
+        };
+
+        let moved_piece_is_king = self
+            .side(self.turn)
+            .pieces
+            .piece(Piece::King)
+            .get(movement.origin);
+
         if moved_piece_is_king {
             if let Some(c) = Castle::move_could_be_castle(self.turn, &movement) {
                 movement.kind = MoveKind::Castle(c);
             }
         }
 
-        // XXX: This is ultra bad for performance.
         if !self.check_valid_move(&movement) {
-            return Err(());
+            return Err(TryFeedError::InvalidMove);
         }
 
         self.feed_unchecked(&movement);
         self.update_result();
 
         Ok(())
+    }
+
+    pub fn feed(&mut self, movement: LegalMove) {
+        self.try_feed(movement).unwrap();
     }
 
     pub fn feed_unchecked(&mut self, movement: &LegalMove) {
@@ -159,7 +180,7 @@ impl Board {
         let movegen = MoveGenerator::new(self);
         for movement in movegen {
             let mut clone = self.clone();
-            clone.feed(movement).unwrap();
+            clone.feed(movement);
 
             if !clone.side(self.turn).king_in_check {
                 return;

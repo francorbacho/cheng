@@ -214,7 +214,7 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
         rook_square_after_castle,
     };
 
-    board.feed(movement).map_err(|e| format!("{e:?}"))?;
+    board.try_feed(movement).map_err(|e| format!("{e:?}"))?;
 
     Ok(move_feedback)
 }

@@ -86,7 +86,7 @@ fn board_rec_evaluate(
     if board.turn == Side::White {
         for movement in moves {
             let mut board_clone = board.clone();
-            board_clone.feed(movement.clone()).unwrap();
+            board_clone.feed(movement.clone());
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             alpha = Evaluation(alpha.0.max(new_ev.0));
@@ -99,7 +99,7 @@ fn board_rec_evaluate(
     } else {
         for movement in moves {
             let mut board_clone = board.clone();
-            board_clone.feed(movement.clone()).unwrap();
+            board_clone.feed(movement.clone());
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             beta = Evaluation(beta.0.min(new_ev.0));

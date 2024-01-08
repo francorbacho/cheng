@@ -156,10 +156,10 @@ fn test_movegen_king_cant_move_to_threaten() {
     crate::init();
 
     let mut board = Board::default();
-    board.feed("b2b3".parse().unwrap()).unwrap();
-    board.feed("e7e5".parse().unwrap()).unwrap();
+    board.try_feed("b2b3").unwrap();
+    board.try_feed("e7e5").unwrap();
 
-    board.feed("c1a3".parse().unwrap()).unwrap();
+    board.try_feed("c1a3").unwrap();
     let ok = !board
         .moves()
         .collect::<Vec<_>>()
@@ -172,7 +172,7 @@ fn test_movegen_king_cant_move_to_threaten() {
 fn test_en_passant_as_white() {
     // https://lichess.org/analysis/8/5Kpk/8/5P2/8/8/8/8_b_-_-_0_1?color=white
     let mut board = Board::from_fen("8/5Kpk/8/5P2/8/8/8/8 b - - 0 1").unwrap();
-    board.feed("g7g5".parse().unwrap()).unwrap();
+    board.try_feed("g7g5").unwrap();
 
     let contains_en_passant_capture = board
         .moves()
@@ -180,7 +180,7 @@ fn test_en_passant_as_white() {
         .contains(&"f5g6".parse().unwrap());
     assert!(contains_en_passant_capture);
 
-    board.feed("f5g6".parse().unwrap()).unwrap();
+    board.try_feed("f5g6").unwrap();
     assert!(board.side(Side::Black).king_in_check);
 
     // Make sure the occupancy is right: the pawn is taken.
@@ -191,7 +191,7 @@ fn test_en_passant_as_white() {
 fn test_en_passant_as_black() {
     // https://lichess.org/analysis/8/8/8/2k5/1p6/3K4/2P5/8_w_-_-_0_1?color=white
     let mut board = Board::from_fen("8/8/8/2k5/1p6/3K4/2P5/8 w - - 0 1").unwrap();
-    board.feed("c2c4".parse().unwrap()).unwrap();
+    board.try_feed("c2c4").unwrap();
 
     let contains_en_passant_capture = board
         .moves()
@@ -200,7 +200,7 @@ fn test_en_passant_as_black() {
 
     assert!(contains_en_passant_capture);
 
-    board.feed("b4c3".parse().unwrap()).unwrap();
+    board.try_feed("b4c3").unwrap();
 
     // Make sure the occupancy is right: the pawn is taken.
     assert_eq!(board.side(Side::White).occupancy, BoardMask::from(D3));
@@ -216,8 +216,8 @@ fn test_en_passant_as_black() {
 fn test_only_pawns_take_en_passant() {
     // https://lichess.org/analysis/8/8/8/8/5k2/8/6P1/4K3_w_-_-_0_1?color=white
     let mut board = Board::from_fen("8/8/8/8/5k2/8/6P1/4K3 w - - 0 1").unwrap();
-    board.feed("g2g4".parse().unwrap()).unwrap();
-    board.feed("f4g3".parse().unwrap()).unwrap();
+    board.try_feed("g2g4").unwrap();
+    board.try_feed("f4g3").unwrap();
 
     assert_eq!(board.side(Side::White).occupancy, BoardMask::from([E1, G4]));
 
@@ -243,13 +243,13 @@ fn test_castling() {
     assert!(board_contains_castle(&board, Castle::KingSide));
     assert!(!board_contains_castle(&board, Castle::QueenSide));
 
-    board.feed("b2g2".parse().unwrap()).unwrap();
-    board.feed("c4g4".parse().unwrap()).unwrap();
+    board.try_feed("b2g2").unwrap();
+    board.try_feed("c4g4").unwrap();
 
     assert!(board_contains_castle(&board, Castle::KingSide));
     assert!(board_contains_castle(&board, Castle::QueenSide));
 
-    board.feed("e1g1".parse().unwrap()).unwrap();
+    board.try_feed("e1g1").unwrap();
 
     assert_eq!(
         board.white_side.occupancy,
@@ -280,12 +280,12 @@ fn test_castling_cant_castle_through_pieces() {
     assert!(board_contains_castle(&board, Castle::KingSide));
     assert!(!board_contains_castle(&board, Castle::QueenSide));
 
-    board.feed("a1b1".parse().unwrap()).unwrap();
+    board.try_feed("a1b1").unwrap();
 
     assert!(!board_contains_castle(&board, Castle::KingSide));
     assert!(!board_contains_castle(&board, Castle::QueenSide));
 
-    board.feed("e8e7".parse().unwrap()).unwrap();
+    board.try_feed("e8e7").unwrap();
 
     assert!(board_contains_castle(&board, Castle::KingSide));
     assert!(!board_contains_castle(&board, Castle::QueenSide));
@@ -297,10 +297,10 @@ fn test_castling_canceled_after_rook_is_taken() {
 
     // https://lichess.org/analysis/4k3/8/8/8/8/8/8/Rb2K2R_w_KQ_-_0_1?color=white
     let mut board = Board::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
-    board.feed("a1a2".parse().unwrap()).unwrap();
-    board.feed("b1e4".parse().unwrap()).unwrap();
-    board.feed("a2a1".parse().unwrap()).unwrap();
-    board.feed("e4h1".parse().unwrap()).unwrap();
+    board.try_feed("a1a2").unwrap();
+    board.try_feed("b1e4").unwrap();
+    board.try_feed("a2a1").unwrap();
+    board.try_feed("e4h1").unwrap();
 
     assert_eq!(board.white_side.castling_rights, CastlingRights::None);
 }

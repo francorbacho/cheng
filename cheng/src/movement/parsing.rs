@@ -1,6 +1,7 @@
 use super::{LegalMove, MoveKind};
 use crate::Square;
 
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -9,6 +10,14 @@ pub enum MoveParseError {
     WrongOriginSquare,
     WrongDestinationSquare,
     WrongPiece,
+}
+
+impl TryFrom<&str> for LegalMove {
+    type Error = MoveParseError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        LegalMove::from_str(s)
+    }
 }
 
 impl FromStr for LegalMove {

@@ -118,7 +118,7 @@ fn test_fen_generation() {
     board.feed("e7e5".parse().unwrap()).unwrap();
     board.feed("e1e2".parse().unwrap()).unwrap();
 
-    let expected_fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 1";
+    let expected_fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2";
     assert_eq!(board.into_fen(), expected_fen);
 }
 

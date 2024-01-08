@@ -14,6 +14,7 @@ pub enum FENParsingError {
     InvalidAlignment,
     InvalidCastleRights,
     InvalidHalfMoveClock,
+    InvalidFullMoveClock,
 }
 
 impl Board {
@@ -68,10 +69,11 @@ impl Board {
             }
         };
 
-        let halfmove_clock = self.halfmove_clock;
+        let hmove = self.halfmove_clock;
+        let fmove = self.fullmove_clock;
 
         write!(fen, " {}", char::from(self.turn)).unwrap();
-        write!(fen, " {castling_rights} {en_passant_str} {halfmove_clock} 1").unwrap();
+        write!(fen, " {castling_rights} {en_passant_str} {hmove} {fmove}").unwrap();
 
         fen
     }
@@ -146,7 +148,11 @@ impl Board {
             .ok_or(MissingPart)?
             .parse()
             .map_err(|_| InvalidHalfMoveClock)?;
-        let _fullmove_clock = parts.next().ok_or(MissingPart)?;
+        let fullmove_clock = parts
+            .next()
+            .ok_or(MissingPart)?
+            .parse()
+            .map_err(|_| InvalidFullMoveClock)?;
 
         if parts.next().is_some() {
             Err(TooManyParts)
@@ -156,6 +162,7 @@ impl Board {
                 black_side,
                 turn,
                 halfmove_clock,
+                fullmove_clock,
                 result: None,
             })
         }

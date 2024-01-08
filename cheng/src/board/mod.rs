@@ -34,6 +34,7 @@ pub struct Board {
     pub black_side: SideState,
     pub turn: Side,
     pub halfmove_clock: usize,
+    pub fullmove_clock: usize,
     result: Option<GameResult>,
 }
 
@@ -49,6 +50,7 @@ impl Board {
             black_side: SideState::empty(Side::Black),
             turn: Side::White,
             halfmove_clock: 0,
+            fullmove_clock: 1,
             result: None,
         }
     }
@@ -138,6 +140,10 @@ impl Board {
             self.halfmove_clock = 0;
         } else {
             self.halfmove_clock += 1;
+        }
+
+        if self.turn == Side::Black {
+            self.fullmove_clock += 1;
         }
 
         self.turn = self.turn.opposite();

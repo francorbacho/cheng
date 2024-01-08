@@ -13,5 +13,8 @@ fn test_fen_generation() {
     board.feed("d4c4".parse().unwrap()).unwrap();
     board.feed("c5b6".parse().unwrap()).unwrap();
 
-    assert_eq!(board.into_fen(), "5r2/8/1k6/p2PKp2/1pR5/1P6/P7/8 w - - 8 1");
+    assert_eq!(
+        board.into_fen(),
+        "5r2/8/1k6/p2PKp2/1pR5/1P6/P7/8 w - - 8 46"
+    );
 }

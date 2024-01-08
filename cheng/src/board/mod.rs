@@ -17,11 +17,6 @@ use crate::{
 
 use self::movegen::MoveGenerator;
 
-#[derive(Debug)]
-pub enum FeedError {
-    MoveIsNotValid,
-}
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum GameResult {
     Draw,
@@ -83,7 +78,7 @@ impl Board {
         self.moves().any(|m| &m == movement)
     }
 
-    pub fn feed(&mut self, mut movement: LegalMove) -> Result<(), FeedError> {
+    pub fn feed(&mut self, mut movement: LegalMove) -> Result<(), ()> {
         let side = self.side(self.turn);
         let moved_piece_is_king = side.pieces.piece(Piece::King).get(movement.origin);
         if moved_piece_is_king {
@@ -94,7 +89,7 @@ impl Board {
 
         // XXX: This is ultra bad for performance.
         if !self.check_valid_move(&movement) {
-            return Err(FeedError::MoveIsNotValid);
+            return Err(());
         }
 
         self.feed_unchecked(&movement);

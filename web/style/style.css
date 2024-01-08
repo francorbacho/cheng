@@ -40,3 +40,7 @@ button:hover, select:hover, button:active, select:active {
 #player-select, #fen {
     width: 100%;
 }
+
+#fen {
+    font-family: monospace;
+}

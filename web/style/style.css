@@ -29,12 +29,6 @@ button:hover, select:hover, button:active, select:active {
     display: flex;
 }
 
-.chess-eval {
-    margin: auto;
-    text-align: center;
-    justify-content: center;
-}
-
 #settings {
     width: 50%;
     margin: 0 auto;
@@ -42,10 +36,4 @@ button:hover, select:hover, button:active, select:active {
 
 #player-select {
     width: 100%;
-}
-
-@media (max-width: 800px) {
-    .chess-eval {
-        display: none;
-    }
 }

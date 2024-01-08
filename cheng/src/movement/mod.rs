@@ -1,7 +1,7 @@
 pub mod parsing;
 pub use parsing::MoveParseError;
 
-use std::fmt::Display;
+mod display;
 
 use crate::{board::BoardMask, pieces::Piece, square::Square, Side};
 
@@ -10,21 +10,6 @@ pub struct PseudoMove {
     pub origin: Square,
     pub destination: Square,
     pub kind: MoveKind,
-}
-
-impl Display for PseudoMove {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let Self {
-            origin,
-            destination,
-            ..
-        } = self;
-
-        match self.kind {
-            MoveKind::Move | MoveKind::Castle(_) => write!(f, "{origin:?}{destination:?}"),
-            MoveKind::Promote(piece) => write!(f, "{origin:?}{destination:?}{}", char::from(piece)),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

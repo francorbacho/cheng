@@ -3,7 +3,7 @@ use rand::Rng;
 use std::fmt::{self, Display};
 
 use cheng::prelude::*;
-use cheng::{Board, Piece, LegalMove, Side, SidedPiece};
+use cheng::{Board, LegalMove, Piece, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);

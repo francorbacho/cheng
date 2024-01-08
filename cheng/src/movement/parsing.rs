@@ -1,4 +1,4 @@
-use super::{MoveKind, LegalMove};
+use super::{LegalMove, MoveKind};
 use crate::Square;
 
 use std::str::FromStr;

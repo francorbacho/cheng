@@ -6,7 +6,7 @@ mod movegen;
 mod parsing;
 
 use crate::{
-    movement::{Castle, MoveKind, LegalMove},
+    movement::{Castle, LegalMove, MoveKind},
     pieces::Piece,
     side_state::SideState,
     sides::Side,
@@ -127,7 +127,12 @@ impl Board {
         self.white_side.update_king_in_check(&self.black_side);
         self.black_side.update_king_in_check(&self.white_side);
 
-        if piece_is_pawn || self.side(self.turn.opposite()).occupancy.get(movement.destination) {
+        if piece_is_pawn
+            || self
+                .side(self.turn.opposite())
+                .occupancy
+                .get(movement.destination)
+        {
             self.halfmove_clock = 0;
         } else {
             self.halfmove_clock += 1;

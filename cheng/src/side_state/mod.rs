@@ -7,7 +7,7 @@ use crate::{
     board::BoardMask,
     movegen,
     movement::{Castle, MoveKind},
-    Piece, LegalMove, Side, SidedPiece, Square,
+    LegalMove, Piece, Side, SidedPiece, Square,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]

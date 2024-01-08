@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::{
     board::{Board, BoardMask},
-    movement::{MoveKind, MoveParseError, LegalMove},
+    movement::{LegalMove, MoveKind, MoveParseError},
     pieces::Piece,
     square::prelude::*,
 };

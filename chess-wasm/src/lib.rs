@@ -2,7 +2,7 @@ use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, GameResult, MoveKind, Piece, LegalMove, Side, SidedPiece};
+use cheng::{Board, GameResult, LegalMove, MoveKind, Piece, Side, SidedPiece};
 
 static mut BOARD: Option<Board> = None;
 
@@ -34,7 +34,9 @@ pub fn main() {
 #[wasm_bindgen(js_name = "loadBoardFromFen")]
 pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
     if let Ok(board) = Board::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
-        unsafe { BOARD = Some(board); };
+        unsafe {
+            BOARD = Some(board);
+        };
         Ok(())
     } else {
         Err("Invalid FEN".to_string())
@@ -45,7 +47,6 @@ pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
 pub fn board_to_fen() -> JsString {
     JsString::from(get_board().into_fen())
 }
-
 
 #[wasm_bindgen(js_name = "getSideToMove")]
 #[must_use]

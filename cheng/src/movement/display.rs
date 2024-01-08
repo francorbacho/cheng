@@ -1,4 +1,4 @@
-use super::{MoveKind, LegalMove};
+use super::{LegalMove, MoveKind};
 
 use std::fmt::Display;
 
@@ -16,4 +16,3 @@ impl Display for LegalMove {
         }
     }
 }
-

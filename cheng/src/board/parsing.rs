@@ -1,7 +1,6 @@
 use crate::{
-    Board,
-    Piece, Square, Side,
     side_state::{CastlingRights, SideState},
+    Board, Piece, Side, Square,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -140,7 +139,11 @@ impl Board {
         black_side.castling_rights = black_castle_rights;
 
         let _en_passant_target_square = parts.next().ok_or(MissingPart)?;
-        let halfmove_clock = parts.next().ok_or(MissingPart)?.parse().map_err(|_| InvalidHalfMoveClock)?;
+        let halfmove_clock = parts
+            .next()
+            .ok_or(MissingPart)?
+            .parse()
+            .map_err(|_| InvalidHalfMoveClock)?;
         let _fullmove_clock = parts.next().ok_or(MissingPart)?;
 
         if parts.next().is_some() {

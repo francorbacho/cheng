@@ -1,15 +1,76 @@
+use std::marker::PhantomData;
+
 pub mod parsing;
 pub use parsing::MoveParseError;
 
 mod display;
 
-use crate::{board::BoardMask, pieces::Piece, square::Square, Side};
+use crate::{board::BoardMask, pieces::Piece, square::Square, Board, Side};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LegalMove {
+pub struct PseudoMove {
     pub origin: Square,
     pub destination: Square,
     pub kind: MoveKind,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LegalMove<'a> {
+    pub origin: Square,
+    pub destination: Square,
+    pub kind: MoveKind,
+    _marker: PhantomData<&'a ()>,
+}
+
+impl<'a> LegalMove<'a> {
+    pub unsafe fn unchecked_new(pseudo_move: PseudoMove, _: &'a Board) -> LegalMove<'a> {
+        LegalMove {
+            origin: pseudo_move.origin,
+            destination: pseudo_move.destination,
+            kind: pseudo_move.kind,
+            _marker: PhantomData::default(),
+        }
+    }
+
+    pub fn new<'b>(mut pseudo_move: PseudoMove, board: &'b Board) -> Option<LegalMove<'a>> {
+        let moved_piece_is_king = board
+            .side(board.turn)
+            .pieces
+            .piece(Piece::King)
+            .get(pseudo_move.origin);
+        if moved_piece_is_king {
+            if let Some(c) = Castle::move_could_be_castle(board.turn, &pseudo_move) {
+                pseudo_move.kind = MoveKind::Castle(c);
+            }
+        }
+
+        if board.check_valid_move(&pseudo_move) {
+            Some(LegalMove {
+                origin: pseudo_move.origin,
+                destination: pseudo_move.destination,
+                kind: pseudo_move.kind,
+                _marker: PhantomData::default(),
+            })
+        } else {
+            None
+        }
+    }
+}
+
+impl From<LegalMove<'_>> for PseudoMove {
+    fn from(legalmove: LegalMove<'_>) -> PseudoMove {
+        PseudoMove::from(&legalmove)
+    }
+}
+
+impl From<&LegalMove<'_>> for PseudoMove {
+    fn from(legalmove: &LegalMove<'_>) -> PseudoMove {
+        PseudoMove {
+            origin: legalmove.origin,
+            destination: legalmove.destination,
+            kind: legalmove.kind.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,7 +88,7 @@ pub enum Castle {
 
 impl Castle {
     #[must_use]
-    pub fn move_could_be_castle(side: Side, movement: &LegalMove) -> Option<Castle> {
+    pub fn move_could_be_castle(side: Side, movement: &PseudoMove) -> Option<Castle> {
         let origin_matches_castle = movement.origin == Self::king_square_before_castle(side);
 
         let destination_matches_king_side_castle =

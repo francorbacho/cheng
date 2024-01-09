@@ -4,7 +4,7 @@ use crate::{
     movement::{Castle, MoveKind},
     side_state::CastlingRights,
     square::prelude::*,
-    Board, Piece, Side,
+    Board, Piece, PseudoMove, Side,
 };
 
 #[test]
@@ -162,6 +162,7 @@ fn test_movegen_king_cant_move_to_threaten() {
     board.try_feed("c1a3").unwrap();
     let ok = !board
         .moves()
+        .map(PseudoMove::from)
         .collect::<Vec<_>>()
         .contains(&"e8e7".parse().unwrap());
 
@@ -176,6 +177,7 @@ fn test_en_passant_as_white() {
 
     let contains_en_passant_capture = board
         .moves()
+        .map(PseudoMove::from)
         .collect::<Vec<_>>()
         .contains(&"f5g6".parse().unwrap());
     assert!(contains_en_passant_capture);
@@ -195,6 +197,7 @@ fn test_en_passant_as_black() {
 
     let contains_en_passant_capture = board
         .moves()
+        .map(PseudoMove::from)
         .collect::<Vec<_>>()
         .contains(&"b4c3".parse().unwrap());
 

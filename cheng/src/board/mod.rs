@@ -8,7 +8,7 @@ mod parsing;
 pub use parsing::FENParsingError;
 
 use crate::{
-    movement::{Castle, LegalMove, MoveKind},
+    movement::{Castle, LegalMove, MoveKind, PseudoMove},
     pieces::Piece,
     side_state::SideState,
     sides::Side,
@@ -80,13 +80,14 @@ impl Board {
     }
 
     #[must_use]
-    pub fn check_valid_move(&self, movement: &LegalMove) -> bool {
-        self.moves().any(|m| &m == movement)
+    pub fn check_valid_move(&self, movement: &PseudoMove) -> bool {
+        self.moves()
+            .any(|m| m.origin == movement.origin && m.destination == movement.destination)
     }
 
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>
     where
-        M: TryInto<LegalMove>,
+        M: TryInto<PseudoMove>,
     {
         let mut movement = match movement.try_into() {
             Ok(movement) => movement,
@@ -105,21 +106,21 @@ impl Board {
             }
         }
 
-        if !self.check_valid_move(&movement) {
+        let Some(legalmove) = LegalMove::new(movement, self) else {
             return Err(TryFeedError::InvalidMove);
-        }
+        };
 
-        self.feed_unchecked(&movement);
-        self.update_result();
+        self.feed(legalmove);
 
         Ok(())
     }
 
     pub fn feed(&mut self, movement: LegalMove) {
-        self.try_feed(movement).unwrap();
+        self.feed_unchecked(&movement.into());
+        self.update_result();
     }
 
-    pub fn feed_unchecked(&mut self, movement: &LegalMove) {
+    pub fn feed_unchecked(&mut self, movement: &PseudoMove) {
         let piece_is_pawn = self
             .side(self.turn)
             .pieces

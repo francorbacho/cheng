@@ -1,8 +1,14 @@
-use super::{LegalMove, MoveKind};
+use super::{LegalMove, MoveKind, PseudoMove};
 
 use std::fmt::Display;
 
-impl Display for LegalMove {
+impl Display for LegalMove<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        PseudoMove::from(self).fmt(f)
+    }
+}
+
+impl Display for PseudoMove {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self {
             origin,

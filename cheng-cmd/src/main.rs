@@ -7,7 +7,7 @@ use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
-use cheng::{Board, LegalMove, Square};
+use cheng::{Board, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;
@@ -143,7 +143,7 @@ fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
 }
 
 fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let legalmove: LegalMove = parts
+    let pseudomove: PseudoMove = parts
         .get(1)
         .ok_or("missing move")?
         .parse()
@@ -151,7 +151,7 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
     context
         .board
-        .try_feed(legalmove)
+        .try_feed(pseudomove)
         .map_err(|err| format!("Invalid move: {err:?}"))
 }
 

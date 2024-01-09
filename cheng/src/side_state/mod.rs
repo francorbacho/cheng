@@ -7,7 +7,7 @@ use crate::{
     board::BoardMask,
     movegen,
     movement::{Castle, MoveKind},
-    LegalMove, Piece, Side, SidedPiece, Square,
+    Piece, PseudoMove, Side, SidedPiece, Square,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -169,14 +169,14 @@ impl SideState {
         }
     }
 
-    fn is_two_square_pawn_move(&self, movement: &LegalMove) -> bool {
+    fn is_two_square_pawn_move(&self, movement: &PseudoMove) -> bool {
         self.pieces.piece(Piece::Pawn).get(movement.origin)
             && (movement.destination.rank::<i32>() - movement.origin.rank::<i32>()).abs() == 2
     }
 
-    pub fn update(&mut self, movement: LegalMove) {
+    pub fn update(&mut self, movement: PseudoMove) {
         // NOTE: This only updates the state, and assumes the move is valid.
-        let LegalMove {
+        let PseudoMove {
             ref origin,
             ref destination,
             ..
@@ -208,7 +208,7 @@ impl SideState {
         self.pieces.update(self.side, movement);
     }
 
-    fn update_castling_rights(&mut self, movement: &LegalMove) {
+    fn update_castling_rights(&mut self, movement: &PseudoMove) {
         let origin = movement.origin;
 
         let is_king_move = self.pieces.piece(Piece::King).get(origin);
@@ -293,8 +293,8 @@ impl SidePieces {
         Some(Piece::try_from(result as usize).ok()).flatten()
     }
 
-    pub fn update(&mut self, side: Side, movement: LegalMove) {
-        let LegalMove {
+    pub fn update(&mut self, side: Side, movement: PseudoMove) {
+        let PseudoMove {
             origin,
             destination,
             kind,

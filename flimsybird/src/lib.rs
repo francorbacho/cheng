@@ -2,7 +2,7 @@ use rand::Rng;
 
 use std::fmt::{self, Display};
 
-use cheng::{Board, LegalMove, Piece, Side, SidedPiece};
+use cheng::{Board, GameResult, LegalMove, MoveGenerator, Piece, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -12,6 +12,14 @@ pub static mut EVALUATED_NODES: usize = 0;
 impl Evaluation {
     pub const BLACK_WIN: Self = Evaluation(std::i32::MIN);
     pub const WHITE_WIN: Self = Evaluation(std::i32::MAX);
+    pub const DRAW: Self = Evaluation(0);
+
+    pub fn winner(side: Side) -> Self {
+        match side {
+            Side::White => Evaluation::WHITE_WIN,
+            Side::Black => Evaluation::BLACK_WIN,
+        }
+    }
 
     pub fn favors(self, side: Side) -> bool {
         if self.0 < 0 {
@@ -82,6 +90,10 @@ fn board_rec_evaluate(
         mv.destination.to_index() + noise
     });
 
+    if moves.len() == 0 {
+        return (None, board_static_evaluation(board));
+    }
+
     if board.turn == Side::White {
         for movement in moves {
             let mut board_clone = board.clone();
@@ -116,6 +128,12 @@ fn board_rec_evaluate(
 fn board_static_evaluation(board: &Board) -> Evaluation {
     unsafe { EVALUATED_NODES += 1 }
 
+    match board.result() {
+        Some(GameResult::Draw) => return Evaluation::DRAW,
+        Some(GameResult::Checkmate { winner }) => return Evaluation::winner(winner),
+        None => {}
+    }
+
     let mut result = 0;
     for (SidedPiece(side, piece), _) in board.into_iter() {
         let side_factor = if side == Side::Black { -1 } else { 1 };
@@ -131,5 +149,9 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
         result += side_factor * piece_value;
     }
 
+    let white_moves = MoveGenerator::new_for_side(board, Side::White).len() as i32;
+    let black_moves = MoveGenerator::new_for_side(board, Side::Black).len() as i32;
+
+    result += 50 * (white_moves - black_moves);
     Evaluation(result)
 }

@@ -2,9 +2,11 @@ mod mask;
 pub use mask::BoardMask;
 
 mod iterator;
-mod movegen;
-mod parsing;
 
+mod movegen;
+pub use movegen::MoveGenerator;
+
+mod parsing;
 pub use parsing::FENParsingError;
 
 use crate::{
@@ -14,8 +16,6 @@ use crate::{
     sides::Side,
     SidedPiece,
 };
-
-use self::movegen::MoveGenerator;
 
 #[derive(Clone, Debug)]
 pub enum TryFeedError<E> {

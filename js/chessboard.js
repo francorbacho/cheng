@@ -161,7 +161,7 @@ class Chessboard {
         if (!destSquareElement || sourceSquareElement == destSquareElement) { return; }
 
         const isPawn = movedPiece.classList.contains("pawn");
-        const promotion = (isPawn && (row == 8 || row == 0)) ? "q" : "";
+        const promotion = (isPawn && (row == 8 || row == 1)) ? "q" : "";
         const movement = `${sourceSquare}${destSquare}${promotion}`;
 
         try {

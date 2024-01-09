@@ -152,27 +152,18 @@ impl BorkedBoard {
     pub fn update_result(&mut self) {
         if self.halfmove_clock >= 100 {
             self.result = Some(GameResult::Draw);
-        }
-
-        if !self.side(self.turn).king_in_check {
-            if self.moves().len() == 0 {
-                self.result = Some(GameResult::Draw);
-            }
             return;
         }
 
-        let movegen = MoveGenerator::new(self);
-        for movement in movegen {
-            let mut clone = self.clone();
-            clone.feed(movement);
-
-            if !clone.side(self.turn).king_in_check {
-                return;
+        if self.moves().len() == 0 {
+            if self.side(self.turn).king_in_check {
+                self.result = Some(GameResult::Checkmate {
+                    winner: self.turn.opposite(),
+                });
+            } else {
+                self.result = Some(GameResult::Draw);
             }
         }
-        self.result = Some(GameResult::Checkmate {
-            winner: self.turn.opposite(),
-        });
     }
 
     #[must_use]

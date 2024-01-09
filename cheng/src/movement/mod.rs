@@ -5,7 +5,7 @@ pub use parsing::MoveParseError;
 
 mod display;
 
-use crate::{board::BoardMask, pieces::Piece, square::Square, Board, Side};
+use crate::{board::BoardMask, pieces::Piece, square::Square, BorkedBoard, Side};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PseudoMove {
@@ -23,7 +23,7 @@ pub struct LegalMove<'a> {
 }
 
 impl<'a> LegalMove<'a> {
-    pub unsafe fn unchecked_new(pseudo_move: PseudoMove, _: &'a Board) -> LegalMove<'a> {
+    pub unsafe fn unchecked_new(pseudo_move: PseudoMove, _: &'a BorkedBoard) -> LegalMove<'a> {
         LegalMove {
             origin: pseudo_move.origin,
             destination: pseudo_move.destination,
@@ -32,7 +32,7 @@ impl<'a> LegalMove<'a> {
         }
     }
 
-    pub fn new<'b>(mut pseudo_move: PseudoMove, board: &'b Board) -> Option<LegalMove<'a>> {
+    pub fn new<'b>(mut pseudo_move: PseudoMove, board: &'b BorkedBoard) -> Option<LegalMove<'a>> {
         let moved_piece_is_king = board
             .side(board.turn)
             .pieces

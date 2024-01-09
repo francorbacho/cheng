@@ -1,8 +1,9 @@
 use crate::{
-    board::BoardMask, side_state::iterator::SidePiecesIterator, Board, Side, SidedPiece, Square,
+    board::BoardMask, side_state::iterator::SidePiecesIterator, BorkedBoard, Side, SidedPiece,
+    Square,
 };
 
-impl<'a> IntoIterator for &'a Board {
+impl<'a> IntoIterator for &'a BorkedBoard {
     type Item = (SidedPiece, Square);
 
     type IntoIter = BoardIterator<'a>;
@@ -18,7 +19,7 @@ pub struct BoardIterator<'a> {
 }
 
 impl<'a> BoardIterator<'a> {
-    pub fn new(board: &'a Board) -> Self {
+    pub fn new(board: &'a BorkedBoard) -> Self {
         Self {
             white_pieces_iterator: board.white_side.pieces.into_iter(),
             black_pieces_iterator: board.black_side.pieces.into_iter(),

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::{
-    board::{Board, BoardMask},
+    board::{BoardMask, BorkedBoard},
     movement::{MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
     square::prelude::*,
@@ -50,7 +50,7 @@ fn test_move_parsing() {
 
 #[test]
 fn test_move_simple_opening() {
-    let mut board = Board::default();
+    let mut board = BorkedBoard::default();
 
     board.try_feed("e2e4").unwrap();
     board.try_feed("c7c5").unwrap();
@@ -78,7 +78,7 @@ fn test_move_simple_opening() {
 
 #[test]
 fn test_move_promotion() {
-    let mut board = Board::from_fen("8/6P1/6K1/8/8/5k2/5p2/8 w - - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("8/6P1/6K1/8/8/5k2/5p2/8 w - - 0 1").unwrap();
     board.try_feed("g7g8q").unwrap();
     board.try_feed("f2f1r").unwrap();
 

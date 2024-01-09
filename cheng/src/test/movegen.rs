@@ -4,7 +4,7 @@ use crate::{
     movement::{Castle, MoveKind},
     side_state::CastlingRights,
     square::prelude::*,
-    Board, Piece, PseudoMove, Side,
+    BorkedBoard, Piece, PseudoMove, Side,
 };
 
 #[test]
@@ -155,7 +155,7 @@ fn test_movegen_cant_slide_to_friendly_occupation() {
 fn test_movegen_king_cant_move_to_threaten() {
     crate::init();
 
-    let mut board = Board::default();
+    let mut board = BorkedBoard::default();
     board.try_feed("b2b3").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -172,7 +172,7 @@ fn test_movegen_king_cant_move_to_threaten() {
 #[test]
 fn test_en_passant_as_white() {
     // https://lichess.org/analysis/8/5Kpk/8/5P2/8/8/8/8_b_-_-_0_1?color=white
-    let mut board = Board::from_fen("8/5Kpk/8/5P2/8/8/8/8 b - - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("8/5Kpk/8/5P2/8/8/8/8 b - - 0 1").unwrap();
     board.try_feed("g7g5").unwrap();
 
     let contains_en_passant_capture = board
@@ -192,7 +192,7 @@ fn test_en_passant_as_white() {
 #[test]
 fn test_en_passant_as_black() {
     // https://lichess.org/analysis/8/8/8/2k5/1p6/3K4/2P5/8_w_-_-_0_1?color=white
-    let mut board = Board::from_fen("8/8/8/2k5/1p6/3K4/2P5/8 w - - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("8/8/8/2k5/1p6/3K4/2P5/8 w - - 0 1").unwrap();
     board.try_feed("c2c4").unwrap();
 
     let contains_en_passant_capture = board
@@ -218,7 +218,7 @@ fn test_en_passant_as_black() {
 #[test]
 fn test_only_pawns_take_en_passant() {
     // https://lichess.org/analysis/8/8/8/8/5k2/8/6P1/4K3_w_-_-_0_1?color=white
-    let mut board = Board::from_fen("8/8/8/8/5k2/8/6P1/4K3 w - - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("8/8/8/8/5k2/8/6P1/4K3 w - - 0 1").unwrap();
     board.try_feed("g2g4").unwrap();
     board.try_feed("f4g3").unwrap();
 
@@ -232,9 +232,9 @@ fn test_castling() {
     crate::init();
 
     // https://lichess.org/analysis/4k3/8/8/8/2r5/8/1R6/R3K2R_w_KQ_-_0_1?color=white
-    let mut board = Board::from_fen("4k3/8/8/8/2r5/8/1R6/R3K2R w KQ - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("4k3/8/8/8/2r5/8/1R6/R3K2R w KQ - 0 1").unwrap();
 
-    fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
+    fn board_contains_castle(board: &BorkedBoard, castle_kind: Castle) -> bool {
         board
             .moves()
             .any(|movement| movement.kind == MoveKind::Castle(castle_kind))
@@ -272,9 +272,9 @@ fn test_castling_cant_castle_through_pieces() {
     crate::init();
 
     // https://lichess.org/analysis/4k3/8/8/8/8/8/8/Rb2K2R_w_KQ_-_0_1?color=white
-    let mut board = Board::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
 
-    fn board_contains_castle(board: &Board, castle_kind: Castle) -> bool {
+    fn board_contains_castle(board: &BorkedBoard, castle_kind: Castle) -> bool {
         board
             .moves()
             .any(|movement| movement.kind == MoveKind::Castle(castle_kind))
@@ -299,7 +299,7 @@ fn test_castling_canceled_after_rook_is_taken() {
     crate::init();
 
     // https://lichess.org/analysis/4k3/8/8/8/8/8/8/Rb2K2R_w_KQ_-_0_1?color=white
-    let mut board = Board::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
+    let mut board = BorkedBoard::from_fen("4k3/8/8/8/8/8/8/Rb2K2R w KQ - 0 1").unwrap();
     board.try_feed("a1a2").unwrap();
     board.try_feed("b1e4").unwrap();
     board.try_feed("a2a1").unwrap();
@@ -310,7 +310,7 @@ fn test_castling_canceled_after_rook_is_taken() {
 
 #[test]
 fn test_promotions() {
-    let board = Board::from_fen("4k3/P7/8/8/8/8/8/4K3 w - - 0 1").unwrap();
+    let board = BorkedBoard::from_fen("4k3/P7/8/8/8/8/8/4K3 w - - 0 1").unwrap();
 
     assert!(board
         .moves()

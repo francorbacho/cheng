@@ -30,7 +30,7 @@ pub enum GameResult {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Board {
+pub struct BorkedBoard {
     pub white_side: SideState,
     pub black_side: SideState,
     pub turn: Side,
@@ -39,7 +39,7 @@ pub struct Board {
     result: Option<GameResult>,
 }
 
-impl Board {
+impl BorkedBoard {
     pub const DEFAULT_FEN: &'static str =
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -211,9 +211,9 @@ impl Board {
     }
 }
 
-impl Default for Board {
+impl Default for BorkedBoard {
     #[inline]
     fn default() -> Self {
-        Self::from_fen(Board::DEFAULT_FEN).unwrap()
+        Self::from_fen(BorkedBoard::DEFAULT_FEN).unwrap()
     }
 }

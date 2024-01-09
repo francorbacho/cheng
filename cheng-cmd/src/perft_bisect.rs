@@ -3,7 +3,7 @@ use std::{
     ops::ControlFlow::{Break, Continue},
 };
 
-use cheng::Board;
+use cheng::BorkedBoard;
 use uci::Engine;
 
 use crate::{incremental_perft, Context};
@@ -63,7 +63,7 @@ pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String>
 
 fn perft_bisect_iteration(
     stockfish: &Engine,
-    board: &Board,
+    board: &BorkedBoard,
     depth: usize,
 ) -> Result<(), PerftBisectErr> {
     let mut move_perft_table = perft_stockfish(stockfish, depth).unwrap();

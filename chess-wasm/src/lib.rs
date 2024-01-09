@@ -2,15 +2,15 @@ use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
-use cheng::{Board, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{BorkedBoard, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
 
-static mut BOARD: Option<Board> = None;
+static mut BOARD: Option<BorkedBoard> = None;
 
-fn get_board() -> &'static Board {
+fn get_board() -> &'static BorkedBoard {
     unsafe { BOARD.as_ref() }.expect("BOARD was not initialized")
 }
 
-fn get_board_mut() -> &'static mut Board {
+fn get_board_mut() -> &'static mut BorkedBoard {
     unsafe { BOARD.as_mut() }.expect("BOARD was not initialized")
 }
 
@@ -27,13 +27,13 @@ pub fn main() {
     cheng::init();
 
     unsafe {
-        BOARD = Some(Board::default());
+        BOARD = Some(BorkedBoard::default());
     }
 }
 
 #[wasm_bindgen(js_name = "loadBoardFromFen")]
 pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
-    if let Ok(board) = Board::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
+    if let Ok(board) = BorkedBoard::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
         unsafe {
             BOARD = Some(board);
         };

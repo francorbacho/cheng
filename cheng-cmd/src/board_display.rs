@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use cheng::Board;
+use cheng::BorkedBoard;
 
-pub struct BoardDisplay<'a>(pub &'a Board);
+pub struct BoardDisplay<'a>(pub &'a BorkedBoard);
 
 impl Display for BoardDisplay<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

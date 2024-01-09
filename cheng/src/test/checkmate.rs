@@ -1,5 +1,5 @@
 use crate::{
-    board::{Board, GameResult},
+    board::{BorkedBoard, GameResult},
     sides::Side,
 };
 
@@ -7,7 +7,7 @@ use crate::{
 fn test_simple_queen_check() {
     crate::init();
 
-    let mut board = Board::default();
+    let mut board = BorkedBoard::default();
     board.try_feed("e2e4").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -30,7 +30,7 @@ fn test_checkmate_fast() {
     crate::init();
 
     // Scholar's mate.
-    let mut board = Board::default();
+    let mut board = BorkedBoard::default();
     board.try_feed("e2e4").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -50,7 +50,7 @@ fn test_checkmate_fast() {
     );
 
     // Fool's mate.
-    let mut board = Board::default();
+    let mut board = BorkedBoard::default();
     board.try_feed("f2f3").unwrap();
     board.try_feed("e7e5").unwrap();
 

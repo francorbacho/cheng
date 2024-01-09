@@ -2,7 +2,7 @@ use rand::Rng;
 
 use std::fmt::{self, Display};
 
-use cheng::{Board, GameResult, LegalMove, MoveGenerator, Piece, Side, SidedPiece};
+use cheng::{BorkedBoard, GameResult, LegalMove, MoveGenerator, Piece, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -60,7 +60,7 @@ pub trait Evaluable {
     fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation);
 }
 
-impl Evaluable for Board {
+impl Evaluable for BorkedBoard {
     fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation) {
         unsafe { EVALUATED_NODES = 0 }
 
@@ -72,7 +72,7 @@ impl Evaluable for Board {
 }
 
 fn board_rec_evaluate(
-    board: &mut Board,
+    board: &mut BorkedBoard,
     depth: u8,
     mut alpha: Evaluation,
     mut beta: Evaluation,
@@ -125,7 +125,7 @@ fn board_rec_evaluate(
     (best_move, best_evaluation)
 }
 
-fn board_static_evaluation(board: &Board) -> Evaluation {
+fn board_static_evaluation(board: &BorkedBoard) -> Evaluation {
     unsafe { EVALUATED_NODES += 1 }
 
     match board.result() {

@@ -1,7 +1,7 @@
-use cheng::Board;
+use cheng::BorkedBoard;
 
 #[must_use]
-pub fn perft(board: &Board, depth: usize) -> usize {
+pub fn perft(board: &BorkedBoard, depth: usize) -> usize {
     if depth == 0 {
         return 1;
     }

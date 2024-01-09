@@ -3,13 +3,13 @@ use crate::{
     pieces::Piece,
     side_state::CastlingRights,
     square::Square,
-    Board, LegalMove, PseudoMove, Side, SidedPiece,
+    BorkedBoard, LegalMove, PseudoMove, Side, SidedPiece,
 };
 
 use super::BoardMask;
 
 pub struct MoveGenerator<'a> {
-    pub board: &'a Board,
+    pub board: &'a BorkedBoard,
     pub side: Side,
 
     pub cached_moves: Vec<LegalMove<'a>>,
@@ -17,11 +17,11 @@ pub struct MoveGenerator<'a> {
 }
 
 impl<'a> MoveGenerator<'a> {
-    pub fn new(board: &'a Board) -> Self {
+    pub fn new(board: &'a BorkedBoard) -> Self {
         Self::new_for_side(board, board.turn)
     }
 
-    pub fn new_for_side(board: &'a Board, side: Side) -> Self {
+    pub fn new_for_side(board: &'a BorkedBoard, side: Side) -> Self {
         let mut gen = Self {
             board,
             side,

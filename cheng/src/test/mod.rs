@@ -3,7 +3,7 @@ mod movegen;
 mod moves;
 
 use crate::{
-    board::{Board, BoardMask, FENParsingError},
+    board::{BoardMask, BorkedBoard, FENParsingError},
     pieces::Piece,
     side_state::SideState,
     sides::Side,
@@ -75,41 +75,41 @@ fn test_occupancy_side_pieces_match() {
 
 #[test]
 fn test_fen_parsing() {
-    let empty = Board::from_fen("8/8/8/8/8/8/8/8 w - - 0 1").unwrap();
-    assert_eq!(empty, Board::empty());
+    let empty = BorkedBoard::from_fen("8/8/8/8/8/8/8/8 w - - 0 1").unwrap();
+    assert_eq!(empty, BorkedBoard::empty());
 
     let a8: Square = "a8".parse().unwrap();
-    let board_a8_rook = Board::from_fen("r7/8/8/8/8/8/8/8 w - - 0 1").unwrap();
+    let board_a8_rook = BorkedBoard::from_fen("r7/8/8/8/8/8/8/8 w - - 0 1").unwrap();
     assert_eq!(board_a8_rook.turn, Side::White);
     assert_eq!(board_a8_rook.black_side.occupancy, BoardMask::from(a8));
 
-    let b_only_w_pawns = Board::from_fen("8/8/8/8/8/8/PPPPPPPP/8 b - - 0 1").unwrap();
+    let b_only_w_pawns = BorkedBoard::from_fen("8/8/8/8/8/8/PPPPPPPP/8 b - - 0 1").unwrap();
     assert_eq!(b_only_w_pawns.turn, Side::Black);
-    assert_eq!(b_only_w_pawns.black_side, Board::empty().black_side);
+    assert_eq!(b_only_w_pawns.black_side, BorkedBoard::empty().black_side);
     assert_eq!(b_only_w_pawns.white_side.occupancy, BoardMask::from(0xFF00));
 
-    let b_wb_mix_pawns = Board::from_fen("8/8/8/8/8/8/PpPPPppP/8 w - - 0 1").unwrap();
+    let b_wb_mix_pawns = BorkedBoard::from_fen("8/8/8/8/8/8/PpPPPppP/8 w - - 0 1").unwrap();
     assert_eq!(b_wb_mix_pawns.white_side.occupancy, BoardMask::from(0x9D00));
     assert_eq!(b_wb_mix_pawns.black_side.occupancy, BoardMask::from(0x6200));
 
-    let missing_board = Board::from_fen("w - - 0 1");
+    let missing_board = BorkedBoard::from_fen("w - - 0 1");
     assert!(missing_board.is_err());
 
-    let misaligned_board = Board::from_fen("8/8/8/8/8/8/7/8 w - - 0 1");
+    let misaligned_board = BorkedBoard::from_fen("8/8/8/8/8/8/7/8 w - - 0 1");
     assert_eq!(
         misaligned_board.unwrap_err(),
         FENParsingError::InvalidAlignment
     );
 
     let board_fen_with_extra_spaces =
-        Board::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
+        BorkedBoard::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ");
     assert!(board_fen_with_extra_spaces.is_ok());
 }
 
 #[test]
 fn test_fen_generation() {
-    let mut board = Board::default();
-    assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
+    let mut board = BorkedBoard::default();
+    assert_eq!(board.into_fen(), BorkedBoard::DEFAULT_FEN);
 
     board.try_feed("e2e4").unwrap();
     let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
@@ -124,7 +124,7 @@ fn test_fen_generation() {
 
 #[test]
 fn test_default_game() {
-    let board = Board::default();
+    let board = BorkedBoard::default();
     assert_eq!(board.turn, Side::White);
     assert_eq!(board.white_side.occupancy, BoardMask::from(0xFFFF));
     assert_eq!(

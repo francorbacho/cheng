@@ -1,6 +1,6 @@
 use crate::{
     side_state::{CastlingRights, SideState},
-    Board, Piece, Side, Square,
+    BorkedBoard, Piece, Side, Square,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -18,7 +18,7 @@ pub enum FENParsingError {
     InvalidFullMoveClock,
 }
 
-impl Board {
+impl BorkedBoard {
     #[must_use]
     pub fn into_fen(&self) -> String {
         use std::fmt::Write;

@@ -7,7 +7,7 @@ use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
-use cheng::{Board, LegalMove, PseudoMove, Square};
+use cheng::{BorkedBoard, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;
@@ -17,7 +17,7 @@ use crate::board_display::BoardDisplay;
 
 #[derive(Default)]
 pub struct Context {
-    board: Board,
+    board: BorkedBoard,
 }
 
 fn main() -> Result<(), String> {
@@ -79,7 +79,7 @@ fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
 
 fn fen(context: &mut Context, parts: &[&str]) -> Result<(), String> {
     let fen = parts.get(1..).ok_or("Expected fen argument")?.join(" ");
-    context.board = Board::from_fen(&fen).map_err(|err| format!("{err:?}"))?;
+    context.board = BorkedBoard::from_fen(&fen).map_err(|err| format!("{err:?}"))?;
     Ok(())
 }
 
@@ -88,7 +88,7 @@ pub fn continue_<E>(_movement: &LegalMove, _nodes: usize) -> ControlFlow<E, ()> 
     Continue(())
 }
 
-fn incremental_perft<E, F>(board: &Board, depth: usize, mut callback: F) -> Result<usize, E>
+fn incremental_perft<E, F>(board: &BorkedBoard, depth: usize, mut callback: F) -> Result<usize, E>
 where
     F: FnMut(&LegalMove, usize) -> ControlFlow<E, ()>,
 {

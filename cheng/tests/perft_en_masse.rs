@@ -1,4 +1,4 @@
-use cheng::Board;
+use cheng::BorkedBoard;
 
 mod perft;
 use perft::perft;
@@ -10,7 +10,7 @@ macro_rules! perft {
         fn $perft_name() {
             cheng::init();
             $(
-                let board = Board::from_fen($fen).unwrap();
+                let board = BorkedBoard::from_fen($fen).unwrap();
                 assert_eq!(perft(&board, 3), $nodes);
             )*
         }

@@ -152,6 +152,6 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
     let white_moves = MoveGenerator::new_for_side(board, Side::White).len() as i32;
     let black_moves = MoveGenerator::new_for_side(board, Side::Black).len() as i32;
 
-    result += 50 * (white_moves - black_moves);
+    result += 100.min(5 * (white_moves - black_moves));
     Evaluation(result)
 }

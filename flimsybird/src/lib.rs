@@ -2,7 +2,6 @@ use rand::Rng;
 
 use std::fmt::{self, Display};
 
-use cheng::prelude::*;
 use cheng::{Board, LegalMove, Piece, Side, SidedPiece};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]

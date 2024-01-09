@@ -1,7 +1,7 @@
 pub mod iterator;
 
 #[cfg(feature = "simd")]
-use std::simd::{Simd, SimdOrd, SimdPartialEq, SimdUint};
+use std::simd::{cmp::SimdPartialEq, num::SimdUint, Simd};
 
 use crate::{
     board::BoardMask,

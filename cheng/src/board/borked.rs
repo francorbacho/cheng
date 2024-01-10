@@ -1,5 +1,5 @@
 use crate::{
-    side_state::SideState, Castle, GameResult, LegalMove, MoveGenerator, MoveKind, Piece,
+    side_state::SideState, GameResult, LegalMove, MoveGenerator, Piece,
     PseudoMove, Side, SidedPiece,
 };
 
@@ -67,7 +67,7 @@ impl BorkedBoard {
     where
         M: TryInto<PseudoMove>,
     {
-        let mut movement = match movement.try_into() {
+        let movement = match movement.try_into() {
             Ok(movement) => movement,
             Err(err) => return Err(TryFeedError::Parsing(err)),
         };

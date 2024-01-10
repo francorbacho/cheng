@@ -3,7 +3,7 @@ use std::{
     ops::ControlFlow::{Break, Continue},
 };
 
-use cheng::{Board, BorkedBoard, FromIntoFen};
+use cheng::{Board, FromIntoFen};
 use uci::Engine;
 
 use crate::{incremental_perft, Context};

@@ -1,7 +1,6 @@
 use crate::{
     board::{Board, GameResult},
     sides::Side,
-    FromIntoFen,
 };
 
 #[test]

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use crate::{
-    board::{Board, BoardMask, BorkedBoard},
+    board::{Board, BoardMask},
     movement::{MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
     square::prelude::*,

@@ -7,7 +7,7 @@ use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
-use cheng::{Board, BorkedBoard, FromIntoFen, LegalMove, PseudoMove, Square};
+use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;

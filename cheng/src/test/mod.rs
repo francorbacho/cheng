@@ -3,12 +3,13 @@ mod movegen;
 mod moves;
 
 use crate::{
-    board::{BoardMask, BorkedBoard, FENParsingError},
+    board::{Board, BoardMask, BorkedBoard, FENParsingError},
     pieces::Piece,
     side_state::SideState,
     sides::Side,
     square::prelude::*,
     square::Square,
+    FromIntoFen,
 };
 
 #[test]
@@ -108,8 +109,8 @@ fn test_fen_parsing() {
 
 #[test]
 fn test_fen_generation() {
-    let mut board = BorkedBoard::default();
-    assert_eq!(board.into_fen(), BorkedBoard::DEFAULT_FEN);
+    let mut board = Board::default();
+    assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
 
     board.try_feed("e2e4").unwrap();
     let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
@@ -124,11 +125,11 @@ fn test_fen_generation() {
 
 #[test]
 fn test_default_game() {
-    let board = BorkedBoard::default();
-    assert_eq!(board.turn, Side::White);
-    assert_eq!(board.white_side.occupancy, BoardMask::from(0xFFFF));
+    let board = Board::default();
+    assert_eq!(board.turn(), Side::White);
+    assert_eq!(board.inner().white_side.occupancy, BoardMask::from(0xFFFF));
     assert_eq!(
-        board.black_side.occupancy,
+        board.inner().black_side.occupancy,
         BoardMask::from(0xFFFF << (8 * 6))
     );
 }

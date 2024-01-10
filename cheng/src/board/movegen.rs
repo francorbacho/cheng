@@ -38,9 +38,10 @@ impl<'a> MoveGenerator<'a> {
     }
 
     fn generate_all_moves(&mut self) {
-        if self.board.result().is_some() {
-            return;
-        }
+        // FIXME:
+        // if self.board.result().is_some() {
+        //     return;
+        // }
 
         self.generate_moves_ignoring_game_ended();
         self.generate_castles_ignoring_game_ended();

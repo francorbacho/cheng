@@ -1,4 +1,4 @@
-use cheng::BorkedBoard;
+use cheng::{BorkedBoard, FromIntoFen};
 
 mod perft;
 use perft::perft;

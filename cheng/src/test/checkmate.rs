@@ -1,13 +1,14 @@
 use crate::{
-    board::{BorkedBoard, GameResult},
+    board::{Board, GameResult},
     sides::Side,
+    FromIntoFen,
 };
 
 #[test]
 fn test_simple_queen_check() {
     crate::init();
 
-    let mut board = BorkedBoard::default();
+    let mut board = Board::default();
     board.try_feed("e2e4").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -16,13 +17,13 @@ fn test_simple_queen_check() {
 
     board.try_feed("f3f7").unwrap();
 
-    assert!(board.black_side.king_in_check);
-    assert_eq!(board.result(), None);
+    assert!(board.inner().black_side.king_in_check);
+    assert_eq!(board.result(), GameResult::Undecided);
 
     board.try_feed("e8f7").unwrap();
 
-    assert!(!board.black_side.king_in_check);
-    assert_eq!(board.result(), None);
+    assert!(!board.inner().black_side.king_in_check);
+    assert_eq!(board.result(), GameResult::Undecided);
 }
 
 #[test]
@@ -30,7 +31,7 @@ fn test_checkmate_fast() {
     crate::init();
 
     // Scholar's mate.
-    let mut board = BorkedBoard::default();
+    let mut board = Board::default();
     board.try_feed("e2e4").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -44,13 +45,13 @@ fn test_checkmate_fast() {
 
     assert_eq!(
         board.result(),
-        Some(GameResult::Checkmate {
+        GameResult::Checkmate {
             winner: Side::White
-        })
+        }
     );
 
     // Fool's mate.
-    let mut board = BorkedBoard::default();
+    let mut board = Board::default();
     board.try_feed("f2f3").unwrap();
     board.try_feed("e7e5").unwrap();
 
@@ -59,8 +60,8 @@ fn test_checkmate_fast() {
 
     assert_eq!(
         board.result(),
-        Some(GameResult::Checkmate {
+        GameResult::Checkmate {
             winner: Side::Black
-        })
+        }
     );
 }

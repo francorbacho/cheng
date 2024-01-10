@@ -1,6 +1,7 @@
 #![feature(portable_simd)]
 
 mod board;
+mod fen;
 mod movegen;
 mod movement;
 mod pieces;
@@ -11,7 +12,8 @@ mod square;
 use movegen::{Bishop, PieceExt, Rook};
 
 pub use crate::{
-    board::{BorkedBoard, FENParsingError, GameResult, MoveGenerator},
+    board::{Board, BorkedBoard, FENParsingError, GameResult, MoveGenerator},
+    fen::FromIntoFen,
     movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
     sides::Side,

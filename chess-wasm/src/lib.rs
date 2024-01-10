@@ -2,15 +2,15 @@ use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
-use cheng::{BorkedBoard, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
+use cheng::{Board, FromIntoFen, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
 
-static mut BOARD: Option<BorkedBoard> = None;
+static mut BOARD: Option<Board> = None;
 
-fn get_board() -> &'static BorkedBoard {
+fn get_board() -> &'static Board {
     unsafe { BOARD.as_ref() }.expect("BOARD was not initialized")
 }
 
-fn get_board_mut() -> &'static mut BorkedBoard {
+fn get_board_mut() -> &'static mut Board {
     unsafe { BOARD.as_mut() }.expect("BOARD was not initialized")
 }
 
@@ -27,13 +27,13 @@ pub fn main() {
     cheng::init();
 
     unsafe {
-        BOARD = Some(BorkedBoard::default());
+        BOARD = Some(Board::default());
     }
 }
 
 #[wasm_bindgen(js_name = "loadBoardFromFen")]
 pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
-    if let Ok(board) = BorkedBoard::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
+    if let Ok(board) = Board::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
         unsafe {
             BOARD = Some(board);
         };
@@ -51,7 +51,7 @@ pub fn board_to_fen() -> JsString {
 #[wasm_bindgen(js_name = "getSideToMove")]
 #[must_use]
 pub fn get_side_to_move() -> JsString {
-    side_to_js_string(get_board().turn)
+    side_to_js_string(get_board().turn())
 }
 
 #[wasm_bindgen(getter_with_clone)]
@@ -69,18 +69,15 @@ pub fn get_state() -> GameState {
     let result = board.result();
     GameState {
         result: match result {
-            Some(GameResult::Checkmate { .. }) => "checkmate".to_string(),
-            Some(GameResult::Draw { .. }) => "draw".to_string(),
-            None => String::new(),
+            GameResult::Checkmate { .. } => "checkmate".to_string(),
+            GameResult::Draw { .. } => "draw".to_string(),
+            GameResult::Undecided => String::new(),
         },
-        winner: result.and_then(|result| {
-            if let GameResult::Checkmate { winner } = result {
-                Some(format!("{winner:?}"))
-            } else {
-                None
-            }
-        }),
-        king_in_check: board.side(board.turn).king_in_check,
+        winner: match result {
+            GameResult::Checkmate { winner } => Some(format!("{winner:?}")),
+            _ => None,
+        },
+        king_in_check: board.inner().side(board.turn()).king_in_check,
     }
 }
 
@@ -94,7 +91,7 @@ pub fn get_pieces() -> js_sys::Array {
     let piece_field = JsString::from("piece");
     let position_field = JsString::from("position");
 
-    for (piece, square) in board {
+    for (piece, square) in board.inner() {
         let SidedPiece(side, piece) = piece;
 
         let piece_field_js_value = match piece {
@@ -153,41 +150,44 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
     };
 
     let moved_piece_is_pawn = board
-        .side(board.turn)
+        .inner()
+        .side(board.turn())
         .pieces
         .piece(Piece::Pawn)
         .get(movement.origin);
 
-    let en_passant_square = board.side(board.turn.opposite()).en_passant;
+    let en_passant_square = board.inner().side(board.turn().opposite()).en_passant;
     let passed_en_passant_pawn_square = moved_piece_is_pawn
         .then_some(en_passant_square)
         .filter(|&square| square == Some(movement.destination))
         .flatten()
-        .map(|square| format!("{:?}", square.next_rank(board.turn.opposite())));
+        .map(|square| format!("{:?}", square.next_rank(board.turn().opposite())));
 
     let move_is_capture = passed_en_passant_pawn_square.is_some()
         || board
-            .side(board.turn.opposite())
+            .inner()
+            .side(board.turn().opposite())
             .occupancy
             .get(movement.destination);
 
     // TODO: This is code from the feed function. Obviously this is less than ideal.
     // We should be using a different interface other than LegalMove.
     let moved_piece_is_king = board
-        .side(board.turn)
+        .inner()
+        .side(board.turn())
         .pieces
         .piece(Piece::King)
         .get(movement.origin);
     let castle_side = if moved_piece_is_king {
-        cheng::Castle::move_could_be_castle(board.turn, &movement)
+        cheng::Castle::move_could_be_castle(board.turn(), &movement)
     } else {
         None
     };
 
     let (castle_side, rook_square_before_castle, rook_square_after_castle) =
         if let Some(castle_side) = castle_side {
-            let rook_square_before_castle = castle_side.rook_position_before_castle(board.turn);
-            let rook_square_after_castle = castle_side.rook_position_after_castle(board.turn);
+            let rook_square_before_castle = castle_side.rook_position_before_castle(board.turn());
+            let rook_square_after_castle = castle_side.rook_position_after_castle(board.turn());
             (
                 Some(format!("{castle_side:?}")),
                 Some(format!("{rook_square_before_castle:?}")),

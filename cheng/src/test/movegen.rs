@@ -1,10 +1,10 @@
 use crate::{
-    board::BoardMask,
+    board::{Board, BoardMask},
     movegen::{self, steady, Bishop, King, PieceExt, Rook},
     movement::{Castle, MoveKind},
     side_state::CastlingRights,
     square::prelude::*,
-    BorkedBoard, Piece, PseudoMove, Side,
+    BorkedBoard, FromIntoFen, Piece, PseudoMove, Side,
 };
 
 #[test]
@@ -155,7 +155,7 @@ fn test_movegen_cant_slide_to_friendly_occupation() {
 fn test_movegen_king_cant_move_to_threaten() {
     crate::init();
 
-    let mut board = BorkedBoard::default();
+    let mut board = Board::default();
     board.try_feed("b2b3").unwrap();
     board.try_feed("e7e5").unwrap();
 

@@ -1,6 +1,6 @@
 use crate::{
     side_state::{CastlingRights, SideState},
-    BorkedBoard, Piece, Side, Square,
+    Board, BorkedBoard, FromIntoFen, Piece, Side, Square,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -18,9 +18,23 @@ pub enum FENParsingError {
     InvalidFullMoveClock,
 }
 
-impl BorkedBoard {
+impl FromIntoFen for Board {
+    type Error = FENParsingError;
+
+    fn into_fen(&self) -> String {
+        self.inner.into_fen()
+    }
+
+    fn from_fen(fen: &str) -> Result<Self, Self::Error> {
+        Ok(Board::try_from(BorkedBoard::from_fen(fen)?).unwrap())
+    }
+}
+
+impl FromIntoFen for BorkedBoard {
+    type Error = FENParsingError;
+
     #[must_use]
-    pub fn into_fen(&self) -> String {
+    fn into_fen(&self) -> String {
         use std::fmt::Write;
 
         let mut fen = String::new();
@@ -79,7 +93,7 @@ impl BorkedBoard {
         fen
     }
 
-    pub fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
+    fn from_fen(fen: &str) -> Result<Self, FENParsingError> {
         use FENParsingError::*;
 
         let fen = fen.trim();
@@ -176,7 +190,6 @@ impl BorkedBoard {
                 turn,
                 halfmove_clock,
                 fullmove_clock,
-                result: None,
             })
         }
     }

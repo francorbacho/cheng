@@ -1,10 +1,11 @@
 use std::str::FromStr;
 
 use crate::{
-    board::{BoardMask, BorkedBoard},
+    board::{Board, BoardMask, BorkedBoard},
     movement::{MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
     square::prelude::*,
+    FromIntoFen,
 };
 
 #[test]
@@ -50,55 +51,55 @@ fn test_move_parsing() {
 
 #[test]
 fn test_move_simple_opening() {
-    let mut board = BorkedBoard::default();
+    let mut board = Board::default();
 
     board.try_feed("e2e4").unwrap();
     board.try_feed("c7c5").unwrap();
 
     assert_eq!(
-        board.white_side.occupancy,
+        board.inner().white_side.occupancy,
         BoardMask::from(&[A1, A2, B1, B2, C1, C2, D1, D2, E1, E4, F1, F2, G1, G2, H1, H2][..])
     );
 
     assert_eq!(
-        board.white_side.pieces.piece(Piece::Pawn),
+        board.inner().white_side.pieces.piece(Piece::Pawn),
         BoardMask::from(&[A2, B2, C2, D2, E4, F2, G2, H2][..])
     );
 
     assert_eq!(
-        board.black_side.occupancy,
+        board.inner().black_side.occupancy,
         BoardMask::from(&[A7, A8, B7, B8, C5, C8, D7, D8, E7, E8, F7, F8, G7, G8, H7, H8][..])
     );
 
     assert_eq!(
-        board.black_side.pieces.piece(Piece::Pawn),
+        board.inner().black_side.pieces.piece(Piece::Pawn),
         BoardMask::from(&[A7, B7, C5, D7, E7, F7, G7, H7][..])
     );
 }
 
 #[test]
 fn test_move_promotion() {
-    let mut board = BorkedBoard::from_fen("8/6P1/6K1/8/8/5k2/5p2/8 w - - 0 1").unwrap();
+    let mut board = Board::from_fen("8/6P1/6K1/8/8/5k2/5p2/8 w - - 0 1").unwrap();
     board.try_feed("g7g8q").unwrap();
     board.try_feed("f2f1r").unwrap();
 
     assert_eq!(
-        board.white_side.pieces.piece(Piece::Pawn),
+        board.inner().white_side.pieces.piece(Piece::Pawn),
         BoardMask::default()
     );
 
     assert_eq!(
-        board.black_side.pieces.piece(Piece::Pawn),
+        board.inner().black_side.pieces.piece(Piece::Pawn),
         BoardMask::default()
     );
 
     assert_eq!(
-        board.white_side.pieces.piece(Piece::Queen),
+        board.inner().white_side.pieces.piece(Piece::Queen),
         BoardMask::from(G8),
     );
 
     assert_eq!(
-        board.black_side.pieces.piece(Piece::Rook),
+        board.inner().black_side.pieces.piece(Piece::Rook),
         BoardMask::from(F1),
     );
 }

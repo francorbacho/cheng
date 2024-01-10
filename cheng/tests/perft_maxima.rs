@@ -1,7 +1,7 @@
 mod perft;
 use perft::perft;
 
-use cheng::BorkedBoard;
+use cheng::{BorkedBoard, FromIntoFen};
 
 #[test]
 fn perft_maxima() {

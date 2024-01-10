@@ -1,5 +1,5 @@
 use cheng::prelude::*;
-use cheng::{BorkedBoard, Side};
+use cheng::{BorkedBoard, FromIntoFen, Side};
 
 #[test]
 fn test_fen_generation() {

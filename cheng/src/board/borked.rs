@@ -12,20 +12,16 @@ pub struct BorkedBoard {
     pub turn: Side,
     pub halfmove_clock: usize,
     pub fullmove_clock: usize,
-    pub(super) result: Option<GameResult>,
 }
 
 impl Default for BorkedBoard {
     #[inline]
     fn default() -> Self {
-        Self::from_fen(BorkedBoard::DEFAULT_FEN).unwrap()
+        Self::empty()
     }
 }
 
 impl BorkedBoard {
-    pub const DEFAULT_FEN: &'static str =
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
     #[inline]
     #[must_use]
     pub fn empty() -> Self {
@@ -35,14 +31,7 @@ impl BorkedBoard {
             turn: Side::White,
             halfmove_clock: 0,
             fullmove_clock: 1,
-            result: None,
         }
-    }
-
-    #[inline]
-    #[must_use]
-    pub fn result(&self) -> Option<GameResult> {
-        self.result
     }
 
     #[inline]
@@ -62,10 +51,16 @@ impl BorkedBoard {
         }
     }
 
+    #[inline]
     #[must_use]
-    pub fn check_valid_move(&self, movement: &PseudoMove) -> bool {
-        self.moves()
-            .any(|m| m.origin == movement.origin && m.destination == movement.destination)
+    pub fn is_board_valid(&self) -> bool {
+        !self.side(self.turn.opposite()).king_in_check
+    }
+
+    pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
+        let mut clone = self.clone();
+        clone.feed_unchecked(&pseudomove);
+        clone.is_board_valid()
     }
 
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>
@@ -77,30 +72,13 @@ impl BorkedBoard {
             Err(err) => return Err(TryFeedError::Parsing(err)),
         };
 
-        let moved_piece_is_king = self
-            .side(self.turn)
-            .pieces
-            .piece(Piece::King)
-            .get(movement.origin);
-
-        if moved_piece_is_king {
-            if let Some(c) = Castle::move_could_be_castle(self.turn, &movement) {
-                movement.kind = MoveKind::Castle(c);
-            }
-        }
-
         let Some(legalmove) = LegalMove::new(movement, self) else {
             return Err(TryFeedError::InvalidMove);
         };
 
-        self.feed(legalmove);
+        self.feed_unchecked(&legalmove.into());
 
         Ok(())
-    }
-
-    pub fn feed(&mut self, movement: LegalMove) {
-        self.feed_unchecked(&movement.into());
-        self.update_result();
     }
 
     pub fn feed_unchecked(&mut self, movement: &PseudoMove) {
@@ -149,21 +127,22 @@ impl BorkedBoard {
         self.turn = self.turn.opposite();
     }
 
-    pub fn update_result(&mut self) {
+    pub fn compute_result(&self) -> GameResult {
         if self.halfmove_clock >= 100 {
-            self.result = Some(GameResult::Draw);
-            return;
+            return GameResult::Draw;
         }
 
         if self.moves().len() == 0 {
             if self.side(self.turn).king_in_check {
-                self.result = Some(GameResult::Checkmate {
+                return GameResult::Checkmate {
                     winner: self.turn.opposite(),
-                });
+                };
             } else {
-                self.result = Some(GameResult::Draw);
+                return GameResult::Draw;
             }
         }
+
+        GameResult::Undecided
     }
 
     #[must_use]

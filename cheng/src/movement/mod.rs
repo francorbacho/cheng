@@ -44,7 +44,7 @@ impl<'a> LegalMove<'a> {
             }
         }
 
-        if board.check_valid_move(&pseudo_move) {
+        if board.is_move_valid(pseudo_move.clone()) {
             Some(LegalMove {
                 origin: pseudo_move.origin,
                 destination: pseudo_move.destination,

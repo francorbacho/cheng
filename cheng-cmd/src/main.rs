@@ -77,13 +77,18 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
 fn version() {
     use std::mem::size_of_val;
+    use std::ptr::addr_of;
 
     const GIT_HASH: &'static str = env!("GIT_HASH");
     const GIT_DIRTY: &'static str = env!("GIT_DIRTY");
 
     let version = format!("{GIT_HASH}-{GIT_DIRTY}");
-    let rook_hash_size = size_of_val(unsafe { &cheng::movegen::ROOK_MOVES });
-    let bishop_hash_size = size_of_val(unsafe { &cheng::movegen::BISHOP_MOVES });
+
+    // SAFETY: This is safe because we don't actually care about its value.
+    // This was done using addr_of!() because rust emitted the warning tracked in
+    // https://github.com/rust-lang/rust/issues/114447
+    let rook_hash_size = size_of_val(unsafe { &*addr_of!(cheng::movegen::ROOK_MOVES) });
+    let bishop_hash_size = size_of_val(unsafe { &*addr_of!(cheng::movegen::BISHOP_MOVES) });
 
     println!("cheng-cmd - {version}");
     println!("Rook hash size: {rook_hash_size}");

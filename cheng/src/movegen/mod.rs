@@ -1,20 +1,33 @@
 use self::hash::magic_hash;
 use crate::{board::BoardMask, pieces::Piece, square::Square, Side, SidedPiece};
 
-pub use pieces::{Bishop, Rook};
-
 mod hash;
-mod pieces;
 pub(crate) mod steady;
 
 #[rustfmt::skip]
 mod precomputed;
 
-pub static mut ROOK_MOVES: [[BoardMask; 1 << <Rook as steady::SlidingPiece>::NBITS]; 64] =
-    [[BoardMask::const_from(0); 1 << <Rook as steady::SlidingPiece>::NBITS]; 64];
+pub struct Bishop;
 
-pub static mut BISHOP_MOVES: [[BoardMask; 1 << <Bishop as steady::SlidingPiece>::NBITS]; 64] =
-    [[BoardMask::const_from(0); 1 << <Bishop as steady::SlidingPiece>::NBITS]; 64];
+impl Bishop {
+    pub const fn nbits() -> u32 {
+        <Self as steady::SlidingPiece>::NBITS
+    }
+}
+
+pub struct Rook;
+
+impl Rook {
+    pub const fn nbits() -> u32 {
+        <Self as steady::SlidingPiece>::NBITS
+    }
+}
+
+pub static mut ROOK_MOVES: [[BoardMask; 1 << Rook::nbits()]; 64] =
+    [[BoardMask::const_from(0); 1 << Rook::nbits()]; 64];
+
+pub static mut BISHOP_MOVES: [[BoardMask; 1 << Bishop::nbits()]; 64] =
+    [[BoardMask::const_from(0); 1 << Bishop::nbits()]; 64];
 
 pub fn moves(
     SidedPiece(side, piece): SidedPiece,
@@ -126,7 +139,7 @@ impl PieceExt for Rook {
             let magic = precomputed::ROOK_MAGICS[index];
             for i in 0..occupancy_variations {
                 let occupancy = relevant_occupancy.variation(i);
-                let hash = magic_hash(magic, occupancy, <Rook as steady::SlidingPiece>::NBITS);
+                let hash = magic_hash(magic, occupancy, Rook::nbits());
 
                 unsafe {
                     let moves = <Rook as steady::SlidingPiece>::moves(square, occupancy);
@@ -142,11 +155,7 @@ impl PieceExt for Rook {
     fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
         let occupancy = precomputed::ROOK_OCCUPANCY[index].only(friendly.intersection(opposite));
-        let hash = magic_hash(
-            precomputed::ROOK_MAGICS[index],
-            occupancy,
-            <Rook as steady::SlidingPiece>::NBITS,
-        );
+        let hash = magic_hash(precomputed::ROOK_MAGICS[index], occupancy, Rook::nbits());
 
         unsafe { ROOK_MOVES[index][hash] }
     }
@@ -161,7 +170,7 @@ impl PieceExt for Bishop {
             let magic = precomputed::BISHOP_MAGICS[index];
             for i in 0..occupancy_variations {
                 let occupancy = relevant_occupancy.variation(i);
-                let hash = magic_hash(magic, occupancy, <Bishop as steady::SlidingPiece>::NBITS);
+                let hash = magic_hash(magic, occupancy, Bishop::nbits());
 
                 unsafe {
                     let moves = <Bishop as steady::SlidingPiece>::moves(square, occupancy);
@@ -180,7 +189,7 @@ impl PieceExt for Bishop {
         let hash = magic_hash(
             precomputed::BISHOP_MAGICS[index],
             occupancy,
-            <Bishop as steady::SlidingPiece>::NBITS,
+            Bishop::nbits(),
         );
 
         unsafe { BISHOP_MOVES[index][hash] }

@@ -10,3 +10,4 @@ rand = "0.8"
 
 [features]
 simd = []
+low_nbits = []

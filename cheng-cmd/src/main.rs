@@ -76,6 +76,7 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 }
 
 fn version() {
+    use cheng::movegen::{Bishop, Rook};
     use std::mem::size_of_val;
     use std::ptr::addr_of;
 
@@ -91,8 +92,11 @@ fn version() {
     let bishop_hash_size = size_of_val(unsafe { &*addr_of!(cheng::movegen::BISHOP_MOVES) });
 
     println!("cheng-cmd - {version}");
-    println!("Rook hash size: {rook_hash_size}");
-    println!("Bishop hash size: {bishop_hash_size}");
+    println!("Rook hash size: {rook_hash_size} (nbits={})", Rook::nbits());
+    println!(
+        "Bishop hash size: {bishop_hash_size} (nbits={})",
+        Bishop::nbits()
+    );
 }
 
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {

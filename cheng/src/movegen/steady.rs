@@ -1,4 +1,4 @@
-use super::pieces::{Bishop, Rook};
+use super::{Bishop, Rook};
 
 use crate::{board::BoardMask, square::Square};
 
@@ -23,10 +23,10 @@ pub trait SlidingPiece {
 }
 
 impl SlidingPiece for Rook {
-    #[cfg(release)]
+    #[cfg(feature = "low_nbits")]
     const NBITS: u32 = 12;
 
-    #[cfg(not(release))]
+    #[cfg(not(feature = "low_nbits"))]
     const NBITS: u32 = 14;
 
     fn relevant_occupancy(square: Square) -> BoardMask {
@@ -79,10 +79,10 @@ impl SlidingPiece for Rook {
 }
 
 impl SlidingPiece for Bishop {
-    #[cfg(release)]
+    #[cfg(feature = "low_nbits")]
     const NBITS: u32 = 9;
 
-    #[cfg(not(release))]
+    #[cfg(not(feature = "low_nbits"))]
     const NBITS: u32 = 14;
 
     fn relevant_occupancy(square: Square) -> BoardMask {

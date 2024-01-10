@@ -12,8 +12,10 @@ mod steady;
 #[path = "src/movegen/hash.rs"]
 mod hash;
 
-#[path = "src/movegen/pieces.rs"]
-mod pieces;
+mod pieces {
+    pub struct Bishop;
+    pub struct Rook;
+}
 
 #[path = "src/sides.rs"]
 mod sides;

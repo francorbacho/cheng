@@ -67,8 +67,27 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "ev" => evaluate(context, parts),
         "d" => display_board(context, parts),
         "dump-tables" => dump_tables(),
+        "version" => {
+            version();
+            Ok(())
+        }
         other => Err(format!("command not found: {other}")),
     }
+}
+
+fn version() {
+    use std::mem::size_of_val;
+
+    const GIT_HASH: &'static str = env!("GIT_HASH");
+    const GIT_DIRTY: &'static str = env!("GIT_DIRTY");
+
+    let version = format!("{GIT_HASH}-{GIT_DIRTY}");
+    let rook_hash_size = size_of_val(unsafe { &cheng::movegen::ROOK_MOVES });
+    let bishop_hash_size = size_of_val(unsafe { &cheng::movegen::BISHOP_MOVES });
+
+    println!("cheng-cmd - {version}");
+    println!("Rook hash size: {rook_hash_size}");
+    println!("Bishop hash size: {bishop_hash_size}");
 }
 
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {

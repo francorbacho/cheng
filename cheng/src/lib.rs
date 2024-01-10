@@ -2,7 +2,7 @@
 
 mod board;
 mod fen;
-mod movegen;
+pub mod movegen;
 mod movement;
 mod pieces;
 mod side_state;

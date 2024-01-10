@@ -1,6 +1,6 @@
 use crate::{
-    side_state::SideState, GameResult, LegalMove, MoveGenerator, Piece,
-    PseudoMove, Side, SidedPiece,
+    side_state::SideState, GameResult, LegalMove, MoveGenerator, Piece, PseudoMove, Side,
+    SidedPiece,
 };
 
 use super::TryFeedError;

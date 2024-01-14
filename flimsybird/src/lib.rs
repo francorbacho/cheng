@@ -106,7 +106,7 @@ fn board_rec_evaluate(
         for movement in moves {
             let mut board_clone = board.clone();
             board_clone.feed_unchecked(&movement);
-            if !board_clone.is_board_valid() {
+            if board_clone.is_borked() {
                 continue;
             }
 
@@ -122,7 +122,7 @@ fn board_rec_evaluate(
         for movement in moves {
             let mut board_clone = board.clone();
             board_clone.feed_unchecked(&movement);
-            if !board_clone.is_board_valid() {
+            if board_clone.is_borked() {
                 continue;
             }
 

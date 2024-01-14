@@ -53,14 +53,14 @@ impl BorkedBoard {
 
     #[inline]
     #[must_use]
-    pub fn is_board_valid(&self) -> bool {
-        !self.side(self.turn.opposite()).king_in_check
+    pub fn is_borked(&self) -> bool {
+        self.side(self.turn.opposite()).king_in_check
     }
 
     pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
         let mut clone = self.clone();
         clone.feed_unchecked(&pseudomove);
-        clone.is_board_valid()
+        !clone.is_borked()
     }
 
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>
@@ -128,7 +128,7 @@ impl BorkedBoard {
     }
 
     pub fn compute_result(&self) -> GameResult {
-        debug_assert!(self.is_board_valid());
+        debug_assert!(!self.is_borked());
 
         if self.halfmove_clock >= 100 {
             return GameResult::Draw;
@@ -137,7 +137,7 @@ impl BorkedBoard {
         for pseudomove in self.moves() {
             let mut clone = self.clone();
             clone.feed_unchecked(&pseudomove);
-            if clone.is_board_valid() {
+            if !clone.is_borked() {
                 return GameResult::Undecided;
             }
         }

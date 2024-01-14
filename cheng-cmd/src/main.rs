@@ -21,6 +21,9 @@ pub struct Context {
 }
 
 fn main() -> Result<(), String> {
+    env_logger::init();
+
+    log::info!("initializing cheng...");
     cheng::init();
 
     let argv: Vec<_> = env::args().collect();

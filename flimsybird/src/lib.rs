@@ -40,6 +40,14 @@ impl Evaluation {
         }
     }
 
+    pub fn wins(side: Side) -> Self {
+        if let Side::White = side {
+            Evaluation::WHITE_WIN
+        } else {
+            Evaluation::BLACK_WIN
+        }
+    }
+
     pub fn worst_evaluation(side: Side) -> Self {
         if let Side::White = side {
             Evaluation::BLACK_WIN

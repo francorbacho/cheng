@@ -3,20 +3,19 @@ use crate::{
     pieces::Piece,
     side_state::CastlingRights,
     square::Square,
-    BorkedBoard, LegalMove, PseudoMove, Side, SidedPiece,
+    Board, BorkedBoard, LegalMove, PseudoMove, Side, SidedPiece,
 };
 
 use super::BoardMask;
 
-pub struct MoveGenerator<'a> {
+pub struct PseudoMoveGenerator<'a> {
     pub board: &'a BorkedBoard,
     pub side: Side,
-
-    pub cached_moves: Vec<LegalMove<'a>>,
+    pub cached_moves: Vec<PseudoMove>,
     pub idx: usize,
 }
 
-impl<'a> MoveGenerator<'a> {
+impl<'a> PseudoMoveGenerator<'a> {
     pub fn new(board: &'a BorkedBoard) -> Self {
         Self::new_for_side(board, board.turn)
     }
@@ -47,23 +46,8 @@ impl<'a> MoveGenerator<'a> {
         self.generate_castles_ignoring_game_ended();
     }
 
-    fn checked_add_move(&mut self, movement: PseudoMove) {
-        let mut clone = self.board.clone();
-        clone.turn = self.side;
-        clone.feed_unchecked(&movement);
-        if clone.side(self.side).king_in_check {
-            return;
-        }
-        self.unchecked_add_move(movement);
-    }
-
     #[inline]
-    fn unchecked_add_move(&mut self, movement: PseudoMove) {
-        self.add_move(unsafe { LegalMove::unchecked_new(movement, &self.board) });
-    }
-
-    #[inline]
-    fn add_move(&mut self, movement: LegalMove<'a>) {
+    fn add_move(&mut self, movement: PseudoMove) {
         self.cached_moves.push(movement);
     }
 
@@ -112,7 +96,7 @@ impl<'a> MoveGenerator<'a> {
                     kind: MoveKind::Castle(Castle::QueenSide),
                 };
 
-                self.unchecked_add_move(queen_side_castle);
+                self.add_move(queen_side_castle);
             }
         }
 
@@ -132,7 +116,7 @@ impl<'a> MoveGenerator<'a> {
                     kind: MoveKind::Castle(Castle::KingSide),
                 };
 
-                self.unchecked_add_move(king_side_castle);
+                self.add_move(king_side_castle);
             }
         }
     }
@@ -169,7 +153,7 @@ impl<'a> MoveGenerator<'a> {
                         kind: MoveKind::Move,
                     };
 
-                    self.checked_add_move(movement);
+                    self.add_move(movement);
                 }
             }
         }
@@ -206,7 +190,7 @@ impl<'a> MoveGenerator<'a> {
                         destination,
                         kind: MoveKind::Promote(piece),
                     };
-                    self.checked_add_move(movement);
+                    self.add_move(movement);
                 }
             }
         } else {
@@ -216,8 +200,30 @@ impl<'a> MoveGenerator<'a> {
                     destination,
                     kind: MoveKind::Move,
                 };
-                self.checked_add_move(movement);
+                self.add_move(movement);
             }
+        }
+    }
+}
+
+impl<'a> Iterator for PseudoMoveGenerator<'a> {
+    type Item = PseudoMove;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let pseudomove = self.cached_moves.get(self.idx)?;
+        self.idx += 1;
+        Some(pseudomove.clone())
+    }
+}
+
+pub struct MoveGenerator<'a> {
+    pub inner: PseudoMoveGenerator<'a>,
+}
+
+impl<'a> MoveGenerator<'a> {
+    pub fn new(board: &'a Board) -> Self {
+        Self {
+            inner: PseudoMoveGenerator::new(board.inner()),
         }
     }
 }
@@ -226,8 +232,12 @@ impl<'a> Iterator for MoveGenerator<'a> {
     type Item = LegalMove<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let legalmove = self.cached_moves.get(self.idx)?;
-        self.idx += 1;
-        Some(legalmove.clone())
+        let mut pseudomove;
+        loop {
+            pseudomove = self.inner.next()?;
+            if self.inner.board.is_move_valid(pseudomove.clone()) {
+                return Some(unsafe { LegalMove::unchecked_new(pseudomove, self.inner.board) });
+            }
+        }
     }
 }

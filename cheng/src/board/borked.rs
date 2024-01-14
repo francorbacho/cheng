@@ -1,5 +1,5 @@
 use crate::{
-    side_state::SideState, GameResult, LegalMove, MoveGenerator, Piece, PseudoMove, Side,
+    side_state::SideState, GameResult, LegalMove, Piece, PseudoMove, PseudoMoveGenerator, Side,
     SidedPiece,
 };
 
@@ -146,8 +146,8 @@ impl BorkedBoard {
     }
 
     #[must_use]
-    pub fn moves(&self) -> MoveGenerator {
-        MoveGenerator::new(self)
+    pub fn moves(&self) -> PseudoMoveGenerator {
+        PseudoMoveGenerator::new(self)
     }
 
     #[must_use]

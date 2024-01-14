@@ -1,8 +1,11 @@
 use rand::Rng;
 
+use std::convert::TryFrom;
 use std::fmt::{self, Display};
 
-use cheng::{Board, GameResult, LegalMove, MoveGenerator, Piece, Side, SidedPiece};
+use cheng::{
+    Board, BorkedBoard, GameResult, LegalMove, Piece, PseudoMoveGenerator, Side, SidedPiece,
+};
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Evaluation(pub i32);
@@ -67,21 +70,22 @@ impl Evaluable for Board {
         let max_depth = 3;
         let alpha = Evaluation::BLACK_WIN;
         let beta = Evaluation::WHITE_WIN;
-        board_rec_evaluate(self, max_depth, alpha, beta)
+        board_rec_evaluate(self.inner(), max_depth, alpha, beta)
     }
 }
 
 fn board_rec_evaluate(
-    board: &mut Board,
+    board: &BorkedBoard,
     depth: u8,
     mut alpha: Evaluation,
     mut beta: Evaluation,
 ) -> (Option<LegalMove>, Evaluation) {
     if depth == 0 {
-        return (None, board_static_evaluation(board));
+        let board = Board::try_from(board.clone()).unwrap();
+        return (None, board_static_evaluation(&board));
     }
 
-    let mut best_evaluation = Evaluation::worst_evaluation(board.turn());
+    let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
     let mut best_move = None;
 
     let mut moves = board.moves();
@@ -91,18 +95,22 @@ fn board_rec_evaluate(
     });
 
     if moves.len() == 0 {
-        return (None, board_static_evaluation(board));
+        let board = Board::try_from(board.clone()).unwrap();
+        return (None, board_static_evaluation(&board));
     }
 
-    if board.turn() == Side::White {
+    if board.turn == Side::White {
         for movement in moves {
             let mut board_clone = board.clone();
-            board_clone.feed(movement.clone());
+            board_clone.feed_unchecked(&movement);
+            if !board_clone.is_board_valid() {
+                continue;
+            }
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             alpha = Evaluation(alpha.0.max(new_ev.0));
 
-            if new_ev.is_better_than(board.turn(), best_evaluation) || best_move.is_none() {
+            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
                 best_move = Some(movement);
                 best_evaluation = new_ev;
             }
@@ -110,19 +118,24 @@ fn board_rec_evaluate(
     } else {
         for movement in moves {
             let mut board_clone = board.clone();
-            board_clone.feed(movement.clone());
+            board_clone.feed_unchecked(&movement);
+            if !board_clone.is_board_valid() {
+                continue;
+            }
 
             let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
             beta = Evaluation(beta.0.min(new_ev.0));
 
-            if new_ev.is_better_than(board.turn(), best_evaluation) || best_move.is_none() {
+            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
                 best_move = Some(movement);
                 best_evaluation = new_ev;
             }
         }
     }
 
-    (best_move, best_evaluation)
+    let best_move = unsafe { LegalMove::unchecked_new(best_move.unwrap(), board) };
+
+    (Some(best_move), best_evaluation)
 }
 
 fn board_static_evaluation(board: &Board) -> Evaluation {
@@ -149,8 +162,8 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
         result += side_factor * piece_value;
     }
 
-    let white_moves = MoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;
-    let black_moves = MoveGenerator::new_for_side(board.inner(), Side::Black).len() as i32;
+    let white_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;
+    let black_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::Black).len() as i32;
 
     result += 100.min(5 * (white_moves - black_moves));
     Evaluation(result)

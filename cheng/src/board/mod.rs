@@ -7,7 +7,7 @@ pub use mask::BoardMask;
 mod iterator;
 
 mod movegen;
-pub use movegen::MoveGenerator;
+pub use movegen::{MoveGenerator, PseudoMoveGenerator};
 
 mod parsing;
 pub use parsing::FENParsingError;
@@ -102,6 +102,6 @@ impl Board {
     }
 
     pub fn moves(&self) -> MoveGenerator {
-        MoveGenerator::new(&self.inner)
+        MoveGenerator::new(self)
     }
 }

@@ -2,7 +2,7 @@ use cheng::GameResult;
 use cheng::{Board, FromIntoFen};
 
 #[test]
-fn test_50_move_draw() {
+fn correctness_game_result_50_move_draw() {
     // https://lichess.org/analysis/fromPosition/8/2p1k3/8/1P2K3/8/8/8/8_w_-_-_98_1
     cheng::init();
 
@@ -15,11 +15,20 @@ fn test_50_move_draw() {
 }
 
 #[test]
-fn test_stalemate() {
+fn correctness_game_result_stalemate() {
     // https://lichess.org/analysis/7k/8/8/6Q1/8/8/8/4K3_w_-_-_0_1?color=white
     cheng::init();
 
     let mut board = Board::from_fen("7k/8/8/6Q1/8/8/8/4K3 w - - 0 1").unwrap();
     board.try_feed("g5g6").unwrap();
     assert_eq!(board.result(), GameResult::Draw);
+}
+
+#[test]
+fn correctness_move_is_invalid() {
+    cheng::init();
+
+    let mut board = Board::default();
+    let err = board.try_feed("e2f5");
+    assert!(err.is_err());
 }

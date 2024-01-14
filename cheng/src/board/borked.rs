@@ -128,21 +128,27 @@ impl BorkedBoard {
     }
 
     pub fn compute_result(&self) -> GameResult {
+        debug_assert!(self.is_board_valid());
+
         if self.halfmove_clock >= 100 {
             return GameResult::Draw;
         }
 
-        if self.moves().len() == 0 {
-            if self.side(self.turn).king_in_check {
-                return GameResult::Checkmate {
-                    winner: self.turn.opposite(),
-                };
-            } else {
-                return GameResult::Draw;
+        for pseudomove in self.moves() {
+            let mut clone = self.clone();
+            clone.feed_unchecked(&pseudomove);
+            if clone.is_board_valid() {
+                return GameResult::Undecided;
             }
         }
 
-        GameResult::Undecided
+        if self.side(self.turn).king_in_check {
+            GameResult::Checkmate {
+                winner: self.turn.opposite(),
+            }
+        } else {
+            GameResult::Draw
+        }
     }
 
     #[must_use]

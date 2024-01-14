@@ -57,10 +57,10 @@ impl BorkedBoard {
         self.side(self.turn.opposite()).king_in_check
     }
 
-    pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
+    pub fn does_move_bork(&self, pseudomove: PseudoMove) -> bool {
         let mut clone = self.clone();
         clone.feed_unchecked(&pseudomove);
-        !clone.is_borked()
+        clone.is_borked()
     }
 
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>

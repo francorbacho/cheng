@@ -235,7 +235,7 @@ impl<'a> Iterator for MoveGenerator<'a> {
         let mut pseudomove;
         loop {
             pseudomove = self.inner.next()?;
-            if self.inner.board.is_move_valid(pseudomove.clone()) {
+            if !self.inner.board.does_move_bork(pseudomove.clone()) {
                 return Some(unsafe { LegalMove::unchecked_new(pseudomove, self.inner.board) });
             }
         }

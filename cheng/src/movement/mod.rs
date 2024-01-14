@@ -44,15 +44,15 @@ impl<'a> LegalMove<'a> {
             }
         }
 
-        if board.is_move_valid(pseudo_move.clone()) {
+        if board.does_move_bork(pseudo_move.clone()) {
+            None
+        } else {
             Some(LegalMove {
                 origin: pseudo_move.origin,
                 destination: pseudo_move.destination,
                 kind: pseudo_move.kind,
                 _marker: PhantomData::default(),
             })
-        } else {
-            None
         }
     }
 }

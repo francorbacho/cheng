@@ -63,6 +63,21 @@ impl BorkedBoard {
         clone.is_borked()
     }
 
+    pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
+        let Some(piece) = self.side(self.turn).pieces.find(pseudomove.origin) else {
+            return false;
+        };
+
+        let piece = SidedPiece(self.turn, piece);
+
+        crate::movegen::moves(
+            piece,
+            pseudomove.origin,
+            self.side(self.turn).occupancy,
+            self.side(self.turn.opposite()).occupancy,
+        ).get(pseudomove.destination)
+    }
+
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>
     where
         M: TryInto<PseudoMove>,
@@ -71,6 +86,10 @@ impl BorkedBoard {
             Ok(movement) => movement,
             Err(err) => return Err(TryFeedError::Parsing(err)),
         };
+
+        if !self.is_move_valid(movement.clone()) {
+            return Err(TryFeedError::InvalidMove);
+        }
 
         let Some(legalmove) = LegalMove::new(movement, self) else {
             return Err(TryFeedError::InvalidMove);

@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
@@ -15,6 +16,15 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v3
+
+    - name: Checkout pages
+      uses: actions/checkout@v3
+      with:
+          path: 'pages'
+          ref: 'gh-pages'
+          token: ${{ secrets.PUSH_KEY }}
+          repository: 'francorbacho/francorbacho.github.io'
+
     - name: Reconfigure gitignore
       run: sed -i '/web\/pkg/d' .gitignore
     - name: Install latest nightly
@@ -29,10 +39,14 @@ jobs:
         crate: wasm-pack
     - name: Build
       run: ./web/deploy.sh --copy
+
     - name: Deploy
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./web
-        user_name: 'github-actions[bot]'
-        user_email: 'github-actions[bot]@users.noreply.github.com'
+      run: |
+          commit=$(git rev-parse HEAD)
+          cd pages/
+          mv ../web/ cheng
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git add cheng
+          git commit -m "deploy francorbacho/cheng@$commit"
+          git push

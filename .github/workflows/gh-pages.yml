@@ -44,9 +44,9 @@ jobs:
       run: |
           commit=$(git rev-parse HEAD)
           cd pages/
-          mv ../web/ cheng
+          mv ../web/ chess
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com
-          git add cheng
+          git add chess
           git commit -m "deploy francorbacho/cheng@$commit"
           git push

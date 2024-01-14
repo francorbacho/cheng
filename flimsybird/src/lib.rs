@@ -94,11 +94,6 @@ fn board_rec_evaluate(
         mv.destination.to_index() + noise
     });
 
-    if moves.len() == 0 {
-        let board = Board::try_from(board.clone()).unwrap();
-        return (None, board_static_evaluation(&board));
-    }
-
     if board.turn == Side::White {
         for movement in moves {
             let mut board_clone = board.clone();
@@ -133,9 +128,13 @@ fn board_rec_evaluate(
         }
     }
 
-    let best_move = unsafe { LegalMove::unchecked_new(best_move.unwrap(), board) };
-
-    (Some(best_move), best_evaluation)
+    if let Some(best_move) = best_move {
+        let best_move = unsafe { LegalMove::unchecked_new(best_move, board) };
+        (Some(best_move), best_evaluation)
+    } else {
+        let board = Board::try_from(board.clone()).unwrap();
+        (None, board_static_evaluation(&board))
+    }
 }
 
 fn board_static_evaluation(board: &Board) -> Evaluation {

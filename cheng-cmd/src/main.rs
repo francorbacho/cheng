@@ -131,10 +131,7 @@ where
     let mut nodes = 0;
     for movement in moves {
         let mut clone = board.clone();
-
-        if clone.try_feed(movement.clone()).is_err() {
-            continue;
-        }
+        clone.feed(movement.clone());
 
         let move_nodes = incremental_perft(&clone, depth - 1, continue_)?;
         nodes += move_nodes;

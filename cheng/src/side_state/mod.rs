@@ -10,107 +10,6 @@ use crate::{
     Piece, PseudoMove, Side, SidedPiece, Square,
 };
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum CastlingRights {
-    None,
-    QueenSide,
-    KingSide,
-    #[default]
-    Both,
-}
-
-impl CastlingRights {
-    #[inline]
-    pub fn checked_add(&mut self, rhs: CastlingRights) -> Result<(), CastlingRights> {
-        match (*self, rhs) {
-            (lhs, rhs) if lhs == rhs => Err(lhs),
-            (CastlingRights::None, rhs) => {
-                *self = rhs;
-                Ok(())
-            }
-            (CastlingRights::Both, err) => Err(err),
-            (CastlingRights::QueenSide, CastlingRights::KingSide)
-            | (CastlingRights::KingSide, CastlingRights::QueenSide) => {
-                *self = CastlingRights::Both;
-                Ok(())
-            }
-            _ => unreachable!(),
-        }
-    }
-
-    #[inline]
-    pub fn without(self, rhs: CastlingRights) -> CastlingRights {
-        // Clippy's recommedation is IMO less readable.
-        #[allow(clippy::match_same_arms)]
-        match (self, rhs) {
-            (CastlingRights::None, _) => CastlingRights::None,
-            (lhs, rhs) if lhs == rhs => CastlingRights::None,
-            (CastlingRights::Both, CastlingRights::KingSide) => CastlingRights::QueenSide,
-            (CastlingRights::Both, CastlingRights::QueenSide) => CastlingRights::KingSide,
-            (CastlingRights::KingSide, CastlingRights::QueenSide) => CastlingRights::KingSide,
-            (CastlingRights::QueenSide, CastlingRights::KingSide) => CastlingRights::QueenSide,
-            _ => unreachable!(),
-        }
-    }
-
-    #[inline]
-    pub fn queen_side(self) -> bool {
-        match self {
-            Self::None | Self::KingSide => false,
-            Self::QueenSide | Self::Both => true,
-        }
-    }
-
-    #[inline]
-    pub fn king_side(self) -> bool {
-        match self {
-            Self::None | Self::QueenSide => false,
-            Self::KingSide | Self::Both => true,
-        }
-    }
-
-    pub fn to_fen_str(self) -> &'static str {
-        match self {
-            Self::None => "",
-            Self::QueenSide => "q",
-            Self::KingSide => "k",
-            Self::Both => "kq",
-        }
-    }
-
-    /// Parses FEN castling rights for white and black.
-    pub fn parse_fen_from_str(
-        castling_rights: &str,
-    ) -> Result<(CastlingRights, CastlingRights), ()> {
-        if castling_rights == "-" {
-            return Ok((CastlingRights::None, CastlingRights::None));
-        }
-
-        let mut white_cr = CastlingRights::None;
-        let mut black_cr = CastlingRights::None;
-
-        for chr in castling_rights.chars() {
-            match chr {
-                'K' => white_cr
-                    .checked_add(CastlingRights::KingSide)
-                    .map_err(|_| ())?,
-                'Q' => white_cr
-                    .checked_add(CastlingRights::QueenSide)
-                    .map_err(|_| ())?,
-                'k' => black_cr
-                    .checked_add(CastlingRights::KingSide)
-                    .map_err(|_| ())?,
-                'q' => black_cr
-                    .checked_add(CastlingRights::QueenSide)
-                    .map_err(|_| ())?,
-                _ => return Err(()),
-            }
-        }
-
-        Ok((white_cr, black_cr))
-    }
-}
-
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SideState {
     pub side: Side,
@@ -356,3 +255,105 @@ impl SidePiecesThreats {
         result
     }
 }
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum CastlingRights {
+    None,
+    QueenSide,
+    KingSide,
+    #[default]
+    Both,
+}
+
+impl CastlingRights {
+    #[inline]
+    pub fn checked_add(&mut self, rhs: CastlingRights) -> Result<(), CastlingRights> {
+        match (*self, rhs) {
+            (lhs, rhs) if lhs == rhs => Err(lhs),
+            (CastlingRights::None, rhs) => {
+                *self = rhs;
+                Ok(())
+            }
+            (CastlingRights::Both, err) => Err(err),
+            (CastlingRights::QueenSide, CastlingRights::KingSide)
+            | (CastlingRights::KingSide, CastlingRights::QueenSide) => {
+                *self = CastlingRights::Both;
+                Ok(())
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    pub fn without(self, rhs: CastlingRights) -> CastlingRights {
+        // Clippy's recommedation is IMO less readable.
+        #[allow(clippy::match_same_arms)]
+        match (self, rhs) {
+            (CastlingRights::None, _) => CastlingRights::None,
+            (lhs, rhs) if lhs == rhs => CastlingRights::None,
+            (CastlingRights::Both, CastlingRights::KingSide) => CastlingRights::QueenSide,
+            (CastlingRights::Both, CastlingRights::QueenSide) => CastlingRights::KingSide,
+            (CastlingRights::KingSide, CastlingRights::QueenSide) => CastlingRights::KingSide,
+            (CastlingRights::QueenSide, CastlingRights::KingSide) => CastlingRights::QueenSide,
+            _ => unreachable!(),
+        }
+    }
+
+    #[inline]
+    pub fn queen_side(self) -> bool {
+        match self {
+            Self::None | Self::KingSide => false,
+            Self::QueenSide | Self::Both => true,
+        }
+    }
+
+    #[inline]
+    pub fn king_side(self) -> bool {
+        match self {
+            Self::None | Self::QueenSide => false,
+            Self::KingSide | Self::Both => true,
+        }
+    }
+
+    pub fn to_fen_str(self) -> &'static str {
+        match self {
+            Self::None => "",
+            Self::QueenSide => "q",
+            Self::KingSide => "k",
+            Self::Both => "kq",
+        }
+    }
+
+    /// Parses FEN castling rights for white and black.
+    pub fn parse_fen_from_str(
+        castling_rights: &str,
+    ) -> Result<(CastlingRights, CastlingRights), ()> {
+        if castling_rights == "-" {
+            return Ok((CastlingRights::None, CastlingRights::None));
+        }
+
+        let mut white_cr = CastlingRights::None;
+        let mut black_cr = CastlingRights::None;
+
+        for chr in castling_rights.chars() {
+            match chr {
+                'K' => white_cr
+                    .checked_add(CastlingRights::KingSide)
+                    .map_err(|_| ())?,
+                'Q' => white_cr
+                    .checked_add(CastlingRights::QueenSide)
+                    .map_err(|_| ())?,
+                'k' => black_cr
+                    .checked_add(CastlingRights::KingSide)
+                    .map_err(|_| ())?,
+                'q' => black_cr
+                    .checked_add(CastlingRights::QueenSide)
+                    .map_err(|_| ())?,
+                _ => return Err(()),
+            }
+        }
+
+        Ok((white_cr, black_cr))
+    }
+}
+

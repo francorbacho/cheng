@@ -267,6 +267,14 @@ pub enum CastlingRights {
 
 impl CastlingRights {
     #[inline]
+    pub fn contains(&self, rhs: Castle) -> bool {
+        match rhs {
+            Castle::KingSide => self.king_side(),
+            Castle::QueenSide => self.queen_side(),
+        }
+    }
+
+    #[inline]
     pub fn checked_add(&mut self, rhs: CastlingRights) -> Result<(), CastlingRights> {
         match (*self, rhs) {
             (lhs, rhs) if lhs == rhs => Err(lhs),
@@ -356,4 +364,3 @@ impl CastlingRights {
         Ok((white_cr, black_cr))
     }
 }
-

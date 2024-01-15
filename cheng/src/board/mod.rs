@@ -104,4 +104,26 @@ impl Board {
     pub fn moves(&self) -> MoveGenerator {
         MoveGenerator::new(self)
     }
+
+    pub fn perft(&self, depth: usize) -> usize {
+        fn perft(board: &BorkedBoard, depth: usize) -> usize {
+            if depth == 0 {
+                return 1;
+            }
+
+            let moves = board.moves();
+            let mut nodes = 0;
+            for movement in moves {
+                let mut clone = board.clone();
+                if clone.try_feed(movement.clone()).is_err() {
+                    continue;
+                }
+                nodes += perft(&clone, depth - 1);
+            }
+
+            nodes
+        }
+
+        perft(&self.inner, depth)
+    }
 }

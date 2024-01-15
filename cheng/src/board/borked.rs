@@ -1,6 +1,6 @@
 use crate::{
-    side_state::SideState, GameResult, LegalMove, Piece, PseudoMove, PseudoMoveGenerator, Side,
-    SidedPiece,
+    board::BoardMask, side_state::SideState, GameResult, LegalMove, Piece, PseudoMove,
+    PseudoMoveGenerator, Side, SidedPiece,
 };
 
 use super::TryFeedError;
@@ -64,18 +64,30 @@ impl BorkedBoard {
     }
 
     pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
+        // TODO: Refactor this. Shares some code with PseudoMoveGenerator and others.
+
         let Some(piece) = self.side(self.turn).pieces.find(pseudomove.origin) else {
             return false;
         };
 
+        let friendly = self.side(self.turn).occupancy;
+        let mut opposite = self.side(self.turn.opposite()).occupancy;
+
+        if piece == Piece::King {
+            if let Some(c) = crate::movement::Castle::move_could_be_castle(self.turn, &pseudomove) {
+                return self.side(self.turn).castling_rights.contains(c);
+            }
+        } else if piece == Piece::Pawn {
+            opposite = match self.side(self.turn.opposite()).en_passant {
+                Some(square) => opposite.intersection(BoardMask::from(square)),
+                None => opposite,
+            };
+        }
+
         let piece = SidedPiece(self.turn, piece);
 
-        crate::movegen::moves(
-            piece,
-            pseudomove.origin,
-            self.side(self.turn).occupancy,
-            self.side(self.turn.opposite()).occupancy,
-        ).get(pseudomove.destination)
+        crate::movegen::moves(piece, pseudomove.origin, friendly, opposite)
+            .get(pseudomove.destination)
     }
 
     pub fn try_feed<M>(&mut self, movement: M) -> Result<(), TryFeedError<M::Error>>

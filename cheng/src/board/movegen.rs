@@ -78,7 +78,7 @@ impl<'a> PseudoMoveGenerator<'a> {
             Side::Black => (C8, G8),
         };
 
-        let occupancy = side.occupancy.intersection(opposite_side.occupancy);
+        let occupancy = side.occupancy.with(opposite_side.occupancy);
 
         if side.castling_rights.queen_side() {
             let relevant_square_occupancy = Castle::QueenSide.relevant_square_occupancy(side.side);
@@ -166,7 +166,7 @@ impl<'a> PseudoMoveGenerator<'a> {
         let opposite = self.board.side(self.side.opposite()).occupancy;
 
         let opposite = match self.board.side(self.side.opposite()).en_passant {
-            Some(square) => opposite.intersection(BoardMask::from(square)),
+            Some(square) => opposite.with(BoardMask::from(square)),
             None => opposite,
         };
 

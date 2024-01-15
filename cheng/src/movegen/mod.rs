@@ -41,7 +41,7 @@ pub fn moves(
         Piece::Bishop => Bishop::moves(square, friendly, opposite),
         Piece::Rook => Rook::moves(square, friendly, opposite),
         Piece::Queen => Rook::moves(square, friendly, opposite)
-            .intersection(Bishop::moves(square, friendly, opposite)),
+            .with(Bishop::moves(square, friendly, opposite)),
         Piece::King => King::moves(square, friendly, opposite),
     }
 }
@@ -58,7 +58,7 @@ pub fn threats(
         Piece::Bishop => Bishop::threats(square, friendly, opposite),
         Piece::Rook => Rook::threats(square, friendly, opposite),
         Piece::Queen => Rook::threats(square, friendly, opposite)
-            .intersection(Bishop::threats(square, friendly, opposite)),
+            .with(Bishop::threats(square, friendly, opposite)),
         Piece::King => King::threats(square, friendly, opposite),
     }
 }
@@ -81,7 +81,7 @@ pub(crate) fn pawn_moves(
         ),
     };
 
-    let occupancy = friendly.intersection(opposite);
+    let occupancy = friendly.with(opposite);
 
     let occupancy_next_rank_mask = square
         .checked_next_rank(side)
@@ -94,7 +94,7 @@ pub(crate) fn pawn_moves(
     moves
         .without(occupancy)
         .without(occupancy_allows_two_square_move_mask)
-        .intersection(captures)
+        .with(captures)
 }
 
 pub(crate) fn pawn_threats(side: Side, square: Square) -> BoardMask {
@@ -154,7 +154,7 @@ impl PieceExt for Rook {
 
     fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
-        let occupancy = precomputed::ROOK_OCCUPANCY[index].only(friendly.intersection(opposite));
+        let occupancy = precomputed::ROOK_OCCUPANCY[index].only(friendly.with(opposite));
         let hash = magic_hash(precomputed::ROOK_MAGICS[index], occupancy, Rook::nbits());
 
         unsafe { ROOK_MOVES[index][hash] }
@@ -185,7 +185,7 @@ impl PieceExt for Bishop {
 
     fn threats(square: Square, friendly: BoardMask, opposite: BoardMask) -> BoardMask {
         let index = square.to_index();
-        let occupancy = precomputed::BISHOP_OCCUPANCY[index].only(friendly.intersection(opposite));
+        let occupancy = precomputed::BISHOP_OCCUPANCY[index].only(friendly.with(opposite));
         let hash = magic_hash(
             precomputed::BISHOP_MAGICS[index],
             occupancy,

@@ -60,7 +60,7 @@ impl BoardMask {
     }
 
     #[inline]
-    pub fn intersection(self, mask: BoardMask) -> BoardMask {
+    pub fn with(self, mask: BoardMask) -> BoardMask {
         BoardMask(self.0 | mask.0)
     }
 

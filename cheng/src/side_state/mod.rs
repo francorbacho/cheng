@@ -242,14 +242,14 @@ impl SidePiecesThreats {
         {
             *threats = BoardMask::default();
             for square in *squares {
-                *threats = threats.intersection(movegen::threats(
+                *threats = threats.with(movegen::threats(
                     SidedPiece(side, piece),
                     square,
                     friendly_occupancy,
                     opposite_occupancy,
                 ));
             }
-            result = result.intersection(*threats);
+            result = result.with(*threats);
         }
 
         result

@@ -79,7 +79,7 @@ impl BorkedBoard {
             }
         } else if piece == Piece::Pawn {
             opposite = match self.side(self.turn.opposite()).en_passant {
-                Some(square) => opposite.intersection(BoardMask::from(square)),
+                Some(square) => opposite.with(BoardMask::from(square)),
                 None => opposite,
             };
         }

@@ -131,15 +131,7 @@ impl BorkedBoard {
             pawn_pieces.reset(actual_pawn_square);
         }
 
-        self.side_mut(self.turn.opposite())
-            .remove(movement.destination);
-
-        self.white_side.update_threats(&self.black_side);
-        self.black_side.update_threats(&self.white_side);
-
-        self.white_side.update_king_in_check(&self.black_side);
-        self.black_side.update_king_in_check(&self.white_side);
-
+        // This handles en passant capture as well.
         if piece_is_pawn
             || self
                 .side(self.turn.opposite())
@@ -154,6 +146,15 @@ impl BorkedBoard {
         if self.turn == Side::Black {
             self.fullmove_clock += 1;
         }
+
+        self.side_mut(self.turn.opposite())
+            .remove(movement.destination);
+
+        self.white_side.update_threats(&self.black_side);
+        self.black_side.update_threats(&self.white_side);
+
+        self.white_side.update_king_in_check(&self.black_side);
+        self.black_side.update_king_in_check(&self.white_side);
 
         self.turn = self.turn.opposite();
     }

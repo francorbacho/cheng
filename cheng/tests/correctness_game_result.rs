@@ -15,6 +15,17 @@ fn correctness_game_result_50_move_draw() {
 }
 
 #[test]
+fn correctness_game_result_50_move_draw_capture() {
+    // https://lichess.org/analysis/fromPosition/4k3/8/8/1p6/8/2b5/3N4/4K3_b_-_-_99_1
+    cheng::init();
+
+    let mut board = Board::from_fen("4k3/8/8/1p6/8/2b5/3N4/4K3 b - - 99 1").unwrap();
+    board.try_feed("c3d2").unwrap();
+
+    assert_eq!(board.result(), GameResult::Undecided);
+}
+
+#[test]
 fn correctness_game_result_stalemate() {
     // https://lichess.org/analysis/7k/8/8/6Q1/8/8/8/4K3_w_-_-_0_1?color=white
     cheng::init();

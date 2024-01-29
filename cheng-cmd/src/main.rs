@@ -104,6 +104,7 @@ fn version() {
 
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     println!("{}", BoardDisplay(&context.board.inner()));
+    println!("fen: {}", context.board.into_fen());
 
     Ok(())
 }

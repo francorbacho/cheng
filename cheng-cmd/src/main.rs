@@ -105,6 +105,7 @@ fn version() {
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     println!("{}", BoardDisplay(&context.board.inner()));
     println!("fen: {}", context.board.into_fen());
+    println!("result: {:?}", context.board.result());
 
     Ok(())
 }
@@ -191,7 +192,7 @@ fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     let (best_move, evaluation) = context.board.evaluate();
 
     if let Some(best_move) = best_move {
-        println!("best move found to be {best_move:?}");
+        println!("{best_move}");
     }
 
     println!("evaluation: {evaluation}");

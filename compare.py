@@ -56,9 +56,9 @@ def compare_them(engine_w: str, engine_b: str) -> str:
     no = 1
     while True:
         mw = get_move(engine_w, fen)
-        fen = feed(engine_w, fen, mw)
+        fen = feed(engine_w, fen, mw[1:])
         mb = get_move(engine_b, fen)
-        fen = feed(engine_b, fen, mb)
+        fen = feed(engine_b, fen, mb[1:])
 
         print(f"{no}. {mw} {mb}")
         no += 1

@@ -189,10 +189,11 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 }
 
 fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
-    let (best_move, evaluation) = context.board.evaluate();
+    let mut binding = context.board.clone();
+    let (best_move, evaluation) = binding.evaluate();
 
     if let Some(best_move) = best_move {
-        println!("{best_move}");
+        println!("{}", cheng::SAN(&best_move, &context.board));
     }
 
     println!("evaluation: {evaluation}");

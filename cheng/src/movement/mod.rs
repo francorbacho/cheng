@@ -4,6 +4,7 @@ pub mod parsing;
 pub use parsing::MoveParseError;
 
 mod display;
+pub use display::SAN;
 
 use crate::{board::BoardMask, pieces::Piece, square::Square, BorkedBoard, Side};
 

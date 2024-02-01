@@ -14,7 +14,7 @@ use movegen::{Bishop, PieceExt, Rook};
 pub use crate::{
     board::{Board, BorkedBoard, FENParsingError, GameResult, PseudoMoveGenerator},
     fen::FromIntoFen,
-    movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove},
+    movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove, SAN},
     pieces::Piece,
     side_state::CastlingRights,
     sides::Side,

@@ -28,3 +28,6 @@ features = [
   'Node',
   'Window',
 ]
+
+[features]
+low_nbits = ["cheng/low_nbits"]

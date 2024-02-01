@@ -38,8 +38,7 @@ jobs:
       with:
         crate: wasm-pack
     - name: Build
-      run: ./web/deploy.sh --copy
-
+      run: ./web/deploy.sh --copy --low-nbits
     - name: Deploy
       run: |
           commit=$(git rev-parse HEAD)

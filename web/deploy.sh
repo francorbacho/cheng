@@ -1,6 +1,16 @@
 #!/bin/bash
 
-set -ex
+set -e
+
+verbose() {
+	echo >&2 "+ $@"
+	"$@"
+}
+
+help_and_exit() {
+	echo "usage: $0 [--copy] [--low-nbits]"
+    exit 1
+}
 
 require_command() {
     cmd=$1
@@ -12,18 +22,27 @@ require_command() {
 
 base_name=$0
 
-require_command git
-require_command wasm-pack
+verbose require_command git
+verbose require_command wasm-pack
+
+for flag in $*
+do
+    case "$flag" in
+        --copy) copy=1 ;;
+        --low-nbits) cargoflags="$cargoflags --features low_nbits" ;;
+        *) help_and_exit ;;
+    esac
+done
 
 workspace_root=$(git rev-parse --show-toplevel)
 
-wasm-pack build --no-typescript --target web $workspace_root/chess-wasm
+verbose wasm-pack build --no-typescript --release --target web $workspace_root/chess-wasm $cargoflags
 
 test -e $workspace_root/web/pkg && rm -r $workspace_root/web/pkg
 
-if [[ "$1" = "--copy" ]]; then
-    cp -r $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
-    rm $workspace_root/web/pkg/.gitignore
+if [[ "$copy" -eq 1 ]]; then
+    verbose cp -r $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+    verbose rm $workspace_root/web/pkg/.gitignore
 else
-    ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
+    verbose ln -sf $workspace_root/chess-wasm/pkg $workspace_root/web/pkg
 fi

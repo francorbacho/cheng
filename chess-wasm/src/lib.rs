@@ -186,8 +186,8 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
 
     let (castle_side, rook_square_before_castle, rook_square_after_castle) =
         if let Some(castle_side) = castle_side {
-            let rook_square_before_castle = castle_side.rook_position_before_castle(board.turn());
-            let rook_square_after_castle = castle_side.rook_position_after_castle(board.turn());
+            let rook_square_before_castle = castle_side.rook_square_before_castle(board.turn());
+            let rook_square_after_castle = castle_side.rook_square_after_castle(board.turn());
             (
                 Some(format!("{castle_side:?}")),
                 Some(format!("{rook_square_before_castle:?}")),

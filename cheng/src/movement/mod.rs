@@ -111,7 +111,7 @@ impl Castle {
     }
 
     #[must_use]
-    pub fn rook_position_before_castle(self, side: Side) -> Square {
+    pub fn rook_square_before_castle(self, side: Side) -> Square {
         use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => H1,
@@ -122,7 +122,7 @@ impl Castle {
     }
 
     #[must_use]
-    pub const fn rook_position_after_castle(self, side: Side) -> Square {
+    pub const fn rook_square_after_castle(self, side: Side) -> Square {
         use crate::prelude::*;
         match (side, self) {
             (Side::White, Castle::KingSide) => F1,

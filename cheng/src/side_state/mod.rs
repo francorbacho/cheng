@@ -61,9 +61,9 @@ impl SideState {
             return;
         }
 
-        if square == Castle::KingSide.rook_position_before_castle(self.side) {
+        if square == Castle::KingSide.rook_square_before_castle(self.side) {
             self.castling_rights = self.castling_rights.without(CastlingRights::KingSide);
-        } else if square == Castle::QueenSide.rook_position_before_castle(self.side) {
+        } else if square == Castle::QueenSide.rook_square_before_castle(self.side) {
             self.castling_rights = self.castling_rights.without(CastlingRights::QueenSide);
         }
     }
@@ -97,9 +97,9 @@ impl SideState {
             self.castling_rights = CastlingRights::None;
 
             self.occupancy
-                .reset(castle.rook_position_before_castle(self.side));
+                .reset(castle.rook_square_before_castle(self.side));
             self.occupancy
-                .set(castle.rook_position_after_castle(self.side));
+                .set(castle.rook_square_after_castle(self.side));
         } else if let MoveKind::Move = movement.kind {
             self.update_castling_rights(&movement);
         }
@@ -121,9 +121,9 @@ impl SideState {
             return;
         }
 
-        if origin == Castle::QueenSide.rook_position_before_castle(self.side) {
+        if origin == Castle::QueenSide.rook_square_before_castle(self.side) {
             self.castling_rights = self.castling_rights.without(CastlingRights::QueenSide);
-        } else if origin == Castle::KingSide.rook_position_before_castle(self.side) {
+        } else if origin == Castle::KingSide.rook_square_before_castle(self.side) {
             self.castling_rights = self.castling_rights.without(CastlingRights::KingSide);
         }
     }
@@ -217,8 +217,8 @@ impl SidePieces {
                 king_mask.set(destination);
 
                 let rook_mask = self.piece_mut(Piece::Rook);
-                rook_mask.reset(castle.rook_position_before_castle(side));
-                rook_mask.set(castle.rook_position_after_castle(side));
+                rook_mask.reset(castle.rook_square_before_castle(side));
+                rook_mask.set(castle.rook_square_after_castle(side));
             }
         }
     }

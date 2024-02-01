@@ -40,8 +40,9 @@ pub fn moves(
         Piece::Knight => Knight::moves(square, friendly, opposite),
         Piece::Bishop => Bishop::moves(square, friendly, opposite),
         Piece::Rook => Rook::moves(square, friendly, opposite),
-        Piece::Queen => Rook::moves(square, friendly, opposite)
-            .with(Bishop::moves(square, friendly, opposite)),
+        Piece::Queen => {
+            Rook::moves(square, friendly, opposite).with(Bishop::moves(square, friendly, opposite))
+        }
         Piece::King => King::moves(square, friendly, opposite),
     }
 }

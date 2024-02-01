@@ -1,6 +1,6 @@
 use crate::{
     side_state::{CastlingRights, SideState},
-    Board, BorkedBoard, FromIntoFen, Piece, Side, Square,
+    Board, BorkedBoard, Castle, FromIntoFen, Piece, Side, Square,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -154,8 +154,13 @@ impl FromIntoFen for BorkedBoard {
             }
         };
 
-        white_side.castling_rights = white_castle_rights;
-        black_side.castling_rights = black_castle_rights;
+        if are_castling_rights_ok(white_castle_rights, &white_side) {
+            white_side.castling_rights = white_castle_rights;
+        }
+
+        if are_castling_rights_ok(black_castle_rights, &black_side) {
+            black_side.castling_rights = black_castle_rights;
+        }
 
         let en_passant_square = parts.next().ok_or(MissingPart)?;
         if en_passant_square != "-" {
@@ -192,5 +197,27 @@ impl FromIntoFen for BorkedBoard {
                 fullmove_clock,
             })
         }
+    }
+}
+
+#[inline(always)]
+fn are_castling_rights_ok(rights: CastlingRights, side: &SideState) -> bool {
+    let queenside_ok = || -> bool {
+        side.pieces
+            .piece(Piece::Rook)
+            .get(Castle::QueenSide.rook_square_before_castle(side.side))
+    };
+
+    let kingside_ok = || -> bool {
+        side.pieces
+            .piece(Piece::Rook)
+            .get(Castle::KingSide.rook_square_before_castle(side.side))
+    };
+
+    match rights {
+        CastlingRights::None => true,
+        CastlingRights::QueenSide => queenside_ok(),
+        CastlingRights::KingSide => kingside_ok(),
+        CastlingRights::Both => queenside_ok() && kingside_ok(),
     }
 }

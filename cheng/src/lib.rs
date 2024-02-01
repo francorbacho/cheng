@@ -16,6 +16,7 @@ pub use crate::{
     fen::FromIntoFen,
     movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove},
     pieces::Piece,
+    side_state::CastlingRights,
     sides::Side,
     square::{prelude, Square},
 };

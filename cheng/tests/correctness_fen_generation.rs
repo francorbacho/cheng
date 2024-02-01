@@ -1,5 +1,5 @@
 use cheng::prelude::*;
-use cheng::{BorkedBoard, FromIntoFen, Side};
+use cheng::{BorkedBoard, CastlingRights, FromIntoFen, Side};
 
 #[test]
 fn test_fen_generation() {
@@ -30,4 +30,28 @@ fn test_fen_parse_en_passant() {
 
     board = BorkedBoard::from_fen(&board.into_fen()).unwrap();
     assert_eq!(board.side(Side::Black).en_passant, Some(C6));
+}
+
+#[test]
+fn test_fen_parse_invalid_kqkq() {
+    cheng::init();
+    let board = BorkedBoard::from_fen("4k3/8/8/8/8/8/8/4K3 w KQkq - 0 1").unwrap();
+    assert_eq!(
+        board.side(Side::White).castling_rights,
+        CastlingRights::None
+    );
+    assert_eq!(
+        board.side(Side::Black).castling_rights,
+        CastlingRights::None
+    );
+
+    let board = BorkedBoard::from_fen("k7/8/8/8/7P/8/8/K7 w KQkq - 0 2").unwrap();
+    assert_eq!(
+        board.side(Side::White).castling_rights,
+        CastlingRights::None
+    );
+    assert_eq!(
+        board.side(Side::Black).castling_rights,
+        CastlingRights::None
+    );
 }

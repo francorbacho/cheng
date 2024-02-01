@@ -43,6 +43,7 @@ jobs:
       run: |
           commit=$(git rev-parse HEAD)
           cd pages/
+          rm -rf chess
           mv ../web/ chess
           git config user.name github-actions[bot]
           git config user.email github-actions[bot]@users.noreply.github.com

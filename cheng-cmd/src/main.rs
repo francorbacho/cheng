@@ -83,8 +83,8 @@ fn version() {
     use std::mem::size_of_val;
     use std::ptr::addr_of;
 
-    const GIT_HASH: &'static str = env!("GIT_HASH");
-    const GIT_DIRTY: &'static str = env!("GIT_DIRTY");
+    const GIT_HASH: &str = env!("GIT_HASH");
+    const GIT_DIRTY: &str = env!("GIT_DIRTY");
 
     let version = format!("{GIT_HASH}-{GIT_DIRTY}");
 
@@ -103,7 +103,7 @@ fn version() {
 }
 
 fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
-    println!("{}", BoardDisplay(&context.board.inner()));
+    println!("{}", BoardDisplay(context.board.inner()));
     println!("fen: {}", context.board.into_fen());
     println!("result: {:?}", context.board.result());
 

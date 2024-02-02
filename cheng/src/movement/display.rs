@@ -14,7 +14,7 @@ impl Display for SAN<'_> {
             .pieces
             .find(self.0.origin)
             .unwrap();
-        write!(f, "{}", char::from(piece).to_uppercase().to_string())?;
+        write!(f, "{}", char::from(piece).to_uppercase())?;
         self.0.fmt(f)
     }
 }

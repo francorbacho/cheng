@@ -208,10 +208,8 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
             result += 65 * side_factor;
         }
 
-        if bb.fullmove_clock > 40 {
-            if piece == Piece::Pawn {
-                result += 10 * square.rank::<i32>();
-            }
+        if bb.fullmove_clock > 40 && piece == Piece::Pawn {
+            result += 10 * square.rank::<i32>();
         }
     }
 

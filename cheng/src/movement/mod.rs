@@ -29,7 +29,7 @@ impl<'a> LegalMove<'a> {
             origin: pseudo_move.origin,
             destination: pseudo_move.destination,
             kind: pseudo_move.kind,
-            _marker: PhantomData::default(),
+            _marker: PhantomData,
         }
     }
 
@@ -52,7 +52,7 @@ impl<'a> LegalMove<'a> {
                 origin: pseudo_move.origin,
                 destination: pseudo_move.destination,
                 kind: pseudo_move.kind,
-                _marker: PhantomData::default(),
+                _marker: PhantomData,
             })
         }
     }

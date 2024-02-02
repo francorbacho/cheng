@@ -1,4 +1,4 @@
-use cheng::Board;
+use cheng::{Board, FromIntoFen};
 use flimsybird::Evaluable;
 
 use crate::Context;
@@ -14,22 +14,35 @@ pub fn isready() {
 }
 
 pub fn position(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    if parts.get(1) != Some(&"startpos") {
-        return Err(format!("bad word"));
+    let mut parts = &parts[1..];
+    if parts.get(0) == Some(&"startpos") {
+        context.board = Board::default();
+        parts = &parts[1..];
+    } else if parts.get(0) == Some(&"fen") {
+        let fen = match &parts.get(1..7) {
+            Some(parts) => parts.join(" "),
+            None => return Err(format!("invalid fen, missing parts")),
+        };
+        context.board = Board::from_fen(&fen).map_err(|e| format!("{e:?}"))?;
+        parts = &parts[7..];
+    } else {
+        return Err(format!("bad word: '{}'", parts[1..].join(" ")));
     }
 
-    context.board = Board::default();
+    match parts.get(0) {
+        Some(&"moves") => {
+            for mv in &parts[1..] {
+                context
+                    .board
+                    .try_feed(*mv)
+                    .map_err(|_| format!("received invalid move"))?;
+            }
 
-    if let Some(&"moves") = parts.get(2) {
-        for mv in &parts[3..] {
-            context
-                .board
-                .try_feed(*mv)
-                .map_err(|_| format!("received invalid move"))?;
+            Ok(())
         }
+        Some(word) => Err(format!("invalid word: {word}")),
+        None => Ok(()),
     }
-
-    Ok(())
 }
 
 pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {

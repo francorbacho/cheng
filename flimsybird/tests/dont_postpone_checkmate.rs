@@ -7,7 +7,7 @@ fn assert_wins(side: Side, fen: &str) {
         unreachable!()
     };
 
-    assert_eq!(evaluation, Evaluation::wins(side));
+    assert_eq!(evaluation, Evaluation::checkmate_in(side, 1), "fen {fen}");
 }
 
 #[test]

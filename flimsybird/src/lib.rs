@@ -26,6 +26,15 @@ impl Evaluation {
         }
     }
 
+    pub fn checkmate_in(side: Side, depth: u32) -> Self {
+        assert!(depth < Self::CHECKMATE_NET_SIZE);
+
+        let mut result = Self::winner(side);
+        result.0 -= result.0.signum() * depth as i32;
+
+        result
+    }
+
     pub fn is_better_than(self, side: Side, ev2: Self) -> bool {
         if side == Side::White {
             self.0 > ev2.0

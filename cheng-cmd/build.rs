@@ -21,6 +21,10 @@ fn main() {
         "dirty"
     };
 
+    let date = Command::new("date").arg("-R").output().unwrap().stdout;
+    let date = String::from_utf8(date).unwrap();
+
     println!("cargo:rustc-env=GIT_HASH={git_hash}");
     println!("cargo:rustc-env=GIT_DIRTY={git_dirty}");
+    println!("cargo:rustc-env=DATE={date}");
 }

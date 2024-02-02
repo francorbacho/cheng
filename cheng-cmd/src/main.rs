@@ -102,6 +102,7 @@ fn version() {
 
     const GIT_HASH: &str = env!("GIT_HASH");
     const GIT_DIRTY: &str = env!("GIT_DIRTY");
+    const DATE: &str = env!("DATE");
 
     let version = format!("{GIT_HASH}-{GIT_DIRTY}");
 
@@ -112,6 +113,7 @@ fn version() {
     let bishop_hash_size = size_of_val(unsafe { &*addr_of!(cheng::movegen::BISHOP_MOVES) });
 
     println!("cheng-cmd - {version}");
+    println!("Built: {DATE}");
     println!("Rook hash size: {rook_hash_size} (nbits={})", Rook::nbits());
     println!(
         "Bishop hash size: {bishop_hash_size} (nbits={})",

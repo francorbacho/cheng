@@ -7,6 +7,56 @@ import os
 STARTING_FEN = "4r3/p7/4nk2/3p1Bp1/3P2P1/5PK1/8/1R6 w - - 4 30"
 
 
+class Engine:
+    def __init__(self, path: str) -> None:
+        if not os.path.isfile(path):
+            raise Exception(f"engine `{path}` does not exist")
+
+        self.verbose = True
+        self.process = subprocess.Popen(
+            path,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+            bufsize=1,
+            shell=False,
+        )
+
+        self.uci_send("uci")
+        self.uci_send("isready")
+        self.uci_waitfor("uciok")
+        self.uci_waitfor("readyok")
+
+    def uci_send(self, cmd: str) -> None:
+        if self.verbose:
+            print(f"<< {cmd}", file=sys.stderr)
+        self.process.stdin.write(f"{cmd}\n")
+        self.process.stdin.flush()
+
+    def uci_recv(self) -> str:
+        resp = self.process.stdout.readline().strip()
+        if self.verbose:
+            print(f">> {resp}", file=sys.stderr)
+        return resp
+
+    def uci_waitfor(self, response: str) -> None:
+        if self.uci_recv() != response:
+            raise ValueError()
+
+    def go(self, fen: str, moves: list[str]) -> str:
+        moves_joined = " ".join(moves)
+        self.uci_send(f"position fen {fen} moves {moves_joined}")
+        self.uci_send(f"go movetime 0")
+        while True:
+            line = self.uci_recv()
+            [prefix, bestmove] = line.split(" ")
+            assert prefix == "bestmove"
+            return bestmove
+
+    def __exit__(self) -> None:
+        self.process.terminate()
+
+
 class WhiteWinner(Exception):
     pass
 
@@ -23,46 +73,22 @@ def print_help() -> None:
     print(f"usage: {sys.argv[0]} <engine1> <engine2>")
 
 
-def feed(engine: str, fen: str, move: str) -> str:
-    cmd = f"fen {fen}\nfeed {move}\nd\n"
-    res = subprocess.run([engine], input=cmd.encode(), capture_output=True)
-    res = res.stdout.decode().strip().split("\n")
-    new_fen = res[-2].split("fen: ")[1]
-    result = res[-1].split("result: ")[1]
-
-    if result == "Undecided":
-        return new_fen
-    if "winner: White" in result:
-        raise WhiteWinner()
-    if "winner: Black" in result:
-        raise BlackWinner()
-    if "Draw" in result:
-        raise Draw()
-
-    raise Exception()
-
-
-def get_move(engine: str, fen: str) -> str:
-    cmd = f"fen {fen}\nev\n"
-    res = subprocess.run([engine], input=cmd.encode(), capture_output=True)
-    res = res.stdout.decode().strip().split("\n")
-    move = res[0]
-    return move
-
-
-def compare_them(engine_w: str, engine_b: str) -> str:
+def compare_them(engine_w: Engine, engine_b: Engine) -> str:
     # NOTE: Always starts white.
     fen = STARTING_FEN
-    no = 1
+    moves = []
     while True:
-        mw = get_move(engine_w, fen)
-        print(f"{no}. {mw} ", end="")
-        fen = feed(engine_w, fen, mw[1:])
-        mb = get_move(engine_b, fen)
-        fen = feed(engine_b, fen, mb[1:])
+        mw = engine_w.go(fen, moves)
+        if mw == "(none)":
+            raise BlackWinner()
+        moves.append(mw)
+        print(f"{len(moves)}. {mw} ", end="")
 
+        mb = engine_b.go(fen, moves)
+        if mb == "(none)":
+            raise WhiteWinner()
+        moves.append(mb)
         print(f"{mb}", flush=True)
-        no += 1
 
 
 def main() -> None:
@@ -70,13 +96,8 @@ def main() -> None:
         print_help()
         sys.exit(1)
 
-    engine1 = sys.argv[1]
-    engine2 = sys.argv[2]
-
-    if not os.path.isfile(engine1):
-        print(f"engine 1 `{engine1}` does not exist")
-    if not os.path.isfile(engine2):
-        print(f"engine 2 `{engine2}` does not exist")
+    engine1 = Engine(sys.argv[1])
+    engine2 = Engine(sys.argv[2])
 
     try:
         compare_them(engine1, engine2)

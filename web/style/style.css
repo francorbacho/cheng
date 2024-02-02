@@ -4,20 +4,26 @@ body {
     font-size: xx-large;
 }
 
-button, select, input {
+button,
+select,
+input {
     background-color: #dee2e6;
     padding: 3px;
     border: 1px solid black;
     border-radius: 0px;
 }
 
-button, select {
+button,
+select {
     text-align: center;
     padding-left: 18px;
     padding-right: 18px;
 }
 
-button:hover, select:hover, button:active, select:active {
+button:hover,
+select:hover,
+button:active,
+select:active {
     color: white;
     background: black;
 }
@@ -37,10 +43,11 @@ button:hover, select:hover, button:active, select:active {
     margin: 0 auto;
 }
 
-#player-select, #fen {
+#player-select,
+input {
     width: 100%;
 }
 
-#fen {
+input {
     font-family: monospace;
 }

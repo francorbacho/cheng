@@ -54,6 +54,9 @@ class Chessboard {
         }
 
         this.constructPieces();
+        this.updateCheckIndicator();
+        this.unsetPreviousModeIndicator();
+        this.updateFenInputBox();
     }
 
     constructPieces() {
@@ -172,7 +175,7 @@ class Chessboard {
         }
     }
 
-    feedMove(movement) {
+    feedMoveWithoutScheduling(movement) {
         const moveFeedback = wasm.feedMove(movement);
 
         const originSquareElement = document.querySelector(`square[position=${moveFeedback.origin}]`);
@@ -205,7 +208,10 @@ class Chessboard {
         this.updateCheckIndicator();
         this.updatePreviousMoveIndicator(moveFeedback.origin, moveFeedback.destination);
         this.updateFenInputBox();
+    }
 
+    feedMove(movement) {
+        this.feedMoveWithoutScheduling(movement);
         setTimeout(() => this.scheduleComputerMove(), 500);
     }
 
@@ -233,12 +239,17 @@ class Chessboard {
         }
     }
 
-    updatePreviousMoveIndicator(newMoveOrigin, newMoveDestination) {
+
+    unsetPreviousModeIndicator() {
         const lastMoveSquareElement = document.querySelectorAll("square.last-move");
 
         for (const squareElement of lastMoveSquareElement) {
             squareElement.classList.remove("last-move");
         }
+    }
+
+    updatePreviousMoveIndicator(newMoveOrigin, newMoveDestination) {
+        this.unsetPreviousModeIndicator();
 
         const originSquareElement = document.querySelector(`square[position=${newMoveOrigin}]`);
         const destSquareElement = document.querySelector(`square[position=${newMoveDestination}]`);
@@ -268,7 +279,7 @@ window.onload = function () {
     }, 2_000);
 
     const playerSettings = document.getElementById("player-select")
-    playerSettings.addEventListener("change", function() {
+    playerSettings.addEventListener("change", function () {
         const [white, black] = playerSettings.value.split("-");
         console.assert(white === "human" || white == "computer");
         console.assert(black === "human" || black == "computer");
@@ -280,8 +291,32 @@ window.onload = function () {
     });
 
     const fenInput = document.getElementById("fen");
-    fenInput.addEventListener("change", function()  {
+    fenInput.addEventListener("change", function () {
         wasm.loadBoardFromFen(fenInput.value);
         mainBoard.syncToWasm();
+    });
+
+    const uciInput = document.getElementById("uci");
+    uciInput.addEventListener("change", function () {
+        const uciCommand = uciInput.value.trim().split(" ");
+
+        if (uciCommand[0] !== "position" || uciCommand[1] !== "fen")
+            throw new Error(`Expected \`position fen\` command, got \`${uciCommand[0]} ${uciCommand[1]}\``);
+
+        const fen = uciCommand.slice(2, 8);
+        wasm.loadBoardFromFen(fen.join(" "));
+        mainBoard.syncToWasm();
+
+        if (uciCommand[8] !== "moves")
+            throw new Error(`Expected \`moves\` subcommand, got \`${uciCommand[8]}\``);
+
+        const moves = uciCommand.slice(9);
+
+        new Promise(async () => {
+            for (let movement of moves) {
+                await new Promise(r => setTimeout(r, 500));
+                mainBoard.feedMoveWithoutScheduling(movement);
+            }
+        });
     });
 };

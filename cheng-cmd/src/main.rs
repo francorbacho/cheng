@@ -48,7 +48,7 @@ fn repl() -> rustyline::Result<()> {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                let parts: Vec<&str> = line.split(' ').collect();
+                let parts: Vec<&str> = line.trim().split(' ').collect();
 
                 if parts[0] == "quit" {
                     break;

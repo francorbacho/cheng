@@ -67,3 +67,7 @@ pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
     Ok(())
 }
+
+pub fn eval(context: &mut Context) {
+    flimsybird::board_static_evaluation::<flimsybird::UciTracer>(&context.board);
+}

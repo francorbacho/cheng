@@ -1,4 +1,6 @@
 mod params;
+mod static_evaluation_tracer;
+pub use static_evaluation_tracer::{NoopTracer, StaticEvaluationTracer, UciTracer};
 
 use rand::Rng;
 
@@ -117,7 +119,7 @@ fn board_rec_evaluate(
 ) -> (Option<LegalMove>, Evaluation) {
     if depth == 0 {
         let board = Board::try_from(board.clone()).unwrap();
-        return (None, board_static_evaluation(&board));
+        return (None, board_static_evaluation::<NoopTracer>(&board));
     }
 
     let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
@@ -169,11 +171,14 @@ fn board_rec_evaluate(
         (Some(best_move), best_evaluation)
     } else {
         let board = Board::try_from(board.clone()).unwrap();
-        (None, board_static_evaluation(&board))
+        (None, board_static_evaluation::<NoopTracer>(&board))
     }
 }
 
-fn board_static_evaluation(board: &Board) -> Evaluation {
+pub fn board_static_evaluation<L>(board: &Board) -> Evaluation
+where
+    L: StaticEvaluationTracer,
+{
     unsafe { EVALUATED_NODES += 1 }
 
     match board.result() {
@@ -200,25 +205,43 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
     let bk_shield = bk_square.checked_next_rank(Side::Black);
 
     let mut result = 0;
-    for (SidedPiece(side, piece), square) in board.inner().into_iter() {
-        let side_factor = if side == Side::Black { -1 } else { 1 };
-        let piece_value = params::piece_value(piece);
+    let mut advance_pawn_gain = 0;
+    let mut white_material = 0;
+    let mut black_material = 0;
+    let mut king_shield = 0;
 
-        result += piece_value * side_factor;
+    for (SidedPiece(side, piece), square) in board.inner().into_iter() {
+        let piece_value = params::piece_value(piece);
+        let side_factor = if side == Side::Black { -1 } else { 1 };
+
+        if side == Side::White {
+            white_material += piece_value;
+        } else if side == Side::Black {
+            black_material += piece_value;
+        }
 
         if Some(square) == wk_shield || Some(square) == bk_shield {
-            result += params::KING_SHIELD * side_factor;
+            king_shield += params::KING_SHIELD * side_factor;
         }
 
         if bb.fullmove_clock > 40 && piece == Piece::Pawn {
-            result += params::ADVANCE_PAWN_GAIN * square.rank::<i32>();
+            advance_pawn_gain += params::ADVANCE_PAWN_GAIN * square.rank::<i32>();
         }
     }
+
+    L::trace("white material", white_material);
+    L::trace("black material", black_material);
+    L::trace("advance pawn gain", advance_pawn_gain);
+    L::trace("king shield", king_shield);
+    result += white_material - black_material + advance_pawn_gain + king_shield;
 
     let white_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;
     let black_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::Black).len() as i32;
     let move_diff = white_moves - black_moves;
+    let diff_moves_gain = params::MAX_GAIN_DIFF_MOVES.min(params::MOVE_DIFF_WEIGHT * move_diff);
+    L::trace("diff moves gain", diff_moves_gain);
+    result += diff_moves_gain;
 
-    result += params::MAX_GAIN_DIFF_MOVES.min(params::MOVE_DIFF_WEIGHT * move_diff);
+    L::trace("final evaluation", result);
     Evaluation(result)
 }

@@ -76,6 +76,7 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "isready" => Ok(uci::isready()),
         "position" => uci::position(context, parts),
         "go" => uci::go(context, parts),
+        "eval" => Ok(uci::eval(context)),
 
         // our protocol
         "perft" => perft(context, parts).map_err(String::from),

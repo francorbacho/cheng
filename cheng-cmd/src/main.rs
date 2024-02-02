@@ -83,7 +83,7 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
         "fen" => fen(context, parts),
         "feed" => feed(context, parts),
-        "ev" => evaluate(context, parts),
+        "ev" => Ok(evaluate(context)),
         "d" => Ok(display_board(context, parts)),
         "dump-tables" => Ok(dump_tables()),
         "bench" => bench(parts),
@@ -206,7 +206,7 @@ fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         .map_err(|err| format!("Invalid move: {err:?}"))
 }
 
-fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
+fn evaluate(context: &mut Context) {
     let mut binding = context.board.clone();
     let (best_move, evaluation) = binding.evaluate();
 
@@ -215,8 +215,6 @@ fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     }
 
     println!("evaluation: {evaluation}");
-
-    Ok(())
 }
 
 fn dump_tables() {
@@ -245,6 +243,7 @@ fn dump_tables() {
 fn bench(parts: &[&str]) -> Result<(), String> {
     match parts.get(1).map(|s| *s) {
         Some("magics") => Ok(bench_magics()),
+        Some("fen") => Ok(bench_fen()),
         Some(word) => Err(format!("bad word: {word}")),
         None => Err(format!("what to bench")),
     }
@@ -276,4 +275,14 @@ fn bench_magics() {
     let took = after - before;
 
     println!("1 billion interations took :: {took:?}");
+}
+
+fn bench_fen() {
+    let before = Instant::now();
+    let fen = "8/k7/1NpP1K2/6B1/Pp2P1pp/1P4rr/1PpbNP2/5R2 w - - 0 1";
+    let board = Board::from_fen(fen).unwrap();
+    evaluate(&mut Context { board });
+    let after = Instant::now();
+    let took = after - before;
+    println!("evaluation took :: {took:?}");
 }

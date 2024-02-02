@@ -82,13 +82,11 @@ def compare_them(engine_w: Engine, engine_b: Engine) -> str:
         if mw == "(none)":
             raise BlackWinner()
         moves.append(mw)
-        print(f"{len(moves)}. {mw} ", end="")
 
         mb = engine_b.go(fen, moves)
         if mb == "(none)":
             raise WhiteWinner()
         moves.append(mb)
-        print(f"{mb}", flush=True)
 
 
 def main() -> None:

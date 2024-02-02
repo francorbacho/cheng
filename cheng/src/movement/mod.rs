@@ -8,6 +8,7 @@ pub use display::SAN;
 
 use crate::{board::BoardMask, pieces::Piece, square::Square, BorkedBoard, Side};
 
+// TODO: Implement `PseudoMove` as a `std::num::NonZeroU16`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PseudoMove {
     pub origin: Square,

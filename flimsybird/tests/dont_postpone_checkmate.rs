@@ -21,4 +21,6 @@ fn checkmate_in_one() {
         Side::Black,
         "rnbqkbnr/pppp1ppp/4p3/8/6P1/5P2/PPPPP2P/RNBQKBNR b KQkq - 0 2",
     );
+
+    assert_wins(Side::White, "8/7k/8/1P4RP/5P2/5PP1/8/Q2K4 w - - 23 75");
 }

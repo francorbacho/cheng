@@ -17,18 +17,12 @@ impl Evaluation {
     pub const WHITE_WIN: Self = Evaluation(std::i32::MAX);
     pub const DRAW: Self = Evaluation(0);
 
+    const CHECKMATE_NET_SIZE: u32 = 10;
+
     pub fn winner(side: Side) -> Self {
         match side {
             Side::White => Evaluation::WHITE_WIN,
             Side::Black => Evaluation::BLACK_WIN,
-        }
-    }
-
-    pub fn favors(self, side: Side) -> bool {
-        if self.0 < 0 {
-            side == Side::Black
-        } else {
-            side == Side::White
         }
     }
 
@@ -38,6 +32,27 @@ impl Evaluation {
         } else {
             self.0 < ev2.0
         }
+    }
+
+    pub fn push(&mut self) {
+        if self.is_forced_checkmate() {
+            self.0 -= self.0.signum();
+        }
+    }
+
+    pub fn is_forced_checkmate(self) -> bool {
+        self.0.abs_diff(Self::WHITE_WIN.0) < Self::CHECKMATE_NET_SIZE
+            || self.0.abs_diff(Self::BLACK_WIN.0) < Self::CHECKMATE_NET_SIZE
+    }
+
+    pub fn checkmate_depth(self) -> Option<u32> {
+        if self.is_forced_checkmate() {
+            let wd = self.0.abs_diff(Self::WHITE_WIN.0);
+            let bd = self.0.abs_diff(Self::BLACK_WIN.0);
+            return Some(wd.min(bd));
+        }
+
+        None
     }
 
     pub fn wins(side: Side) -> Self {
@@ -59,10 +74,11 @@ impl Evaluation {
 
 impl Display for Evaluation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Evaluation::WHITE_WIN => writeln!(f, "white has forced win"),
-            Evaluation::BLACK_WIN => writeln!(f, "black has forced win"),
-            Evaluation(other) => writeln!(f, "{other:+}"),
+        if let Some(depth) = self.checkmate_depth() {
+            let side = if self.0 > 0 { "white" } else { "black" };
+            writeln!(f, "{side} has forced win in {depth}")
+        } else {
+            writeln!(f, "{:+}", self.0)
         }
     }
 }
@@ -138,6 +154,7 @@ fn board_rec_evaluate(
 
     if let Some(best_move) = best_move {
         let best_move = unsafe { LegalMove::unchecked_new(best_move, board) };
+        best_evaluation.push();
         (Some(best_move), best_evaluation)
     } else {
         let board = Board::try_from(board.clone()).unwrap();
@@ -154,8 +171,25 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
         GameResult::Checkmate { winner } => return Evaluation::winner(winner),
     }
 
+    let bb = board.inner();
+    let wk_square = bb
+        .side(Side::White)
+        .pieces
+        .piece(Piece::King)
+        .first()
+        .unwrap();
+    let bk_square = bb
+        .side(Side::Black)
+        .pieces
+        .piece(Piece::King)
+        .first()
+        .unwrap();
+
+    let wk_shield = wk_square.checked_next_rank(Side::White);
+    let bk_shield = bk_square.checked_next_rank(Side::Black);
+
     let mut result = 0;
-    for (SidedPiece(side, piece), _) in board.inner().into_iter() {
+    for (SidedPiece(side, piece), square) in board.inner().into_iter() {
         let side_factor = if side == Side::Black { -1 } else { 1 };
         let piece_value = match piece {
             Piece::Pawn => 100,
@@ -167,6 +201,18 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
         };
 
         result += side_factor * piece_value;
+
+        if Some(square) == wk_shield {
+            result += 65 * side_factor;
+        } else if Some(square) == bk_shield {
+            result += 65 * side_factor;
+        }
+
+        if bb.fullmove_clock > 40 {
+            if piece == Piece::Pawn {
+                result += 10 * square.rank::<i32>();
+            }
+        }
     }
 
     let white_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;

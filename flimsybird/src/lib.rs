@@ -115,15 +115,14 @@ impl Evaluable for Board {
 fn board_rec_evaluate(
     board: &BorkedBoard,
     depth: u8,
-    mut alpha: Evaluation,
-    mut beta: Evaluation,
+    mut best_i_can_do: Evaluation,
+    best_o_can_do: Evaluation,
 ) -> (Option<LegalMove>, Evaluation) {
     if depth == 0 {
         let board = Board::try_from(board.clone()).unwrap();
         return (None, board_static_evaluation::<NoopTracer>(&board));
     }
 
-    let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
     let mut best_move = None;
 
     let opposite = board.side(board.turn.opposite()).occupancy;
@@ -141,44 +140,27 @@ fn board_rec_evaluate(
         move_is_capture_gain + movekind_gain + noise
     });
 
-    if board.turn == Side::White {
-        for movement in moves {
-            let mut board_clone = board.clone();
-            board_clone.feed_unchecked(&movement);
-            if board_clone.is_borked() {
-                continue;
-            }
-
-            let new_ev = board_rec_evaluate(&board_clone, depth - 1, alpha, beta).1;
-            alpha = Evaluation(alpha.0.max(new_ev.0));
-
-            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
-                best_move = Some(movement);
-                best_evaluation = new_ev;
-            }
+    for movement in moves {
+        let mut board_clone = board.clone();
+        board_clone.feed_unchecked(&movement);
+        if board_clone.is_borked() {
+            continue;
         }
-    } else {
-        for movement in moves {
-            let mut board_clone = board.clone();
-            board_clone.feed_unchecked(&movement);
-            if board_clone.is_borked() {
-                continue;
-            }
 
-            let new_ev = board_rec_evaluate(&board_clone, depth - 1, alpha, beta).1;
-            beta = Evaluation(beta.0.min(new_ev.0));
+        let (_, new_ev) = board_rec_evaluate(&board_clone, depth - 1, best_o_can_do, best_i_can_do);
 
-            if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
-                best_move = Some(movement);
-                best_evaluation = new_ev;
-            }
+        if new_ev.is_better_than(board.turn, best_o_can_do) {
+            break;
+        } else if new_ev.is_better_than(board.turn, best_i_can_do) || best_move.is_none() {
+            best_move = Some(movement);
+            best_i_can_do = new_ev;
         }
     }
 
     if let Some(best_move) = best_move {
         let best_move = unsafe { LegalMove::unchecked_new(best_move, board) };
-        best_evaluation.push();
-        (Some(best_move), best_evaluation)
+        best_i_can_do.push();
+        (Some(best_move), best_i_can_do)
     } else {
         let board = Board::try_from(board.clone()).unwrap();
         (None, board_static_evaluation::<NoopTracer>(&board))

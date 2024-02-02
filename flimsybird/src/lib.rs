@@ -236,6 +236,27 @@ where
     L::trace("king shield", king_shield);
     result += white_material - black_material + advance_pawn_gain + king_shield;
 
+    let queen_early_development_penalty = if bb.fullmove_clock < 10 {
+        let wq_square = bb.side(Side::White).pieces.piece(Piece::Queen).first();
+        let bq_square = bb.side(Side::Black).pieces.piece(Piece::Queen).first();
+        let mut result = 0;
+
+        if wq_square != Some(sq::D1) {
+            result += params::QUEEN_EARLY_DEVELOPMENT;
+        }
+
+        if bq_square != Some(sq::D8) {
+            result -= params::QUEEN_EARLY_DEVELOPMENT;
+        }
+
+        result
+    } else {
+        0i32
+    };
+
+    L::trace("queen early penalty", queen_early_development_penalty);
+    result += queen_early_development_penalty;
+
     let white_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;
     let black_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::Black).len() as i32;
     let move_diff = white_moves - black_moves;

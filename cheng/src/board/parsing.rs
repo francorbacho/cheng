@@ -21,8 +21,8 @@ pub enum FENParsingError {
 impl FromIntoFen for Board {
     type Error = FENParsingError;
 
-    fn into_fen(&self) -> String {
-        self.inner.into_fen()
+    fn as_fen(&self) -> String {
+        self.inner.as_fen()
     }
 
     fn from_fen(fen: &str) -> Result<Self, Self::Error> {
@@ -34,7 +34,7 @@ impl FromIntoFen for BorkedBoard {
     type Error = FENParsingError;
 
     #[must_use]
-    fn into_fen(&self) -> String {
+    fn as_fen(&self) -> String {
         use std::fmt::Write;
 
         let mut fen = String::new();
@@ -149,8 +149,8 @@ impl FromIntoFen for BorkedBoard {
         let (white_castle_rights, black_castle_rights) = {
             let castle_rights_str = parts.next().ok_or(MissingPart)?;
             match CastlingRights::parse_fen_from_str(castle_rights_str) {
-                Ok(castle_rights) => castle_rights,
-                Err(_) => return Err(InvalidCastleRights),
+                Some(castle_rights) => castle_rights,
+                None => return Err(InvalidCastleRights),
             }
         };
 

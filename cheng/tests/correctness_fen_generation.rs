@@ -13,10 +13,7 @@ fn test_fen_generation() {
     board.try_feed("d4c4").unwrap();
     board.try_feed("c5b6").unwrap();
 
-    assert_eq!(
-        board.into_fen(),
-        "5r2/8/1k6/p2PKp2/1pR5/1P6/P7/8 w - - 8 46"
-    );
+    assert_eq!(board.as_fen(), "5r2/8/1k6/p2PKp2/1pR5/1P6/P7/8 w - - 8 46");
 }
 
 #[test]
@@ -28,7 +25,7 @@ fn test_fen_parse_en_passant() {
             .unwrap();
     assert_eq!(board.side(Side::Black).en_passant, Some(C6));
 
-    board = BorkedBoard::from_fen(&board.into_fen()).unwrap();
+    board = BorkedBoard::from_fen(&board.as_fen()).unwrap();
     assert_eq!(board.side(Side::Black).en_passant, Some(C6));
 }
 

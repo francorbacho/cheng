@@ -33,7 +33,7 @@ pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String>
     let stockfish = Engine::new("stockfish").map_err(|e| format!("{e}"))?;
     let mut depth_remaining = depth;
     let mut board = context.board.clone();
-    stockfish.set_position(&board.into_fen()).unwrap();
+    stockfish.set_position(&board.as_fen()).unwrap();
 
     while let Err(e) = perft_bisect_iteration(&stockfish, &board, depth_remaining) {
         match e {
@@ -52,7 +52,7 @@ pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String>
             } => {
                 println!("Wrong node count in {movement} (got: {got}, expected: {expected})...");
                 board.try_feed(movement.as_str()).unwrap();
-                stockfish.set_position(&board.into_fen()).unwrap();
+                stockfish.set_position(&board.as_fen()).unwrap();
                 depth_remaining -= 1;
             }
         }

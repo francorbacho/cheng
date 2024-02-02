@@ -126,7 +126,7 @@ fn board_rec_evaluate(
                 continue;
             }
 
-            let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
+            let new_ev = board_rec_evaluate(&board_clone, depth - 1, alpha, beta).1;
             alpha = Evaluation(alpha.0.max(new_ev.0));
 
             if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
@@ -142,7 +142,7 @@ fn board_rec_evaluate(
                 continue;
             }
 
-            let new_ev = board_rec_evaluate(&mut board_clone, depth - 1, alpha, beta).1;
+            let new_ev = board_rec_evaluate(&board_clone, depth - 1, alpha, beta).1;
             beta = Evaluation(beta.0.min(new_ev.0));
 
             if new_ev.is_better_than(board.turn, best_evaluation) || best_move.is_none() {
@@ -202,9 +202,7 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
 
         result += side_factor * piece_value;
 
-        if Some(square) == wk_shield {
-            result += 65 * side_factor;
-        } else if Some(square) == bk_shield {
+        if Some(square) == wk_shield || Some(square) == bk_shield {
             result += 65 * side_factor;
         }
 

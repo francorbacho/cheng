@@ -45,7 +45,7 @@ pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
 
 #[wasm_bindgen(js_name = "boardToFen")]
 pub fn board_to_fen() -> JsString {
-    JsString::from(get_board().into_fen())
+    JsString::from(get_board().as_fen())
 }
 
 #[wasm_bindgen(js_name = "getSideToMove")]
@@ -242,7 +242,6 @@ pub fn evaluate() -> i32 {
 }
 
 #[wasm_bindgen(js_name = "flimsybirdRun")]
-#[must_use]
 pub async fn flimsybird_run() -> Result<String, String> {
     let board = get_board_mut();
     let (Some(best_move), ev) = Evaluable::evaluate(board) else {

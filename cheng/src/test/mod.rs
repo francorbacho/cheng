@@ -110,17 +110,17 @@ fn test_fen_parsing() {
 #[test]
 fn test_fen_generation() {
     let mut board = Board::default();
-    assert_eq!(board.into_fen(), Board::DEFAULT_FEN);
+    assert_eq!(board.as_fen(), Board::DEFAULT_FEN);
 
     board.try_feed("e2e4").unwrap();
     let expected_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
-    assert_eq!(board.into_fen(), expected_fen);
+    assert_eq!(board.as_fen(), expected_fen);
 
     board.try_feed("e7e5").unwrap();
     board.try_feed("e1e2").unwrap();
 
     let expected_fen = "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPPKPPP/RNBQ1BNR b kq - 1 2";
-    assert_eq!(board.into_fen(), expected_fen);
+    assert_eq!(board.as_fen(), expected_fen);
 }
 
 #[test]

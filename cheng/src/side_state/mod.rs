@@ -333,11 +333,9 @@ impl CastlingRights {
     }
 
     /// Parses FEN castling rights for white and black.
-    pub fn parse_fen_from_str(
-        castling_rights: &str,
-    ) -> Result<(CastlingRights, CastlingRights), ()> {
+    pub fn parse_fen_from_str(castling_rights: &str) -> Option<(CastlingRights, CastlingRights)> {
         if castling_rights == "-" {
-            return Ok((CastlingRights::None, CastlingRights::None));
+            return Some((CastlingRights::None, CastlingRights::None));
         }
 
         let mut white_cr = CastlingRights::None;
@@ -345,22 +343,14 @@ impl CastlingRights {
 
         for chr in castling_rights.chars() {
             match chr {
-                'K' => white_cr
-                    .checked_add(CastlingRights::KingSide)
-                    .map_err(|_| ())?,
-                'Q' => white_cr
-                    .checked_add(CastlingRights::QueenSide)
-                    .map_err(|_| ())?,
-                'k' => black_cr
-                    .checked_add(CastlingRights::KingSide)
-                    .map_err(|_| ())?,
-                'q' => black_cr
-                    .checked_add(CastlingRights::QueenSide)
-                    .map_err(|_| ())?,
-                _ => return Err(()),
+                'K' => white_cr.checked_add(CastlingRights::KingSide).ok()?,
+                'Q' => white_cr.checked_add(CastlingRights::QueenSide).ok()?,
+                'k' => black_cr.checked_add(CastlingRights::KingSide).ok()?,
+                'q' => black_cr.checked_add(CastlingRights::QueenSide).ok()?,
+                _ => return None,
             }
         }
 
-        Ok((white_cr, black_cr))
+        Some((white_cr, black_cr))
     }
 }

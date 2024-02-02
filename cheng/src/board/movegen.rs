@@ -36,12 +36,11 @@ impl<'a> PseudoMoveGenerator<'a> {
         self.cached_moves.len()
     }
 
-    fn generate_all_moves(&mut self) {
-        // FIXME:
-        // if self.board.result().is_some() {
-        //     return;
-        // }
+    pub fn is_empty(&self) -> bool {
+        self.cached_moves.is_empty()
+    }
 
+    fn generate_all_moves(&mut self) {
         self.generate_moves_ignoring_game_ended();
         self.generate_castles_ignoring_game_ended();
     }

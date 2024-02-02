@@ -1,5 +1,3 @@
-#![feature(generic_const_exprs)]
-
 #[path = "src/square.rs"]
 mod square;
 
@@ -20,11 +18,9 @@ mod pieces {
 #[path = "src/sides.rs"]
 mod sides;
 
-use std::{
-    collections::{hash_map::Entry, HashMap},
-    fmt, fs,
-    io::{self, Write},
-};
+use std::collections::{hash_map::Entry, HashMap};
+use std::io::{self, Write};
+use std::{fmt, fs};
 
 use board::BoardMask;
 use hash::magic_hash;
@@ -138,10 +134,7 @@ where
     Ok(())
 }
 
-fn write_sliding_piece<P: SlidingPiece>(f: &mut fs::File, name: &str) -> io::Result<()>
-where
-    [(); 1 << P::NBITS]: Sized,
-{
+fn write_sliding_piece<P: SlidingPiece>(f: &mut fs::File, name: &str) -> io::Result<()> {
     write_sliding_piece_occupancy::<P>(f, name)?;
     write_sliding_piece_magic::<P>(f, name)?;
 
@@ -162,10 +155,7 @@ fn write_sliding_piece_occupancy<P: SlidingPiece>(f: &mut fs::File, name: &str) 
     Ok(())
 }
 
-fn write_sliding_piece_magic<P: SlidingPiece>(f: &mut fs::File, name: &str) -> io::Result<()>
-where
-    [(); 1 << P::NBITS]: Sized,
-{
+fn write_sliding_piece_magic<P: SlidingPiece>(f: &mut fs::File, name: &str) -> io::Result<()> {
     writeln!(f, "#[allow(clippy::mistyped_literal_suffixes)]")?;
     writeln!(f, "pub const {name}_MAGICS: [u64; 64] = [")?;
 
@@ -186,16 +176,12 @@ fn random_few_bits() -> u64 {
     rand::random::<u64>() & rand::random::<u64>() & rand::random::<u64>()
 }
 
-fn find_magic<P: SlidingPiece>(square: Square) -> Result<(u64, u32), ()>
-where
-    [(); 1 << P::NBITS]: Sized,
-{
+fn find_magic<P: SlidingPiece>(square: Square) -> Result<(u64, u32), ()> {
     let basic_occupancy = P::relevant_occupancy(square);
     let basic_occupancy_bits_set = basic_occupancy.count();
 
-    // Maybe replace these with vectors, to get rid of the 'where' clauses.
-    let mut occupancy_variations = [BoardMask::default(); 1 << P::NBITS];
-    let mut available_moves = [BoardMask::default(); 1 << P::NBITS];
+    let mut occupancy_variations = vec![BoardMask::default(); 1 << P::NBITS];
+    let mut available_moves = vec![BoardMask::default(); 1 << P::NBITS];
 
     for i in 0..(1 << basic_occupancy_bits_set) {
         occupancy_variations[i] = basic_occupancy.variation(i);

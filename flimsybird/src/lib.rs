@@ -8,8 +8,8 @@ use std::convert::TryFrom;
 use std::fmt::{self, Display};
 
 use cheng::{
-    prelude as sq, Board, BorkedBoard, GameResult, LegalMove, Piece, PseudoMoveGenerator, Side,
-    SidedPiece,
+    prelude as sq, Board, BorkedBoard, GameResult, LegalMove, MoveKind, Piece, PseudoMoveGenerator,
+    Side, SidedPiece,
 };
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
@@ -126,10 +126,19 @@ fn board_rec_evaluate(
     let mut best_evaluation = Evaluation::worst_evaluation(board.turn);
     let mut best_move = None;
 
+    let opposite = board.side(board.turn.opposite()).occupancy;
+
     let mut moves = board.moves();
     moves.cached_moves.sort_unstable_by_key(|mv| {
         let noise = rand::thread_rng().gen_range(0..10);
-        mv.destination.to_index() + noise
+        let move_is_capture_gain = if opposite.get(mv.destination) { 100 } else { 0 };
+        let movekind_gain = match mv.kind {
+            MoveKind::Castle(_) => 50,
+            MoveKind::Promote(Piece::Queen) => 150,
+            MoveKind::Promote(_) => 120,
+            _ => 0,
+        };
+        move_is_capture_gain + movekind_gain + noise
     });
 
     if board.turn == Side::White {

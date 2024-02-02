@@ -1,11 +1,16 @@
+mod uci;
+
 mod board_display;
 mod perft_bisect;
 use perft_bisect::perft_bisect;
 
 use std::convert::AsRef;
-use std::env;
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
+use std::{
+    env,
+    io::{self, Write},
+};
 
 use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
@@ -44,8 +49,10 @@ fn repl() -> rustyline::Result<()> {
         match readline {
             Ok(line) => {
                 let parts: Vec<&str> = line.split(' ').collect();
-                let err = interpret(&mut context, &parts);
-                if let Err(msg) = err {
+
+                if parts[0] == "quit" {
+                    break;
+                } else if let Err(msg) = interpret(&mut context, &parts) {
                     eprintln!("error: {msg}");
                 }
             }
@@ -62,7 +69,15 @@ fn repl() -> rustyline::Result<()> {
 }
 
 fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    match parts[0] {
+    let ok = match parts[0] {
+        // UCI
+        "uci" => Ok(uci::uci()),
+        "ucinewgame" => Ok(uci::ucinewgame(context)),
+        "isready" => Ok(uci::isready()),
+        "position" => uci::position(context, parts),
+        "go" => uci::go(context, parts),
+
+        // our protocol
         "perft" => perft(context, parts).map_err(String::from),
         "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
         "fen" => fen(context, parts),
@@ -73,7 +88,11 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "bench" => bench(parts),
         "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
-    }
+    };
+
+    io::stdout().flush().unwrap();
+
+    ok
 }
 
 fn version() {

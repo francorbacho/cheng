@@ -1,6 +1,6 @@
 mod params;
 mod static_evaluation_tracer;
-pub use static_evaluation_tracer::{NoopTracer, StaticEvaluationTracer, UciTracer};
+pub use static_evaluation_tracer::{LogTracer, NoopTracer, StaticEvaluationTracer, UciTracer};
 
 use rand::Rng;
 
@@ -8,7 +8,8 @@ use std::convert::TryFrom;
 use std::fmt::{self, Display};
 
 use cheng::{
-    Board, BorkedBoard, GameResult, LegalMove, Piece, PseudoMoveGenerator, Side, SidedPiece,
+    prelude as sq, Board, BorkedBoard, GameResult, LegalMove, Piece, PseudoMoveGenerator, Side,
+    SidedPiece,
 };
 
 #[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]

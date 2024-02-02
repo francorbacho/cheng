@@ -18,3 +18,11 @@ impl StaticEvaluationTracer for UciTracer {
         println!("{what} :: {ev}");
     }
 }
+
+pub struct LogTracer;
+
+impl StaticEvaluationTracer for LogTracer {
+    fn trace(what: &str, ev: i32) {
+        log::info!(target: "ev", "{what} :: {ev}");
+    }
+}

@@ -253,3 +253,11 @@ pub async fn flimsybird_run() -> Result<String, String> {
     log::debug!("line: {best_move} :: {ev} ({nodes} nodes evaluated)");
     Ok(format!("{best_move}"))
 }
+
+#[wasm_bindgen(js_name = "static_evaluate")]
+pub async fn static_evaluate() -> Result<(), String> {
+    let board = get_board_mut();
+    flimsybird::board_static_evaluation::<flimsybird::LogTracer>(board);
+
+    Ok(())
+}

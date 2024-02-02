@@ -1,3 +1,5 @@
+mod params;
+
 use rand::Rng;
 
 use std::convert::TryFrom;
@@ -200,29 +202,23 @@ fn board_static_evaluation(board: &Board) -> Evaluation {
     let mut result = 0;
     for (SidedPiece(side, piece), square) in board.inner().into_iter() {
         let side_factor = if side == Side::Black { -1 } else { 1 };
-        let piece_value = match piece {
-            Piece::Pawn => 100,
-            Piece::Knight => 300,
-            Piece::Bishop => 325,
-            Piece::Rook => 500,
-            Piece::Queen => 900,
-            Piece::King => 0,
-        };
+        let piece_value = params::piece_value(piece);
 
-        result += side_factor * piece_value;
+        result += piece_value * side_factor;
 
         if Some(square) == wk_shield || Some(square) == bk_shield {
-            result += 65 * side_factor;
+            result += params::KING_SHIELD * side_factor;
         }
 
         if bb.fullmove_clock > 40 && piece == Piece::Pawn {
-            result += 10 * square.rank::<i32>();
+            result += params::ADVANCE_PAWN_GAIN * square.rank::<i32>();
         }
     }
 
     let white_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::White).len() as i32;
     let black_moves = PseudoMoveGenerator::new_for_side(board.inner(), Side::Black).len() as i32;
+    let move_diff = white_moves - black_moves;
 
-    result += 100.min(5 * (white_moves - black_moves));
+    result += params::MAX_GAIN_DIFF_MOVES.min(params::MOVE_DIFF_WEIGHT * move_diff);
     Evaluation(result)
 }

@@ -61,6 +61,8 @@ pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
     if let Some(best_move) = best_move {
         println!("bestmove {best_move}");
+    } else {
+        println!("bestmove (none)");
     }
 
     Ok(())

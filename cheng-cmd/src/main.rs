@@ -68,12 +68,10 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "fen" => fen(context, parts),
         "feed" => feed(context, parts),
         "ev" => evaluate(context, parts),
-        "d" => display_board(context, parts),
-        "dump-tables" => dump_tables(),
-        "version" => {
-            version();
-            Ok(())
-        }
+        "d" => Ok(display_board(context, parts)),
+        "dump-tables" => Ok(dump_tables()),
+        "bench" => bench(parts),
+        "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
     }
 }
@@ -102,12 +100,10 @@ fn version() {
     );
 }
 
-fn display_board(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
+fn display_board(context: &mut Context, _parts: &[&str]) {
     println!("{}", BoardDisplay(context.board.inner()));
     println!("fen: {}", context.board.as_fen());
     println!("result: {:?}", context.board.result());
-
-    Ok(())
 }
 
 fn fen(context: &mut Context, parts: &[&str]) -> Result<(), String> {
@@ -201,7 +197,7 @@ fn evaluate(context: &mut Context, _parts: &[&str]) -> Result<(), String> {
     Ok(())
 }
 
-fn dump_tables() -> Result<(), String> {
+fn dump_tables() {
     for sq in Square::iter_all() {
         println!("{sq:?}");
         let table_of_moves = unsafe { cheng::internal::ROOK_MOVES[sq.to_index()] };
@@ -222,6 +218,40 @@ fn dump_tables() -> Result<(), String> {
 
         println!();
     }
+}
 
-    Ok(())
+fn bench(parts: &[&str]) -> Result<(), String> {
+    match parts.get(1).map(|s| *s) {
+        Some("magics") => Ok(bench_magics()),
+        Some(word) => Err(format!("bad word: {word}")),
+        None => Err(format!("what to bench")),
+    }
+}
+
+fn bench_magics() {
+    use cheng::movegen::PieceExt;
+    use cheng::movegen::{Bishop, Rook};
+    use cheng::BoardMask;
+
+    let before = Instant::now();
+
+    for i in 0..1_000_000_000 {
+        let square = i % 64;
+
+        std::hint::black_box(Rook::moves(
+            Square::from_index(square),
+            BoardMask::default(),
+            BoardMask::default(),
+        ));
+        std::hint::black_box(Bishop::moves(
+            Square::from_index(square),
+            BoardMask::default(),
+            BoardMask::default(),
+        ));
+    }
+
+    let after = Instant::now();
+    let took = after - before;
+
+    println!("1 billion interations took :: {took:?}");
 }

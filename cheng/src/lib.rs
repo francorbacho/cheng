@@ -12,7 +12,7 @@ mod square;
 use movegen::{Bishop, PieceExt, Rook};
 
 pub use crate::{
-    board::{Board, BorkedBoard, FENParsingError, GameResult, PseudoMoveGenerator},
+    board::{Board, BoardMask, BorkedBoard, FENParsingError, GameResult, PseudoMoveGenerator},
     fen::FromIntoFen,
     movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove, SAN},
     pieces::Piece,

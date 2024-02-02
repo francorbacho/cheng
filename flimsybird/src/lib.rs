@@ -91,7 +91,7 @@ impl Evaluable for Board {
     fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation) {
         unsafe { EVALUATED_NODES = 0 }
 
-        let max_depth = 3;
+        let max_depth = 4;
         let alpha = Evaluation::BLACK_WIN;
         let beta = Evaluation::WHITE_WIN;
         board_rec_evaluate(self.inner(), max_depth, alpha, beta)

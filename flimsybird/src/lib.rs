@@ -22,9 +22,9 @@ impl Evaluable for Board {
         unsafe { EVALUATED_NODES = 0 }
 
         let max_depth = params::DEPTH;
-        let alpha = Evaluation::BLACK_WIN;
-        let beta = Evaluation::WHITE_WIN;
-        board_rec_evaluate(self.inner(), max_depth, alpha, beta)
+        let best_i_can_do = Evaluation::winner(self.turn().opposite());
+        let best_o_can_do = Evaluation::winner(self.turn());
+        board_rec_evaluate(self.inner(), max_depth, best_i_can_do, best_o_can_do)
     }
 }
 

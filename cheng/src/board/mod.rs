@@ -48,6 +48,10 @@ impl TryFrom<BorkedBoard> for Board {
     type Error = ();
 
     fn try_from(borked: BorkedBoard) -> Result<Board, ()> {
+        if borked.is_borked() {
+            return Err(());
+        }
+
         let result = borked.compute_result();
         Ok(Board {
             inner: borked,

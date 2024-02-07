@@ -1,102 +1,18 @@
+mod evaluation;
 mod params;
 mod static_evaluation_tracer;
+
+pub use evaluation::Evaluation;
 pub use static_evaluation_tracer::{LogTracer, NoopTracer, StaticEvaluationTracer, UciTracer};
 
-use rand::Rng;
-
 use std::convert::TryFrom;
-use std::fmt::{self, Display};
 
 use cheng::{
     prelude as sq, Board, BorkedBoard, GameResult, LegalMove, MoveKind, Piece, PseudoMoveGenerator,
     Side, SidedPiece,
 };
 
-#[derive(Default, Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Evaluation(pub i32);
-
 pub static mut EVALUATED_NODES: usize = 0;
-
-impl Evaluation {
-    pub const BLACK_WIN: Self = Evaluation(std::i32::MIN);
-    pub const WHITE_WIN: Self = Evaluation(std::i32::MAX);
-    pub const DRAW: Self = Evaluation(0);
-
-    const CHECKMATE_NET_SIZE: u32 = 10;
-
-    pub fn winner(side: Side) -> Self {
-        match side {
-            Side::White => Evaluation::WHITE_WIN,
-            Side::Black => Evaluation::BLACK_WIN,
-        }
-    }
-
-    pub fn checkmate_in(side: Side, depth: u32) -> Self {
-        assert!(depth < Self::CHECKMATE_NET_SIZE);
-
-        let mut result = Self::winner(side);
-        result.0 -= result.0.signum() * depth as i32;
-
-        result
-    }
-
-    pub fn is_better_than(self, side: Side, ev2: Self) -> bool {
-        if side == Side::White {
-            self.0 > ev2.0
-        } else {
-            self.0 < ev2.0
-        }
-    }
-
-    pub fn push(&mut self) {
-        if self.is_forced_checkmate() {
-            self.0 -= self.0.signum();
-        }
-    }
-
-    pub fn is_forced_checkmate(self) -> bool {
-        self.0.abs_diff(Self::WHITE_WIN.0) < Self::CHECKMATE_NET_SIZE
-            || self.0.abs_diff(Self::BLACK_WIN.0) < Self::CHECKMATE_NET_SIZE
-    }
-
-    pub fn checkmate_depth(self) -> Option<u32> {
-        if self.is_forced_checkmate() {
-            let wd = self.0.abs_diff(Self::WHITE_WIN.0);
-            let bd = self.0.abs_diff(Self::BLACK_WIN.0);
-            return Some(wd.min(bd));
-        }
-
-        None
-    }
-
-    pub fn wins(side: Side) -> Self {
-        if let Side::White = side {
-            Evaluation::WHITE_WIN
-        } else {
-            Evaluation::BLACK_WIN
-        }
-    }
-
-    pub fn worst_evaluation(side: Side) -> Self {
-        if let Side::White = side {
-            Evaluation::BLACK_WIN
-        } else {
-            Evaluation::WHITE_WIN
-        }
-    }
-}
-
-impl Display for Evaluation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(depth) = self.checkmate_depth() {
-            let side = if self.0 > 0 { "white" } else { "black" };
-            writeln!(f, "{side} has forced win in {depth}")
-        } else {
-            writeln!(f, "{:+}", self.0)
-        }
-    }
-}
-
 pub trait Evaluable {
     fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation);
 }
@@ -105,7 +21,7 @@ impl Evaluable for Board {
     fn evaluate(&mut self) -> (Option<LegalMove>, Evaluation) {
         unsafe { EVALUATED_NODES = 0 }
 
-        let max_depth = 4;
+        let max_depth = params::DEPTH;
         let alpha = Evaluation::BLACK_WIN;
         let beta = Evaluation::WHITE_WIN;
         board_rec_evaluate(self.inner(), max_depth, alpha, beta)
@@ -120,24 +36,30 @@ fn board_rec_evaluate(
 ) -> (Option<LegalMove>, Evaluation) {
     if depth == 0 {
         let board = Board::try_from(board.clone()).unwrap();
-        return (None, board_static_evaluation::<NoopTracer>(&board));
+        return (
+            None,
+            quiescense_search(&board, best_i_can_do, best_o_can_do, params::QUIESCENSE_DEPTH),
+        );
     }
 
     let mut best_move = None;
-
     let opposite = board.side(board.turn.opposite()).occupancy;
+    let opposite_pieces = &board.side(board.turn.opposite()).pieces;
 
     let mut moves = board.moves();
     moves.cached_moves.sort_unstable_by_key(|mv| {
-        let noise = rand::thread_rng().gen_range(0..10);
-        let move_is_capture_gain = if opposite.get(mv.destination) { 100 } else { 0 };
+        let move_is_capture_gain = if opposite.get(mv.destination) {
+            params::piece_value(opposite_pieces.find(mv.destination).unwrap())
+        } else {
+            0
+        };
         let movekind_gain = match mv.kind {
             MoveKind::Castle(_) => 50,
             MoveKind::Promote(Piece::Queen) => 150,
             MoveKind::Promote(_) => 120,
             _ => 0,
         };
-        move_is_capture_gain + movekind_gain + noise
+        move_is_capture_gain + movekind_gain
     });
 
     for movement in moves {
@@ -162,9 +84,57 @@ fn board_rec_evaluate(
         best_i_can_do.push();
         (Some(best_move), best_i_can_do)
     } else {
+        // We don't have to do quiescense search here, *we are here because there are no possible moves*.
         let board = Board::try_from(board.clone()).unwrap();
         (None, board_static_evaluation::<NoopTracer>(&board))
     }
+}
+
+fn quiescense_search(
+    board: &Board,
+    mut best_i_can_do: Evaluation,
+    best_o_can_do: Evaluation,
+    depth: u8,
+) -> Evaluation {
+    let eval = board_static_evaluation::<NoopTracer>(board);
+
+    if eval.is_better_than(board.turn(), best_o_can_do) {
+        return best_o_can_do;
+    }
+
+    if eval.is_better_than(board.turn(), best_i_can_do) {
+        best_i_can_do = eval;
+    }
+
+    if depth == 0 {
+        return best_i_can_do;
+    }
+
+    let bb = board.inner();
+    let opposite = bb.side(bb.turn.opposite()).occupancy;
+
+    for movement in bb.moves() {
+        if !opposite.get(movement.destination) {
+            continue;
+        }
+        let mut board_clone = bb.clone();
+        board_clone.feed_unchecked(&movement);
+
+        let Ok(board_clone) = Board::try_from(board_clone) else {
+            continue;
+        };
+
+        let new_ev = quiescense_search(&board_clone, best_o_can_do, best_i_can_do, depth - 1);
+        if new_ev.is_better_than(bb.turn, best_o_can_do) {
+            return best_o_can_do;
+        }
+
+        if new_ev.is_better_than(bb.turn, best_i_can_do) {
+            best_i_can_do = new_ev;
+        }
+    }
+
+    return best_i_can_do;
 }
 
 pub fn board_static_evaluation<L>(board: &Board) -> Evaluation

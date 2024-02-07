@@ -59,7 +59,7 @@ fn board_rec_evaluate(
             MoveKind::Promote(_) => 120,
             _ => 0,
         };
-        move_is_capture_gain + movekind_gain
+        -move_is_capture_gain - movekind_gain
     });
 
     for movement in moves {

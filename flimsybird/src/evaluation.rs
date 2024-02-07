@@ -78,9 +78,9 @@ impl Display for Evaluation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(depth) = self.checkmate_depth() {
             let side = if self.0 > 0 { "white" } else { "black" };
-            writeln!(f, "{side} has forced win in {depth}")
+            write!(f, "{side} has forced win in {depth}")
         } else {
-            writeln!(f, "{:+}", self.0)
+            write!(f, "{:+}", self.0)
         }
     }
 }

@@ -65,6 +65,8 @@ pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         println!("bestmove (none)");
     }
 
+    log::info!("Evaluated {} nodes", unsafe { flimsybird::EVALUATED_NODES });
+
     Ok(())
 }
 

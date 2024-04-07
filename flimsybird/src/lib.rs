@@ -38,7 +38,12 @@ fn board_rec_evaluate(
         let board = Board::try_from(board.clone()).unwrap();
         return (
             None,
-            quiescense_search(&board, best_i_can_do, best_o_can_do, params::QUIESCENSE_DEPTH),
+            quiescense_search(
+                &board,
+                best_i_can_do,
+                best_o_can_do,
+                params::QUIESCENSE_DEPTH,
+            ),
         );
     }
 

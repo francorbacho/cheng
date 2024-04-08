@@ -79,6 +79,7 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "eval" => Ok(uci::eval(context)),
 
         // our protocol
+        "goinfo" => goinfo(context).map_err(String::from),
         "perft" => perft(context, parts).map_err(String::from),
         "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
         "fen" => fen(context, parts),
@@ -164,6 +165,14 @@ where
     }
 
     Ok(nodes)
+}
+
+fn goinfo(context: &mut Context) -> Result<(), &'static str> {
+    let mut board_clone = context.board.clone();
+    let (mv, _) = board_clone.evaluate();
+    let mv = mv.unwrap();
+    println!("info pv {mv}");
+    Ok(())
 }
 
 fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {

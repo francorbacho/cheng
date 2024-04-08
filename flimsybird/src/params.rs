@@ -1,7 +1,7 @@
 use cheng::Piece;
 
 pub const DEPTH: u8 = 4;
-pub const QUIESCENSE_DEPTH: u8 = 1;
+pub const QUIESCENSE_DEPTH: u8 = 2;
 
 pub const fn piece_value(piece: Piece) -> i32 {
     match piece {

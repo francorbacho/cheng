@@ -1,5 +1,5 @@
 mod evaluation;
-mod params;
+pub mod params;
 mod static_evaluation_tracer;
 
 pub use evaluation::Evaluation;
@@ -95,24 +95,14 @@ fn board_rec_evaluate(
     }
 }
 
-fn quiescense_search(
+pub fn quiescense_search(
     board: &Board,
     mut best_i_can_do: Evaluation,
     best_o_can_do: Evaluation,
     depth: u8,
 ) -> Evaluation {
-    let eval = board_static_evaluation::<NoopTracer>(board);
-
-    if eval.is_better_than(board.turn(), best_o_can_do) {
-        return best_o_can_do;
-    }
-
-    if eval.is_better_than(board.turn(), best_i_can_do) {
-        best_i_can_do = eval;
-    }
-
     if depth == 0 {
-        return best_i_can_do;
+        return board_static_evaluation::<NoopTracer>(board);
     }
 
     let bb = board.inner();

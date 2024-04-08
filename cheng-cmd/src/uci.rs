@@ -1,5 +1,5 @@
 use cheng::{Board, FromIntoFen};
-use flimsybird::Evaluable;
+use flimsybird::{Evaluable, Evaluation};
 
 use crate::Context;
 
@@ -72,4 +72,16 @@ pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
 
 pub fn eval(context: &mut Context) {
     flimsybird::board_static_evaluation::<flimsybird::UciTracer>(&context.board);
+
+    let result = flimsybird::quiescense_search(
+        &context.board,
+        Evaluation::winner(context.board.turn().opposite()),
+        Evaluation::winner(context.board.turn()),
+        flimsybird::params::QUIESCENSE_DEPTH,
+    );
+
+    println!(
+        "quiescense search (at depth {depth}): {result}",
+        depth = flimsybird::params::QUIESCENSE_DEPTH
+    );
 }

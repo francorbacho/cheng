@@ -7,6 +7,13 @@ class Chessboard {
             white: "human",
             black: "computer",
         };
+
+        this.worker = new Worker("js/worker.js", { type: "module" });
+
+        this.worker.onmessage = (ev) => { this.feedMove(ev.data); };
+        this.worker.onerror = (ev) => {
+            console.error("WORKER FAILED", ev);
+        };
     }
 
     constructHTML() {
@@ -263,7 +270,7 @@ class Chessboard {
             return;
         }
 
-        wasm.flimsybirdRun().then(move => this.feedMove(move)).catch(() => { });
+        this.worker.postMessage({ inputData: wasm.boardToFen() });
     }
 }
 

@@ -326,4 +326,17 @@ window.onload = function () {
             }
         });
     });
+
+    const aiInput = document.getElementById("server");
+    aiInput.addEventListener("change", function () {
+        const endpoint = aiInput.value;
+
+        console.log("tried to set server to :: ", aiInput.value);
+
+        fetch(endpoint)
+            .then(resp => resp.json())
+            .then(j => {
+                mainBoard.feedMoveWithoutScheduling(j.movement);
+            });
+    });
 };

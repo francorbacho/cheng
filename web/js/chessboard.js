@@ -63,7 +63,7 @@ class Chessboard {
 
         this.constructPieces();
         this.updateCheckIndicator();
-        this.unsetPreviousModeIndicator();
+        this.unsetPreviousMoveIndicator();
         this.updateFenInputBox();
     }
 
@@ -248,7 +248,7 @@ class Chessboard {
     }
 
 
-    unsetPreviousModeIndicator() {
+    unsetPreviousMoveIndicator() {
         const lastMoveSquareElement = document.querySelectorAll("square.last-move");
 
         for (const squareElement of lastMoveSquareElement) {
@@ -257,7 +257,7 @@ class Chessboard {
     }
 
     updatePreviousMoveIndicator(newMoveOrigin, newMoveDestination) {
-        this.unsetPreviousModeIndicator();
+        this.unsetPreviousMoveIndicator();
 
         const originSquareElement = document.querySelector(`square[position=${newMoveOrigin}]`);
         const destSquareElement = document.querySelector(`square[position=${newMoveDestination}]`);

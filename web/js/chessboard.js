@@ -3,6 +3,7 @@ class Chessboard {
         this.boardFrameId = id;
         this.squares = {};
         this.draggingPiece = null;
+        this.uciEndpoint = null;
         this.playerConfiguration = {
             white: "human",
             black: "computer",
@@ -272,6 +273,23 @@ class Chessboard {
 
         this.worker.postMessage({ inputData: wasm.boardToFen() });
     }
+
+    scheduleEndpointMove() {
+        if (this.uciEndpoint == null) {
+            console.error("Cannot request endpoint cause uci endpoint is null");
+            return;
+        }
+
+        const fen = wasm.boardToFen().replaceAll("/", "_").replaceAll(" ", "+");
+        const url = `${this.uciEndpoint}?fen=${fen}`;
+        console.log("url " + url);
+
+        fetch(url)
+            .then(resp => resp.json())
+            .then(j => {
+                mainBoard.feedMoveWithoutScheduling(j.movement);
+            });
+    }
 }
 
 const mainBoard = new Chessboard("chessboard");
@@ -330,13 +348,7 @@ window.onload = function () {
     const aiInput = document.getElementById("server");
     aiInput.addEventListener("change", function () {
         const endpoint = aiInput.value;
-
-        console.log("tried to set server to :: ", aiInput.value);
-
-        fetch(endpoint)
-            .then(resp => resp.json())
-            .then(j => {
-                mainBoard.feedMoveWithoutScheduling(j.movement);
-            });
+        mainBoard.uciEndpoint = endpoint;
+        mainBoard.scheduleEndpointMove();
     });
 };

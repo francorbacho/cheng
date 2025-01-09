@@ -34,15 +34,6 @@ select:active {
     margin: 0 auto;
 }
 
-.chess-interface {
-    display: flex;
-}
-
-#settings {
-    width: 50%;
-    margin: 0 auto;
-}
-
 #player-select,
 input {
     width: 100%;
@@ -50,4 +41,29 @@ input {
 
 input {
     font-family: monospace;
+    padding: 3px;
+    margin: 3px;
+    box-sizing: border-box;
+}
+
+.app {
+    justify-content: space-evenly;
+    display: flex;
+    flex-direction: row;
+}
+
+.app-metadata {
+    display: flex;
+    flex-direction: column;
+    background-color: lightgray;
+    padding: 15px;
+    border-radius: 4px;
+    border: 2px solid #333;
+}
+
+.settings {
+    padding-top: 20px;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }

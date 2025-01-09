@@ -15,22 +15,45 @@
     <script src="js/chessboard.js"></script>
     <script src="js/load_wasm.js" type="module"></script>
 
-    <div id="chess" class="chess-interface">
+    <div class="app">
         <chessboard id="chessboard" draggable="false">Enable JavaScript to play</chessboard>
-     </div>
 
-    <div id="settings">
-        <select name="players" id="player-select">
-            <option value="human-human">Human vs. Human</option>
-            <option value="human-computer" selected="selected">Human vs. Computer</option>
-            <option value="computer-human">Computer vs. Human</option>
-            <option value="computer-computer">Computer vs. Computer</option>
-        </select>
+        <div class="app-metadata">
+            <div class="settings">
+                <div>
+                    <div class="dot-and-select-container">
+                        <span class="dot-player-marker" style="background-color: white;"></span>
 
-        <input type="text" id="fen" placeholder="fen">
-        <input type="text" id="uci" placeholder="uci">
-        <input type="text" id="server" placeholder="ai server">
+                        <select class="player-select" id="player-select-white">
+                            <option value="human">Human</option>
+                            <option value="wasm">WASM</option>
+                            <option value="endpoint">Endpoint</option>
+                        </select>
+                    </div>
+
+                    <input type="text" id="white-endpoint" placeholder="ai server">
+                </div>
+
+                <div>
+                    <div class="dot-and-select-container">
+                        <span class="dot-player-marker" style="background-color: black;"></span>
+
+                        <select class="player-select" id="player-select-black">
+                            <option value="human">Human</option>
+                            <option value="wasm">WASM</option>
+                            <option value="endpoint">Endpoint</option>
+                        </select>
+                    </div>
+
+                    <input type="text" id="black-endpoint" placeholder="ai server">
+                </div>
+            </div>
+
+            <input type="text" id="fen" placeholder="fen">
+            <input type="text" id="uci" placeholder="uci">
+        </div>
     </div>
+
 </body>
 
 </html>

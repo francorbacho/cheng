@@ -10,7 +10,6 @@ chessboard {
     height: auto;
     aspect-ratio: 1;
     flex-flow: wrap-reverse;
-    margin: 20px auto;
     border: 2px solid #333;
 
     justify-content: center;
@@ -129,4 +128,23 @@ mark.check {
 
 .black.king {
     background-image: url('https://upload.wikimedia.org/wikipedia/commons/f/f0/Chess_kdt45.svg');
+}
+
+.dot-and-select-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot-player-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.player-select {
+    flex-grow: 1;
+    padding: 5px;
+    font-size: 14px;
 }

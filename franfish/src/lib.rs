@@ -1,3 +1,8 @@
+mod inspector;
+use inspector::DebugInspector;
+use inspector::Inspector;
+use inspector::NoInspector;
+
 use cheng::LegalMove;
 use cheng::Piece;
 use cheng::Side;
@@ -5,7 +10,17 @@ use cheng::{Board, BorkedBoard};
 
 pub type Evaluation = i32;
 
+pub fn go_debug(board: &Board, depth: usize) -> LegalMove {
+    go_inspect::<DebugInspector>(board, depth)
+}
+
 pub fn go(board: &Board, depth: usize) -> LegalMove {
+    go_inspect::<NoInspector>(board, depth)
+}
+
+fn go_inspect<I: Inspector>(board: &Board, depth: usize) -> LegalMove {
+    I::on_start();
+
     let mut best_move = None;
     let mut best_eval = if board.turn() == Side::White {
         Evaluation::MIN
@@ -17,7 +32,7 @@ pub fn go(board: &Board, depth: usize) -> LegalMove {
         let mut clone = board.clone();
         clone.feed(movement.clone());
 
-        let eval = minimax(&clone.inner(), depth, i32::MIN, i32::MAX);
+        let eval = minimax::<I>(&clone.inner(), depth, i32::MIN, i32::MAX);
         if board.turn() == Side::White && best_eval < eval {
             best_eval = eval;
             best_move = Some(movement);
@@ -27,17 +42,19 @@ pub fn go(board: &Board, depth: usize) -> LegalMove {
         }
     }
 
+    I::on_end();
+
     best_move.unwrap()
 }
 
-fn minimax(
+fn minimax<I: Inspector>(
     board: &BorkedBoard,
     depth: usize,
     mut alpha: Evaluation,
     mut beta: Evaluation,
 ) -> Evaluation {
     if depth == 0 {
-        let evaluation = evaluate(board);
+        let evaluation = evaluate::<I>(board);
         let depth_penalty = if board.turn == Side::White {
             depth as i32
         } else {
@@ -58,17 +75,22 @@ fn minimax(
         if clone.is_borked() {
             continue;
         }
-        let eval = minimax(&clone, depth - 1, alpha, beta);
+        let eval = minimax::<I>(&clone, depth - 1, alpha, beta);
 
         if board.turn == Side::White {
             result = Evaluation::max(result, eval);
             alpha = Evaluation::max(alpha, eval);
+
+            I::on_new_best_move();
         } else {
             result = Evaluation::min(result, eval);
             beta = Evaluation::min(beta, eval);
+
+            I::on_new_best_move();
         }
 
         if beta <= alpha {
+            I::on_pruning();
             break;
         }
     }
@@ -76,7 +98,7 @@ fn minimax(
     result
 }
 
-fn evaluate(board: &BorkedBoard) -> Evaluation {
+fn evaluate<I: Inspector>(board: &BorkedBoard) -> Evaluation {
     fn piece_value(piece: Piece) -> Evaluation {
         match piece {
             Piece::Pawn => 100,
@@ -87,6 +109,8 @@ fn evaluate(board: &BorkedBoard) -> Evaluation {
             Piece::King => 0,
         }
     }
+
+    I::on_evaluate();
 
     let mut result = 0i32;
 

@@ -311,7 +311,7 @@ mod ff {
             .parse()
             .map_err(|_| "invalid depth")?;
 
-        let movement = franfish::go(&context.board, depth);
+        let movement = franfish::go_debug(&context.board, depth);
 
         let go_end = Instant::now();
         let go_duration = go_end - go_start;

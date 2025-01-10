@@ -1,16 +1,16 @@
+mod args;
+
 mod uci;
 
 mod board_display;
 mod perft_bisect;
 use perft_bisect::perft_bisect;
 
-use std::convert::AsRef;
+use args::Args;
+
+use std::io::{self, Write};
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
-use std::{
-    env,
-    io::{self, Write},
-};
 
 use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
@@ -31,11 +31,10 @@ fn main() -> Result<(), String> {
     log::info!("initializing cheng...");
     cheng::init();
 
-    let argv: Vec<_> = env::args().collect();
-    let argv: Vec<&str> = argv.iter().map(AsRef::as_ref).collect();
+    let args = Args::from_argv();
 
-    if argv.len() > 1 {
-        interpret(&mut Context::default(), &argv[1..])
+    if args.len() > 1 {
+        interpret(&mut Context::default(), args)
     } else {
         repl().map_err(|err| err.to_string())
     }
@@ -48,11 +47,11 @@ fn repl() -> rustyline::Result<()> {
         let readline = rl.readline(">> ");
         match readline {
             Ok(line) => {
-                let parts: Vec<&str> = line.trim().split(' ').collect();
+                let args = args::Args::from_line(&line);
 
-                if parts[0] == "quit" {
+                if args.is_quit() {
                     break;
-                } else if let Err(msg) = interpret(&mut context, &parts) {
+                } else if let Err(msg) = interpret(&mut context, args) {
                     eprintln!("error: {msg}");
                 }
             }
@@ -68,28 +67,28 @@ fn repl() -> rustyline::Result<()> {
     Ok(())
 }
 
-fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let ok = match parts[0] {
+fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
+    let ok = match args.cmd() {
         // UCI
         "uci" => Ok(uci::uci()),
         "ucinewgame" => Ok(uci::ucinewgame(context)),
         "isready" => Ok(uci::isready()),
-        "position" => uci::position(context, parts),
-        "go" => uci::go(context, parts),
+        "position" => uci::position(context, args),
+        "go" => uci::go(context, args),
         "eval" => Ok(uci::eval(context)),
 
-        "ff" => ff::go(context, parts),
+        "ff" => ff::go(context, args),
 
         // our protocol
         "goinfo" => goinfo(context).map_err(String::from),
-        "perft" => perft(context, parts).map_err(String::from),
-        "perft-bisect" => perft_bisect(context, parts).map_err(String::from),
-        "fen" => fen(context, parts),
-        "feed" => feed(context, parts),
+        "perft" => perft(context, args).map_err(String::from),
+        "perft-bisect" => perft_bisect(context, args).map_err(String::from),
+        "fen" => fen(context, args),
+        "feed" => feed(context, args),
         "ev" => Ok(evaluate(context)),
-        "d" => Ok(display_board(context, parts)),
+        "d" => Ok(display_board(context, args)),
         "dump-tables" => Ok(dump_tables()),
-        "bench" => bench(parts),
+        "bench" => bench(args),
         "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
     };
@@ -125,14 +124,14 @@ fn version() {
     );
 }
 
-fn display_board(context: &mut Context, _parts: &[&str]) {
+fn display_board(context: &mut Context, _args: Args) {
     println!("{}", BoardDisplay(context.board.inner()));
     println!("fen: {}", context.board.as_fen());
     println!("result: {:?}", context.board.result());
 }
 
-fn fen(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let fen = parts.get(1..).ok_or("Expected fen argument")?.join(" ");
+fn fen(context: &mut Context, args: Args) -> Result<(), String> {
+    let fen = args.join_from("fen", 1)?;
     context.board = Board::from_fen(&fen).map_err(|err| format!("{err:?}"))?;
     Ok(())
 }
@@ -177,14 +176,10 @@ fn goinfo(context: &mut Context) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
+fn perft(context: &mut Context, args: Args) -> Result<(), String> {
     let perft_start = Instant::now();
 
-    let depth: usize = parts
-        .get(1)
-        .ok_or("missing depth")?
-        .parse()
-        .map_err(|_| "invalid depth")?;
+    let depth: usize = args.parse("depth", 1)?;
 
     let total_nodes = incremental_perft(&context.board, depth, |movement, nodes| {
         println!("{movement}: {nodes}");
@@ -204,12 +199,8 @@ fn perft(context: &mut Context, parts: &[&str]) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn feed(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let pseudomove: PseudoMove = parts
-        .get(1)
-        .ok_or("missing move")?
-        .parse()
-        .map_err(|_| "invalid move")?;
+fn feed(context: &mut Context, args: Args) -> Result<(), String> {
+    let pseudomove: PseudoMove = args.parse::<PseudoMove>("move", 1)?;
 
     context
         .board
@@ -251,12 +242,11 @@ fn dump_tables() {
     }
 }
 
-fn bench(parts: &[&str]) -> Result<(), String> {
-    match parts.get(1).map(|s| *s) {
-        Some("magics") => Ok(bench_magics()),
-        Some("fen") => Ok(bench_fen()),
-        Some(word) => Err(format!("bad word: {word}")),
-        None => Err(format!("what to bench")),
+fn bench(args: Args) -> Result<(), String> {
+    match args.as_str("what to bench", 1)? {
+        "magics" => Ok(bench_magics()),
+        "fen" => Ok(bench_fen()),
+        word => Err(format!("bad word: {word}")),
     }
 }
 
@@ -299,17 +289,14 @@ fn bench_fen() {
 }
 
 mod ff {
-    use super::Context;
+    use crate::Context;
+    use crate::args::Args;
     use std::time::Instant;
 
-    pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
+    pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
         let go_start = Instant::now();
 
-        let depth: usize = parts
-            .get(1)
-            .ok_or("missing depth")?
-            .parse()
-            .map_err(|_| "invalid depth")?;
+        let depth: usize = args.parse::<usize>("depth", 1)?;
 
         let movement = franfish::go_debug(&context.board, depth);
 

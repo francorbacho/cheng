@@ -7,6 +7,7 @@ use cheng::{Board, FromIntoFen};
 use uci::Engine;
 
 use crate::{incremental_perft, Context};
+use crate::args::Args;
 
 #[derive(Debug)]
 pub enum PerftBisectErr {
@@ -23,12 +24,8 @@ pub enum PerftBisectErr {
     },
 }
 
-pub fn perft_bisect(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let depth: usize = parts
-        .get(1)
-        .ok_or("missing depth")?
-        .parse()
-        .map_err(|_| "invalid depth")?;
+pub fn perft_bisect(context: &mut Context, args: Args) -> Result<(), String> {
+    let depth: usize = args.parse("depth", 1)?;
 
     let stockfish = Engine::new("stockfish").map_err(|e| format!("{e}"))?;
     let mut depth_remaining = depth;

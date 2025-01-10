@@ -2,6 +2,7 @@ use cheng::{Board, FromIntoFen};
 use flimsybird::{Evaluable, Evaluation};
 
 use crate::Context;
+use crate::args::Args;
 
 pub fn uci() {
     println!("uciok");
@@ -13,40 +14,49 @@ pub fn isready() {
     println!("readyok");
 }
 
-pub fn position(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let mut parts = &parts[1..];
-    if parts.get(0) == Some(&"startpos") {
-        context.board = Board::default();
-        parts = &parts[1..];
-    } else if parts.get(0) == Some(&"fen") {
-        let fen = match &parts.get(1..7) {
-            Some(parts) => parts.join(" "),
-            None => return Err(format!("invalid fen, missing parts")),
-        };
-        context.board = Board::from_fen(&fen).map_err(|e| format!("{e:?}"))?;
-        parts = &parts[7..];
-    } else {
-        return Err(format!("bad word: '{}'", parts[1..].join(" ")));
+pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
+    let input = args.parts();
+    let mut iter = input.into_iter().peekable();
+
+    match iter.next() {
+        Some("position") => {}
+        value => return Err(format!("Expected 'position' instead of {value:?}")),
     }
 
-    match parts.get(0) {
-        Some(&"moves") => {
-            for mv in &parts[1..] {
-                context
-                    .board
-                    .try_feed(*mv)
-                    .map_err(|_| format!("received invalid move"))?;
+    context.board = match iter.next() {
+        Some("startpos") => Board::default(),
+        Some("fen") => {
+            let fen_parts: Vec<&str> = iter
+                .by_ref()
+                .take_while(|&token| token != "moves")
+                .collect();
+            if fen_parts.is_empty() {
+                return Err("Expected FEN string after 'fen'".to_string());
             }
-
-            Ok(())
+            Board::from_fen(&fen_parts.join(" ")).map_err(|e| format!("{e:?}"))?
         }
-        Some(word) => Err(format!("invalid word: {word}")),
-        None => Ok(()),
-    }
+        _ => return Err("Expected 'startpos' or 'fen'".to_string()),
+    };
+
+    let moves = if iter.peek() == Some(&"moves") {
+        iter.next();
+        iter.map(String::from).collect()
+    } else {
+        Vec::new()
+    };
+
+     for mv in moves {
+         context
+         .board
+         .try_feed(mv.as_str())
+        .map_err(|_| format!("received invalid move"))?;
+     }
+
+    Ok(())
 }
 
-pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
-    let movetime = match parts[1..] {
+pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
+    let movetime = match args.parts()[..] {
         // FIXME: Workaround to get `go` working.
         [] => "0",
         ["movetime", movetime] => movetime,

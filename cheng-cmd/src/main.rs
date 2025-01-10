@@ -78,6 +78,7 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "eval" => Ok(uci::eval(context)),
 
         "ff" => ff::go(context, args),
+        "ffd" => ff::go_debug(context, args),
 
         // our protocol
         "goinfo" => goinfo(context).map_err(String::from),
@@ -293,7 +294,15 @@ mod ff {
     use crate::args::Args;
     use std::time::Instant;
 
-    pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
+    pub fn go(context: &mut Context, _args: Args) -> Result<(), String> {
+        let depth: usize = 3;
+        let movement = franfish::go(&context.board, depth);
+        println!("bestmove {movement}");
+
+        Ok(())
+    }
+
+    pub fn go_debug(context: &mut Context, args: Args) -> Result<(), String> {
         let go_start = Instant::now();
 
         let depth: usize = args.parse::<usize>("depth", 1)?;

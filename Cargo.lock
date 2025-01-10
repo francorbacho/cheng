@@ -49,6 +49,7 @@ dependencies = [
  "cheng",
  "env_logger",
  "flimsybird",
+ "franfish",
  "log 0.4.21",
  "owo-colors",
  "rustyline",
@@ -155,6 +156,14 @@ dependencies = [
 
 [[package]]
 name = "flimsybird"
+version = "0.1.0"
+dependencies = [
+ "cheng",
+ "log 0.4.21",
+]
+
+[[package]]
+name = "franfish"
 version = "0.1.0"
 dependencies = [
  "cheng",

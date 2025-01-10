@@ -78,6 +78,8 @@ fn interpret(context: &mut Context, parts: &[&str]) -> Result<(), String> {
         "go" => uci::go(context, parts),
         "eval" => Ok(uci::eval(context)),
 
+        "ff" => ff::go(context, parts),
+
         // our protocol
         "goinfo" => goinfo(context).map_err(String::from),
         "perft" => perft(context, parts).map_err(String::from),
@@ -294,4 +296,28 @@ fn bench_fen() {
     let after = Instant::now();
     let took = after - before;
     println!("evaluation took :: {took:?}");
+}
+
+mod ff {
+    use super::Context;
+    use std::time::Instant;
+
+    pub fn go(context: &mut Context, parts: &[&str]) -> Result<(), String> {
+        let go_start = Instant::now();
+
+        let depth: usize = parts
+            .get(1)
+            .ok_or("missing depth")?
+            .parse()
+            .map_err(|_| "invalid depth")?;
+
+        let movement = franfish::go(&context.board, depth);
+
+        let go_end = Instant::now();
+        let go_duration = go_end - go_start;
+
+        println!("total time: {go_duration:?}\nmove: {movement}",);
+
+        Ok(())
+    }
 }

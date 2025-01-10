@@ -375,3 +375,9 @@ window.onload = function () {
         });
     });
 };
+
+function restartMainBoard() {
+    wasm.restartBoard();
+    mainBoard.syncToWasm();
+    mainBoard.scheduleMove();
+}

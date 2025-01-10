@@ -1,10 +1,12 @@
+use cheng::LegalMove;
+
 static mut NODES_EVALUATED: usize = 0;
 
 pub trait Inspector {
     #[inline(always)]
     fn on_evaluate() {}
     #[inline(always)]
-    fn on_new_best_move() {}
+    fn on_new_best_move(_movement: &LegalMove) {}
     #[inline(always)]
     fn on_pruning() {}
 
@@ -25,12 +27,11 @@ impl Inspector for DebugInspector {
         unsafe { NODES_EVALUATED += 1 }
     }
 
-    fn on_new_best_move() {
-        println!("new best move found");
+    fn on_new_best_move(movement: &LegalMove) {
+        println!("new best move found {movement}");
     }
 
     fn on_pruning() {
-        println!("pruning");
     }
 
     fn on_start() {

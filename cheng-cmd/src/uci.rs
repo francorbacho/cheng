@@ -56,7 +56,7 @@ pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
 }
 
 pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
-    let movetime = match args.parts()[..] {
+    let movetime = match args.parts()[1..] {
         // FIXME: Workaround to get `go` working.
         [] => "0",
         ["movetime", movetime] => movetime,

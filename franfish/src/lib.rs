@@ -1,14 +1,16 @@
+mod evaluation;
+use evaluation::Evaluation;
+
 mod inspector;
 use inspector::DebugInspector;
 use inspector::Inspector;
 use inspector::NoInspector;
 
-use cheng::LegalMove;
+use cheng::{PseudoMove, LegalMove};
 use cheng::Piece;
 use cheng::Side;
 use cheng::{Board, BorkedBoard};
-
-pub type Evaluation = i32;
+use cheng::PseudoMoveGenerator;
 
 pub fn go_debug(board: &Board, depth: usize) -> LegalMove {
     go_inspect::<DebugInspector>(board, depth)
@@ -21,29 +23,27 @@ pub fn go(board: &Board, depth: usize) -> LegalMove {
 fn go_inspect<I: Inspector>(board: &Board, depth: usize) -> LegalMove {
     I::on_start();
 
-    let mut alpha = i32::MIN;
-    let mut beta = i32::MAX;
+    let mut alpha = Evaluation::BLACK_WIN;
+    let mut beta = Evaluation::WHITE_WIN;
 
     let mut best_move = None;
-    let mut best_eval = if board.turn() == Side::White {
-        Evaluation::MIN
-    } else {
-        Evaluation::MAX
-    };
+    let mut best_eval = Evaluation::wins(board.turn().opposite());
 
     for movement in board.moves() {
+        I::on_evaluate(&PseudoMove::from(&movement), depth);
+
         let mut clone = board.clone();
         clone.feed(movement.clone());
 
         let eval = minimax::<I>(&clone.inner(), depth - 1, alpha, beta);
         if board.turn() == Side::White && best_eval <= eval {
-            I::on_new_best_move(&movement);
+            I::on_new_best_move(&movement, eval);
 
             alpha = eval;
             best_eval = eval;
             best_move = Some(movement);
         } else if board.turn() == Side::Black && eval <= best_eval {
-            I::on_new_best_move(&movement);
+            I::on_new_best_move(&movement, eval);
 
             beta = eval;
             best_eval = eval;
@@ -63,22 +63,20 @@ fn minimax<I: Inspector>(
     mut beta: Evaluation,
 ) -> Evaluation {
     if depth == 0 {
-        let evaluation = evaluate::<I>(board);
-        let depth_penalty = if board.turn == Side::White {
-            depth as i32
-        } else {
-            -(depth as i32)
-        };
-        return evaluation + depth_penalty;
+        return evaluate::<I>(board);
     }
 
-    let mut result = if board.turn == Side::White {
-        Evaluation::MIN
-    } else {
-        Evaluation::MAX
-    };
+    let moves = PseudoMoveGenerator::new(board);
 
-    for movement in board.moves() {
+    if moves.is_empty() {
+        return Evaluation::checkmate_in(board.turn.opposite(), depth as u32);
+    }
+
+    let mut result = Evaluation::wins(board.turn.opposite());
+
+    for movement in moves {
+        I::on_evaluate(&movement, depth);
+
         let mut clone = board.clone();
         clone.feed_unchecked(&movement);
         if clone.is_borked() {
@@ -112,18 +110,19 @@ fn evaluate<I: Inspector>(board: &BorkedBoard) -> Evaluation {
             Piece::Rook => 500,
             Piece::Queen => 900,
             Piece::King => 1 << 16,
-        }
+        }.into()
     }
 
-    I::on_evaluate();
+    I::on_evaluate_leaf();
 
-    let mut result = 0i32;
+    let mut result = Evaluation::default();
 
     for piece in Piece::iter() {
         let wmask = board.white_side.pieces.piece(piece);
         let bmask = board.black_side.pieces.piece(piece);
+        let diff = Evaluation(wmask.count() as i32 - bmask.count() as i32);
 
-        result += (wmask.count() as i32 - bmask.count() as i32) * piece_value(piece);
+        result += diff * piece_value(piece);
     }
 
     result

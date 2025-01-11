@@ -36,13 +36,13 @@ fn go_inspect<I: Inspector>(board: &Board, depth: usize) -> LegalMove {
         clone.feed(movement.clone());
 
         let eval = minimax::<I>(&clone.inner(), depth - 1, alpha, beta);
-        if board.turn() == Side::White && best_eval < eval {
+        if board.turn() == Side::White && best_eval <= eval {
             I::on_new_best_move(&movement);
 
             alpha = eval;
             best_eval = eval;
             best_move = Some(movement);
-        } else if board.turn() == Side::Black && eval < best_eval {
+        } else if board.turn() == Side::Black && eval <= best_eval {
             I::on_new_best_move(&movement);
 
             beta = eval;

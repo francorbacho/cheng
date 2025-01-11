@@ -35,7 +35,7 @@ fn go_inspect<I: Inspector>(board: &Board, depth: usize) -> LegalMove {
         let mut clone = board.clone();
         clone.feed(movement.clone());
 
-        let eval = minimax::<I>(&clone.inner(), depth, alpha, beta);
+        let eval = minimax::<I>(&clone.inner(), depth - 1, alpha, beta);
         if board.turn() == Side::White && best_eval < eval {
             I::on_new_best_move(&movement);
 

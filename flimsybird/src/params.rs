@@ -1,6 +1,6 @@
 use cheng::Piece;
 
-pub const DEPTH: u8 = 4;
+pub const DEPTH: u8 = 3;
 pub const QUIESCENSE_DEPTH: u8 = 2;
 
 pub const fn piece_value(piece: Piece) -> i32 {

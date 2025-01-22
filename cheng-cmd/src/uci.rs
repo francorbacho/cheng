@@ -1,8 +1,8 @@
 use cheng::{Board, FromIntoFen};
 use flimsybird::{Evaluable, Evaluation};
 
-use crate::Context;
 use crate::args::Args;
+use crate::Context;
 
 pub fn uci() {
     println!("uciok");
@@ -45,12 +45,12 @@ pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
         Vec::new()
     };
 
-     for mv in moves {
-         context
-         .board
-         .try_feed(mv.as_str())
-        .map_err(|_| format!("received invalid move"))?;
-     }
+    for mv in moves {
+        context
+            .board
+            .try_feed(mv.as_str())
+            .map_err(|_| format!("received invalid move"))?;
+    }
 
     Ok(())
 }

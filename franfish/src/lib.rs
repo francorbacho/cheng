@@ -6,11 +6,11 @@ use inspector::DebugInspector;
 use inspector::Inspector;
 use inspector::NoInspector;
 
-use cheng::{PseudoMove, LegalMove};
 use cheng::Piece;
+use cheng::PseudoMoveGenerator;
 use cheng::Side;
 use cheng::{Board, BorkedBoard};
-use cheng::PseudoMoveGenerator;
+use cheng::{LegalMove, PseudoMove};
 
 pub fn go_debug(board: &Board, depth: usize) -> LegalMove {
     go_inspect::<DebugInspector>(board, depth)
@@ -110,7 +110,8 @@ fn evaluate<I: Inspector>(board: &BorkedBoard) -> Evaluation {
             Piece::Rook => 500,
             Piece::Queen => 900,
             Piece::King => 1 << 16,
-        }.into()
+        }
+        .into()
     }
 
     I::on_evaluate_leaf();

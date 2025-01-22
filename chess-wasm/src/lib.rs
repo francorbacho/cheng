@@ -33,7 +33,9 @@ pub fn main() {
 
 #[wasm_bindgen(js_name = "restartBoard")]
 pub fn restart_board() {
-    unsafe { BOARD = Some(Board::default()); }
+    unsafe {
+        BOARD = Some(Board::default());
+    }
 }
 
 #[wasm_bindgen(js_name = "loadBoardFromFen")]

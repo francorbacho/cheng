@@ -290,8 +290,8 @@ fn bench_fen() {
 }
 
 mod ff {
-    use crate::Context;
     use crate::args::Args;
+    use crate::Context;
     use std::time::Instant;
 
     pub fn go(context: &mut Context, _args: Args) -> Result<(), String> {

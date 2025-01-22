@@ -6,8 +6,8 @@ use std::{
 use cheng::{Board, FromIntoFen};
 use uci::Engine;
 
-use crate::{incremental_perft, Context};
 use crate::args::Args;
+use crate::{incremental_perft, Context};
 
 #[derive(Debug)]
 pub enum PerftBisectErr {

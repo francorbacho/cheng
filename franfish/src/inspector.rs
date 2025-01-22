@@ -1,5 +1,5 @@
-use cheng::{PseudoMove, LegalMove};
 use crate::Evaluation;
+use cheng::{LegalMove, PseudoMove};
 
 static mut NODES_EVALUATED: usize = 0;
 

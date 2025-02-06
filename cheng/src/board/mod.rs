@@ -101,7 +101,14 @@ impl Board {
         self.inner.feed_unchecked(&movement.into())
     }
 
-    pub fn validate<'b>(&self, pseudomove: PseudoMove) -> Option<LegalMove<'b>> {
+    pub fn validate<'b, M>(&self, pseudomove: M) -> Option<LegalMove<'b>>
+    where
+        M: TryInto<PseudoMove>,
+    {
+        let pseudomove = match pseudomove.try_into() {
+            Ok(pm) => pm,
+            Err(_) => return None,
+        };
         LegalMove::new(pseudomove, &self.inner)
     }
 

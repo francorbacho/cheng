@@ -8,7 +8,8 @@ use perft_bisect::perft_bisect;
 
 use args::Args;
 
-use std::io::{self, Write};
+use std::fs::File;
+use std::io::{self, BufRead, Write};
 use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::Instant;
 
@@ -79,6 +80,8 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
 
         "ff" => ff::go(context, args),
         "ffd" => ff::go_debug(context, args),
+
+        "batch" => batch(context, args),
 
         // our protocol
         "goinfo" => goinfo(context).map_err(String::from),
@@ -167,6 +170,48 @@ where
     }
 
     Ok(nodes)
+}
+
+fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
+    const ANALYSIS_DEPTH: usize = 3;
+
+    let file = args.join_from("file", 1)?;
+
+    let file = match File::open(file) {
+        Ok(file) => file,
+        Err(err) => return Err(format!("{err}")),
+    };
+    let reader = io::BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line.map_err(|x| format!("{x}"))?;
+        let fields: Vec<&str> = line.split(',').collect();
+
+        let fen = &fields[1];
+        let continuation_str = &fields[2];
+        let continuation: Vec<_> = continuation_str.split(' ').collect();
+
+        let mut board = Board::from_fen(fen).map_err(|x| format!("{x:?}"))?;
+        board.try_feed(continuation[0]).unwrap();
+
+        let movement = franfish::go(&board, ANALYSIS_DEPTH);
+        let expected = match board.validate(continuation[1]) {
+            Some(expected) => expected,
+            None => {
+                return Err(format!(
+                    "Failed to parse continuation: {} is not a valid move for {}",
+                    continuation_str, fen
+                ))
+            }
+        };
+
+        if movement != expected {
+            let real_fen = board.as_fen();
+            println!("FEN {real_fen:>60} FAILED (expected={expected}, got={movement})");
+        }
+    }
+
+    Ok(())
 }
 
 fn goinfo(context: &mut Context) -> Result<(), &'static str> {

@@ -58,6 +58,10 @@ impl BorkedBoard {
     }
 
     pub fn does_move_bork(&self, pseudomove: PseudoMove) -> bool {
+        // XXX: The `feed_unchecked` does a lot of computation that
+        //      maybe we don't need (update threats, passed pawns...).
+        //      Can this be improved?
+
         let mut clone = self.clone();
         clone.feed_unchecked(&pseudomove);
         clone.is_borked()

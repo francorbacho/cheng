@@ -67,6 +67,8 @@ impl BorkedBoard {
         clone.is_borked()
     }
 
+    // FIXME: Can we integrate this function with does_move_bork()?
+    //        What is the difference?
     pub fn is_move_valid(&self, pseudomove: PseudoMove) -> bool {
         // TODO: Refactor this. Shares some code with PseudoMoveGenerator and others.
 

@@ -173,8 +173,6 @@ where
 }
 
 fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
-    const ANALYSIS_DEPTH: usize = 3;
-
     let file = args.join_from("file", 1)?;
 
     let file = match File::open(file) {
@@ -194,7 +192,7 @@ fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
         let mut board = Board::from_fen(fen).map_err(|x| format!("{x:?}"))?;
         board.try_feed(continuation[0]).unwrap();
 
-        let movement = franfish::go(&board, ANALYSIS_DEPTH);
+        let movement = franfish::go(&board);
         let expected = match board.validate(continuation[1]) {
             Some(expected) => expected,
             None => {
@@ -340,24 +338,15 @@ mod ff {
     use std::time::Instant;
 
     pub fn go(context: &mut Context, _args: Args) -> Result<(), String> {
-        let depth: usize = 3;
-        let movement = franfish::go(&context.board, depth);
+        let movement = franfish::go(&context.board);
         println!("bestmove {movement}");
 
         Ok(())
     }
 
-    pub fn go_debug(context: &mut Context, args: Args) -> Result<(), String> {
-        let go_start = Instant::now();
-
-        let depth: usize = args.parse::<usize>("depth", 1)?;
-
-        let movement = franfish::go_debug(&context.board, depth);
-
-        let go_end = Instant::now();
-        let go_duration = go_end - go_start;
-
-        println!("total time: {go_duration:?}\nmove: {movement}",);
+    pub fn go_debug(context: &mut Context, _args: Args) -> Result<(), String> {
+        let movement = franfish::go_debug(&context.board);
+        println!("bestmove {movement}");
 
         Ok(())
     }

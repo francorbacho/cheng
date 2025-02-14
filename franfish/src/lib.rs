@@ -1,107 +1,190 @@
 mod evaluation;
 use evaluation::Evaluation;
 
-mod inspector;
-use inspector::DebugInspector;
-use inspector::Inspector;
-use inspector::NoInspector;
+mod debugger;
+use debugger::{Debugger, LogAllDebugger, NoDebugger};
 
+use cheng::FromIntoFen;
 use cheng::Piece;
 use cheng::PseudoMoveGenerator;
 use cheng::Side;
-use cheng::{Board, BorkedBoard};
+use cheng::{Board, BorkedBoard, GameResult};
 use cheng::{LegalMove, PseudoMove};
 
-pub fn go_debug(board: &Board, depth: usize) -> LegalMove {
-    go_inspect::<DebugInspector>(board, depth)
+use std::time::{Duration, Instant};
+
+pub fn go(board: &Board) -> LegalMove {
+    let mut franfish = Franfish::<NoDebugger>::default();
+    franfish.go(board)
 }
 
-pub fn go(board: &Board, depth: usize) -> LegalMove {
-    go_inspect::<NoInspector>(board, depth)
+pub fn go_debug(board: &Board) -> LegalMove {
+    let mut franfish = Franfish::new(LogAllDebugger::default(), Duration::from_secs(15));
+    franfish.go(board)
 }
 
-fn go_inspect<I: Inspector>(board: &Board, depth: usize) -> LegalMove {
-    I::on_start();
+static mut NODES_VISITED: usize = 0;
 
-    let mut alpha = Evaluation::BLACK_WIN;
-    let mut beta = Evaluation::WHITE_WIN;
+const EV_DEPTH: usize = 4;
 
-    let mut best_move = None;
-    let mut best_eval = Evaluation::wins(board.turn().opposite());
+#[derive(PartialEq, Eq)]
+enum SearchExit {
+    FullDepth,
+    Timeout,
+}
 
-    for movement in board.moves() {
-        I::on_evaluate(&PseudoMove::from(&movement), depth);
+#[derive(PartialEq, Eq)]
+struct SearchResult {
+    exit: SearchExit,
+    eval: Evaluation,
+}
 
-        let mut clone = board.clone();
-        clone.feed(movement.clone());
+pub struct Franfish<D: Debugger> {
+    search_started_at: Option<Instant>,
+    max_search_time: Duration,
+    debugger: D,
+}
 
-        let eval = minimax::<I>(&clone.inner(), depth - 1, alpha, beta);
-        if board.turn() == Side::White && best_eval <= eval {
-            I::on_new_best_move(&movement, eval);
+impl<D: Default + Debugger> Default for Franfish<D> {
+    fn default() -> Self {
+        Self::new(D::default(), Duration::from_secs(1))
+    }
+}
 
-            alpha = eval;
-            best_eval = eval;
-            best_move = Some(movement);
-        } else if board.turn() == Side::Black && eval <= best_eval {
-            I::on_new_best_move(&movement, eval);
-
-            beta = eval;
-            best_eval = eval;
-            best_move = Some(movement);
+impl<D: Debugger> Franfish<D> {
+    pub fn new(debugger: D, max_search_time: Duration) -> Self {
+        Self {
+            search_started_at: Some(Instant::now()),
+            max_search_time,
+            debugger,
         }
     }
 
-    I::on_end();
+    fn elapsed(&self) -> Option<Duration> {
+        Some(Instant::now() - self.search_started_at?)
+    }
 
-    best_move.unwrap()
+    pub fn go<'a>(&mut self, board: &'a Board) -> LegalMove<'a> {
+        unsafe {
+            NODES_VISITED = 0;
+        }
+
+        let mut alpha = Evaluation::BLACK_WIN;
+        let mut beta = Evaluation::WHITE_WIN;
+
+        let mut best_move = None;
+        let mut best_eval = Evaluation::wins(board.turn().opposite());
+
+        for movement in board.moves() {
+            let pseudomove = PseudoMove::from(movement.clone());
+            self.debugger.on_feed(&pseudomove, EV_DEPTH);
+
+            let mut clone = board.inner().clone();
+            clone.feed_unchecked(&pseudomove);
+            if clone.is_borked() {
+                continue;
+            }
+
+            let result = self.minimax(&clone, EV_DEPTH - 1, alpha, beta);
+            if result.exit == SearchExit::Timeout {
+                log::trace!("got timeout :(");
+                break;
+            }
+
+            if board.turn() == Side::White && best_eval <= result.eval {
+                alpha = result.eval;
+                best_eval = result.eval;
+                best_move = Some(movement);
+            } else if board.turn() == Side::Black && result.eval <= best_eval {
+                beta = result.eval;
+                best_eval = result.eval;
+                best_move = Some(movement);
+            }
+        }
+
+        log::trace!("visited {} nodes", unsafe { NODES_VISITED });
+
+        board.validate(best_move.unwrap()).unwrap()
+    }
+
+    fn minimax(
+        &mut self,
+        board: &BorkedBoard,
+        depth: usize,
+        mut alpha: Evaluation,
+        mut beta: Evaluation,
+    ) -> SearchResult {
+        if depth == 0 {
+            let eval = evaluate(board);
+            self.debugger.on_leaf(eval);
+
+            return SearchResult {
+                exit: SearchExit::FullDepth,
+                eval,
+            };
+        }
+
+        if self.elapsed() > Some(self.max_search_time) {
+            return SearchResult {
+                exit: SearchExit::Timeout,
+                eval: evaluate(board),
+            };
+        }
+
+        let gen = PseudoMoveGenerator::new(board);
+        if gen.is_empty() {
+            let eval = if board.side(board.turn).king_in_check {
+                Evaluation::wins(board.turn.opposite())
+            } else {
+                Evaluation::DRAW
+            };
+
+            self.debugger.on_leaf(eval);
+
+            return SearchResult {
+                exit: SearchExit::FullDepth,
+                eval,
+            };
+        }
+
+        let mut best_eval = Evaluation::wins(board.turn.opposite());
+        let mut legal_move_exists = false;
+
+        for movement in gen {
+            let mut clone = board.clone();
+            clone.feed_unchecked(&movement);
+            if clone.is_borked() {
+                continue;
+            }
+
+            legal_move_exists = true;
+
+            self.debugger.on_feed(&movement, depth);
+
+            let result = self.minimax(&clone, depth - 1, alpha, beta);
+            if board.turn == Side::White && best_eval <= result.eval {
+                alpha = result.eval;
+                best_eval = result.eval;
+            } else if board.turn == Side::Black && result.eval <= best_eval {
+                beta = result.eval;
+                best_eval = result.eval;
+            }
+
+            // TODO: alpha-beta pruning
+        }
+
+        if !legal_move_exists {
+            self.debugger.on_leaf(best_eval);
+        }
+
+        SearchResult {
+            exit: SearchExit::FullDepth,
+            eval: best_eval,
+        }
+    }
 }
 
-fn minimax<I: Inspector>(
-    board: &BorkedBoard,
-    depth: usize,
-    mut alpha: Evaluation,
-    mut beta: Evaluation,
-) -> Evaluation {
-    if depth == 0 {
-        return evaluate::<I>(board);
-    }
-
-    let moves = PseudoMoveGenerator::new(board);
-
-    if moves.is_empty() {
-        return Evaluation::checkmate_in(board.turn.opposite(), depth as u32);
-    }
-
-    let mut result = Evaluation::wins(board.turn.opposite());
-
-    for movement in moves {
-        I::on_evaluate(&movement, depth);
-
-        let mut clone = board.clone();
-        clone.feed_unchecked(&movement);
-        if clone.is_borked() {
-            continue;
-        }
-        let eval = minimax::<I>(&clone, depth - 1, alpha, beta);
-
-        if board.turn == Side::White {
-            result = Evaluation::max(result, eval);
-            alpha = Evaluation::max(alpha, eval);
-        } else {
-            result = Evaluation::min(result, eval);
-            beta = Evaluation::min(beta, eval);
-        }
-
-        if beta <= alpha {
-            I::on_pruning();
-            break;
-        }
-    }
-
-    result
-}
-
-fn evaluate<I: Inspector>(board: &BorkedBoard) -> Evaluation {
+fn evaluate(board: &BorkedBoard) -> Evaluation {
     fn piece_value(piece: Piece) -> Evaluation {
         match piece {
             Piece::Pawn => 100,
@@ -114,17 +197,25 @@ fn evaluate<I: Inspector>(board: &BorkedBoard) -> Evaluation {
         .into()
     }
 
-    I::on_evaluate_leaf();
+    unsafe {
+        NODES_VISITED += 1;
+    }
 
-    let mut result = Evaluation::default();
+    match board.compute_result() {
+        GameResult::Draw => return Evaluation::DRAW,
+        GameResult::Checkmate { winner } => return Evaluation::wins(winner),
+        GameResult::Undecided => {},
+    }
+
+    let mut evaluation = Evaluation::default();
 
     for piece in Piece::iter() {
         let wmask = board.white_side.pieces.piece(piece);
         let bmask = board.black_side.pieces.piece(piece);
         let diff = Evaluation(wmask.count() as i32 - bmask.count() as i32);
 
-        result += diff * piece_value(piece);
+        evaluation += diff * piece_value(piece);
     }
 
-    result
+    evaluation
 }

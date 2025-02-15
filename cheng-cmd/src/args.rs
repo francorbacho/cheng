@@ -32,7 +32,7 @@ impl Args {
         self.parts
             .get(arg)
             .ok_or_else(|| format!("missing {what}"))
-            .map(|x| x.as_str())
+            .map(std::string::String::as_str)
     }
 
     pub fn parts(&self) -> Vec<&str> {

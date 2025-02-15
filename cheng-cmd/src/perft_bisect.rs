@@ -24,6 +24,7 @@ pub enum PerftBisectErr {
     },
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn perft_bisect(context: &mut Context, args: Args) -> Result<(), String> {
     let depth: usize = args.parse("depth", 1)?;
 

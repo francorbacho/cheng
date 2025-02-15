@@ -16,6 +16,7 @@ pub fn isready() {
     println!("readyok");
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
     let input = args.parts();
     let mut iter = input.into_iter().peekable();
@@ -51,12 +52,13 @@ pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
         context
             .board
             .try_feed(mv.as_str())
-            .map_err(|_| format!("received invalid move"))?;
+            .map_err(|_| "received invalid move".to_string())?;
     }
 
     Ok(())
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
     let movetime = match args.parts()[1..] {
         // FIXME: Workaround to get `go` working.
@@ -67,7 +69,7 @@ pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
         _ => return Err("invalid format".to_string()),
     };
 
-    let _movetime: usize = movetime.parse().map_err(|_| format!("invalid wtime"))?;
+    let _movetime: usize = movetime.parse().map_err(|_| "invalid wtime".to_string())?;
 
     let (best_move, _) = context.board.evaluate();
 
@@ -98,6 +100,7 @@ pub fn eval(context: &mut Context) {
     );
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn setoption(context: &mut Context, args: Args) -> Result<(), String> {
     match args.as_str("option", 1) {
         Ok("timeout") => {

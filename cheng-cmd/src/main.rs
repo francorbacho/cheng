@@ -89,8 +89,8 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "eval" => Ok(uci::eval(context)),
         "setoption" => uci::setoption(context, args),
 
-        "ff" => ff::go(context, args),
-        "ffd" => ff::go_debug(context, args),
+        "ff" => ff::go(context),
+        "ffd" => ff::go_debug(context),
 
         "batch" => batch(context, args),
 
@@ -139,12 +139,14 @@ fn version() {
     );
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn display_board(context: &mut Context, _args: Args) {
     println!("{}", BoardDisplay(context.board.inner()));
     println!("fen: {}", context.board.as_fen());
     println!("result: {:?}", context.board.result());
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn fen(context: &mut Context, args: Args) -> Result<(), String> {
     let fen = args.join_from("fen", 1)?;
     context.board = Board::from_fen(&fen).map_err(|err| format!("{err:?}"))?;
@@ -175,7 +177,7 @@ where
 
         let control = callback(&movement, move_nodes);
         match control {
-            Continue(_) => continue,
+            Continue(()) => continue,
             Break(e) => return Err(e),
         }
     }
@@ -183,6 +185,7 @@ where
     Ok(nodes)
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn batch(context: &mut Context, args: Args) -> Result<(), String> {
     let file = args.join_from("file", 1)?;
 
@@ -205,14 +208,10 @@ fn batch(context: &mut Context, args: Args) -> Result<(), String> {
         context.board.try_feed(continuation[0]).unwrap();
 
         let GoResult { exit, movement } = context.go_franfish();
-        let expected = match context.board.validate(continuation[1]) {
-            Some(expected) => expected,
-            None => {
-                return Err(format!(
-                    "Failed to parse continuation: {} is not a valid move for {}",
-                    continuation_str, fen
-                ))
-            }
+        let Some(expected) = context.board.validate(continuation[1]) else {
+            return Err(format!(
+                "Failed to parse continuation: {continuation_str} is not a valid move for {fen}",
+            ));
         };
 
         if movement != expected {
@@ -228,6 +227,7 @@ fn batch(context: &mut Context, args: Args) -> Result<(), String> {
     Ok(())
 }
 
+#[allow(clippy::unnecessary_wraps)]
 fn goinfo(context: &mut Context) -> Result<(), &'static str> {
     let mut board_clone = context.board.clone();
     let (mv, _) = board_clone.evaluate();
@@ -236,6 +236,7 @@ fn goinfo(context: &mut Context) -> Result<(), &'static str> {
     Ok(())
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn perft(context: &mut Context, args: Args) -> Result<(), String> {
     let perft_start = Instant::now();
 
@@ -259,6 +260,7 @@ fn perft(context: &mut Context, args: Args) -> Result<(), String> {
     Ok(())
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn feed(context: &mut Context, args: Args) -> Result<(), String> {
     let pseudomove: PseudoMove = args.parse::<PseudoMove>("move", 1)?;
 
@@ -284,7 +286,7 @@ fn dump_tables() {
         println!("{sq:?}");
         let table_of_moves = unsafe { cheng::internal::ROOK_MOVES[sq.to_index()] };
         let mut amount_zeros = 0;
-        for moves in table_of_moves.iter() {
+        for moves in &table_of_moves {
             let value = u64::from(*moves);
             if value == 0 {
                 amount_zeros += 1;
@@ -302,6 +304,7 @@ fn dump_tables() {
     }
 }
 
+#[allow(clippy::needless_pass_by_value)]
 fn bench(args: Args) -> Result<(), String> {
     match args.as_str("what to bench", 1)? {
         "magics" => Ok(bench_magics()),
@@ -352,20 +355,20 @@ fn bench_fen() {
 }
 
 mod ff {
-    use crate::args::Args;
     use crate::Context;
-    use std::time::Instant;
 
     use franfish::GoResult;
 
-    pub fn go(context: &mut Context, _args: Args) -> Result<(), String> {
+    #[allow(clippy::unnecessary_wraps)]
+    pub fn go(context: &mut Context) -> Result<(), String> {
         let GoResult { movement, .. } = franfish::go(&context.board);
         println!("bestmove {movement}");
 
         Ok(())
     }
 
-    pub fn go_debug(context: &mut Context, _args: Args) -> Result<(), String> {
+    #[allow(clippy::unnecessary_wraps)]
+    pub fn go_debug(context: &mut Context) -> Result<(), String> {
         let GoResult { movement, .. } = franfish::go_debug(&context.board);
         println!("bestmove {movement}");
 

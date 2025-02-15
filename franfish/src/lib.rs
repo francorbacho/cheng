@@ -4,7 +4,6 @@ use evaluation::Evaluation;
 mod debugger;
 pub use debugger::{Debugger, LogAllDebugger, NoDebugger};
 
-use cheng::FromIntoFen;
 use cheng::Piece;
 use cheng::PseudoMoveGenerator;
 use cheng::Side;

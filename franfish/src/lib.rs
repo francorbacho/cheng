@@ -1,3 +1,5 @@
+mod display;
+
 mod evaluation;
 use evaluation::Evaluation;
 
@@ -35,7 +37,7 @@ pub enum SearchExit {
 #[derive(PartialEq, Eq)]
 pub struct GoResult<'a> {
     pub exit: SearchExit,
-    pub movement: LegalMove<'a>,
+    pub movement: Option<LegalMove<'a>>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -58,15 +60,20 @@ impl<D: Default + Debugger> Default for Franfish<D> {
 
 impl<D: Debugger> Franfish<D> {
     pub fn new(debugger: D, max_search_time: Option<Duration>) -> Self {
+        #[cfg(not(target_arch = "wasm32"))]
+        let now = Some(Instant::now());
+        #[cfg(target_arch = "wasm32")]
+        let now = None;
+
         Self {
-            search_started_at: Some(Instant::now()),
+            search_started_at: now,
             max_search_time,
             debugger,
         }
     }
 
     fn elapsed(&self) -> Option<Duration> {
-        Some(Instant::now() - self.search_started_at?)
+        None
     }
 
     pub fn go<'a>(&mut self, board: &'a Board) -> GoResult<'a> {
@@ -113,7 +120,7 @@ impl<D: Debugger> Franfish<D> {
 
         GoResult {
             exit,
-            movement: board.validate(best_move.unwrap()).unwrap(),
+            movement: board.validate(best_move.unwrap()),
         }
     }
 

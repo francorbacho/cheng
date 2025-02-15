@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 cheng = { path = "../cheng" }
-flimsybird = { path = "../flimsybird" }
 franfish = { path = "../franfish" }
 owo-colors = "3.5.0"
 uci = "0.1.3"

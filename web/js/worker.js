@@ -6,6 +6,6 @@ self.onmessage = async (event) => {
     const { inputData } = event.data;
     wasm.loadBoardFromFen(inputData);
 
-    const result = await wasm.flimsybirdRun().catch(() => { /* TODO: Handle this? */ });
+    const result = await wasm.franfishRun().catch(() => { /* TODO: Handle this? */ });
     self.postMessage(result);
 };

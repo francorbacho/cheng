@@ -1,8 +1,0 @@
-[package]
-name = "flimsybird"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-cheng = { path = "../cheng" }
-log = "0.4"

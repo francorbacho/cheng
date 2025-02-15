@@ -14,7 +14,6 @@ use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::{Duration, Instant};
 
 use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
-use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
@@ -95,15 +94,12 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "batch" => batch(context, args),
 
         // our protocol
-        "goinfo" => goinfo(context).map_err(String::from),
         "perft" => perft(context, args).map_err(String::from),
         "perft-bisect" => perft_bisect(context, args).map_err(String::from),
         "fen" => fen(context, args),
         "feed" => feed(context, args),
-        "ev" => Ok(evaluate(context)),
         "d" => Ok(display_board(context, args)),
         "dump-tables" => Ok(dump_tables()),
-        "bench" => bench(args),
         "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
     };
@@ -208,6 +204,9 @@ fn batch(context: &mut Context, args: Args) -> Result<(), String> {
         context.board.try_feed(continuation[0]).unwrap();
 
         let GoResult { exit, movement } = context.go_franfish();
+        let Some(movement) = movement else {
+            return Err("Failed to generate a movement".to_string());
+        };
         let Some(expected) = context.board.validate(continuation[1]) else {
             return Err(format!(
                 "Failed to parse continuation: {continuation_str} is not a valid move for {fen}",
@@ -224,15 +223,6 @@ fn batch(context: &mut Context, args: Args) -> Result<(), String> {
         }
     }
 
-    Ok(())
-}
-
-#[allow(clippy::unnecessary_wraps)]
-fn goinfo(context: &mut Context) -> Result<(), &'static str> {
-    let mut board_clone = context.board.clone();
-    let (mv, _) = board_clone.evaluate();
-    let mv = mv.unwrap();
-    println!("info pv {mv}");
     Ok(())
 }
 
@@ -270,17 +260,6 @@ fn feed(context: &mut Context, args: Args) -> Result<(), String> {
         .map_err(|err| format!("Invalid move: {err:?}"))
 }
 
-fn evaluate(context: &mut Context) {
-    let mut binding = context.board.clone();
-    let (best_move, evaluation) = binding.evaluate();
-
-    if let Some(best_move) = best_move {
-        println!("{}", cheng::SAN(&best_move, &context.board));
-    }
-
-    println!("evaluation: {evaluation}");
-}
-
 fn dump_tables() {
     for sq in Square::iter_all() {
         println!("{sq:?}");
@@ -304,16 +283,7 @@ fn dump_tables() {
     }
 }
 
-#[allow(clippy::needless_pass_by_value)]
-fn bench(args: Args) -> Result<(), String> {
-    match args.as_str("what to bench", 1)? {
-        "magics" => Ok(bench_magics()),
-        "fen" => Ok(bench_fen()),
-        word => Err(format!("bad word: {word}")),
-    }
-}
-
-fn bench_magics() {
+fn _bench_magics() {
     use cheng::movegen::PieceExt;
     use cheng::movegen::{Bishop, Rook};
     use cheng::BoardMask;
@@ -341,36 +311,21 @@ fn bench_magics() {
     println!("1 billion interations took :: {took:?}");
 }
 
-fn bench_fen() {
-    let before = Instant::now();
-    let fen = "8/k7/1NpP1K2/6B1/Pp2P1pp/1P4rr/1PpbNP2/5R2 w - - 0 1";
-    let board = Board::from_fen(fen).unwrap();
-    evaluate(&mut Context {
-        board,
-        timeout: None,
-    });
-    let after = Instant::now();
-    let took = after - before;
-    println!("evaluation took :: {took:?}");
-}
-
 mod ff {
     use crate::Context;
 
-    use franfish::GoResult;
-
     #[allow(clippy::unnecessary_wraps)]
     pub fn go(context: &mut Context) -> Result<(), String> {
-        let GoResult { movement, .. } = franfish::go(&context.board);
-        println!("bestmove {movement}");
+        let result = franfish::go(&context.board);
+        println!("{result}");
 
         Ok(())
     }
 
     #[allow(clippy::unnecessary_wraps)]
     pub fn go_debug(context: &mut Context) -> Result<(), String> {
-        let GoResult { movement, .. } = franfish::go_debug(&context.board);
-        println!("bestmove {movement}");
+        let result = franfish::go_debug(&context.board);
+        println!("{result}");
 
         Ok(())
     }

@@ -1,6 +1,7 @@
-use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
+
+use franfish::GoResult;
 
 use cheng::{Board, FromIntoFen, GameResult, MoveKind, Piece, PseudoMove, Side, SidedPiece};
 
@@ -243,28 +244,22 @@ pub fn valid_moves() -> js_sys::Array {
 #[wasm_bindgen]
 #[must_use]
 pub fn evaluate() -> i32 {
-    let board = get_board_mut();
-
-    Evaluable::evaluate(board).1 .0
+    todo!()
 }
 
-#[wasm_bindgen(js_name = "flimsybirdRun")]
-pub async fn flimsybird_run() -> Result<String, String> {
-    let board = get_board_mut();
-    let (Some(best_move), ev) = Evaluable::evaluate(board) else {
-        return Err("No move is possible".to_string());
+#[wasm_bindgen(js_name = "franfishRun")]
+pub async fn franfish_run() -> Result<String, String> {
+    log::debug!("starting run...");
+    let board = get_board();
+    let GoResult { movement, .. } = franfish::go(board);
+    log::debug!("run finished and found result :: {movement:?}");
+    let Some(movement) = movement else {
+        return Err("(none)".to_string());
     };
-
-    let nodes = unsafe { flimsybird::EVALUATED_NODES };
-
-    log::debug!("line: {best_move} :: {ev} ({nodes} nodes evaluated)");
-    Ok(format!("{best_move}"))
+    Ok(format!("{movement}"))
 }
 
 #[wasm_bindgen(js_name = "static_evaluate")]
 pub async fn static_evaluate() -> Result<(), String> {
-    let board = get_board_mut();
-    flimsybird::board_static_evaluation::<flimsybird::LogTracer>(board);
-
-    Ok(())
+    todo!()
 }

@@ -21,7 +21,7 @@ use rustyline::DefaultEditor;
 
 use crate::board_display::BoardDisplay;
 
-use franfish::{SearchExit, GoResult};
+use franfish::{GoResult, SearchExit};
 
 #[derive(Default)]
 pub struct Context {

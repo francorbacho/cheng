@@ -215,7 +215,7 @@ fn evaluate(board: &BorkedBoard) -> Evaluation {
     match board.compute_result() {
         GameResult::Draw => return Evaluation::DRAW,
         GameResult::Checkmate { winner } => return Evaluation::wins(winner),
-        GameResult::Undecided => {},
+        GameResult::Undecided => {}
     }
 
     let mut evaluation = Evaluation::default();

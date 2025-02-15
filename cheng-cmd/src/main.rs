@@ -11,7 +11,7 @@ use args::Args;
 use std::fs::File;
 use std::io::{self, BufRead, Write};
 use std::ops::ControlFlow::{self, Break, Continue};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
 use flimsybird::Evaluable;
@@ -26,6 +26,14 @@ use franfish::{GoResult, SearchExit};
 #[derive(Default)]
 pub struct Context {
     board: Board,
+    timeout: Option<Duration>,
+}
+
+impl Context {
+    fn go_franfish(&self) -> GoResult {
+        let mut franfish = franfish::Franfish::new(franfish::NoDebugger, self.timeout);
+        franfish.go(&self.board)
+    }
 }
 
 fn main() -> Result<(), String> {
@@ -79,6 +87,7 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "position" => uci::position(context, args),
         "go" => uci::go(context, args),
         "eval" => Ok(uci::eval(context)),
+        "setoption" => uci::setoption(context, args),
 
         "ff" => ff::go(context, args),
         "ffd" => ff::go_debug(context, args),
@@ -174,7 +183,7 @@ where
     Ok(nodes)
 }
 
-fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
+fn batch(context: &mut Context, args: Args) -> Result<(), String> {
     let file = args.join_from("file", 1)?;
 
     let file = match File::open(file) {
@@ -192,11 +201,11 @@ fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
         let continuation: Vec<_> = continuation_str.split(' ').collect();
 
         log::info!("loading fen {fen} and continuation {continuation:?}");
-        let mut board = Board::from_fen(fen).map_err(|x| format!("{x:?}"))?;
-        board.try_feed(continuation[0]).unwrap();
+        context.board = Board::from_fen(fen).map_err(|x| format!("{x:?}"))?;
+        context.board.try_feed(continuation[0]).unwrap();
 
-        let GoResult { exit, movement } = franfish::go(&board);
-        let expected = match board.validate(continuation[1]) {
+        let GoResult { exit, movement } = context.go_franfish();
+        let expected = match context.board.validate(continuation[1]) {
             Some(expected) => expected,
             None => {
                 return Err(format!(
@@ -207,7 +216,7 @@ fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
         };
 
         if movement != expected {
-            let real_fen = board.as_fen();
+            let real_fen = context.board.as_fen();
             let reason = match exit {
                 SearchExit::FullDepth => "FAILED",
                 SearchExit::Timeout => "TIMEOUT",
@@ -333,7 +342,10 @@ fn bench_fen() {
     let before = Instant::now();
     let fen = "8/k7/1NpP1K2/6B1/Pp2P1pp/1P4rr/1PpbNP2/5R2 w - - 0 1";
     let board = Board::from_fen(fen).unwrap();
-    evaluate(&mut Context { board });
+    evaluate(&mut Context {
+        board,
+        timeout: None,
+    });
     let after = Instant::now();
     let took = after - before;
     println!("evaluation took :: {took:?}");

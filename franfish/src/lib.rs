@@ -2,7 +2,7 @@ mod evaluation;
 use evaluation::Evaluation;
 
 mod debugger;
-use debugger::{Debugger, LogAllDebugger, NoDebugger};
+pub use debugger::{Debugger, LogAllDebugger, NoDebugger};
 
 use cheng::FromIntoFen;
 use cheng::Piece;
@@ -19,7 +19,7 @@ pub fn go(board: &Board) -> GoResult {
 }
 
 pub fn go_debug(board: &Board) -> GoResult {
-    let mut franfish = Franfish::new(LogAllDebugger::default(), Duration::from_secs(15));
+    let mut franfish = Franfish::new(LogAllDebugger::default(), Some(Duration::from_secs(15)));
     franfish.go(board)
 }
 
@@ -47,18 +47,18 @@ struct SearchResult {
 
 pub struct Franfish<D: Debugger> {
     search_started_at: Option<Instant>,
-    max_search_time: Duration,
+    max_search_time: Option<Duration>,
     debugger: D,
 }
 
 impl<D: Default + Debugger> Default for Franfish<D> {
     fn default() -> Self {
-        Self::new(D::default(), Duration::from_secs(2))
+        Self::new(D::default(), Some(Duration::from_secs(2)))
     }
 }
 
 impl<D: Debugger> Franfish<D> {
-    pub fn new(debugger: D, max_search_time: Duration) -> Self {
+    pub fn new(debugger: D, max_search_time: Option<Duration>) -> Self {
         Self {
             search_started_at: Some(Instant::now()),
             max_search_time,
@@ -135,7 +135,8 @@ impl<D: Debugger> Franfish<D> {
             };
         }
 
-        if self.elapsed() > Some(self.max_search_time) {
+        // OPTIMIZATION: We check if it's Some(..) so we don't have to call elapsed.
+        if self.max_search_time.is_some() && self.elapsed() > self.max_search_time {
             return SearchResult {
                 exit: SearchExit::Timeout,
                 eval: evaluate(board),

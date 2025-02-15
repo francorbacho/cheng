@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use cheng::{Board, FromIntoFen};
 use flimsybird::{Evaluable, Evaluation};
 
@@ -94,4 +96,16 @@ pub fn eval(context: &mut Context) {
         "quiescense search (at depth {depth}): {result}",
         depth = flimsybird::params::QUIESCENSE_DEPTH
     );
+}
+
+pub fn setoption(context: &mut Context, args: Args) -> Result<(), String> {
+    match args.as_str("option", 1) {
+        Ok("timeout") => {
+            context.timeout = Some(Duration::from_millis(args.parse("timeout", 2).unwrap()));
+        }
+        Ok(option) => return Err(format!("no such option {option}")),
+        Err(e) => return Err(e),
+    }
+
+    Ok(())
 }

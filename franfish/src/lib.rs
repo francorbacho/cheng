@@ -13,12 +13,12 @@ use cheng::{LegalMove, PseudoMove};
 
 use std::time::{Duration, Instant};
 
-pub fn go(board: &Board) -> LegalMove {
+pub fn go(board: &Board) -> GoResult {
     let mut franfish = Franfish::<NoDebugger>::default();
     franfish.go(board)
 }
 
-pub fn go_debug(board: &Board) -> LegalMove {
+pub fn go_debug(board: &Board) -> GoResult {
     let mut franfish = Franfish::new(LogAllDebugger::default(), Duration::from_secs(15));
     franfish.go(board)
 }
@@ -28,9 +28,15 @@ static mut NODES_VISITED: usize = 0;
 const EV_DEPTH: usize = 4;
 
 #[derive(PartialEq, Eq)]
-enum SearchExit {
+pub enum SearchExit {
     FullDepth,
     Timeout,
+}
+
+#[derive(PartialEq, Eq)]
+pub struct GoResult<'a> {
+    pub exit: SearchExit,
+    pub movement: LegalMove<'a>,
 }
 
 #[derive(PartialEq, Eq)]
@@ -47,7 +53,7 @@ pub struct Franfish<D: Debugger> {
 
 impl<D: Default + Debugger> Default for Franfish<D> {
     fn default() -> Self {
-        Self::new(D::default(), Duration::from_secs(1))
+        Self::new(D::default(), Duration::from_secs(2))
     }
 }
 
@@ -64,7 +70,7 @@ impl<D: Debugger> Franfish<D> {
         Some(Instant::now() - self.search_started_at?)
     }
 
-    pub fn go<'a>(&mut self, board: &'a Board) -> LegalMove<'a> {
+    pub fn go<'a>(&mut self, board: &'a Board) -> GoResult<'a> {
         unsafe {
             NODES_VISITED = 0;
         }
@@ -74,6 +80,7 @@ impl<D: Debugger> Franfish<D> {
 
         let mut best_move = None;
         let mut best_eval = Evaluation::wins(board.turn().opposite());
+        let mut exit = SearchExit::FullDepth;
 
         for movement in board.moves() {
             let pseudomove = PseudoMove::from(movement.clone());
@@ -87,7 +94,8 @@ impl<D: Debugger> Franfish<D> {
 
             let result = self.minimax(&clone, EV_DEPTH - 1, alpha, beta);
             if result.exit == SearchExit::Timeout {
-                log::trace!("got timeout :(");
+                log::debug!("got timeout :(");
+                exit = SearchExit::Timeout;
                 break;
             }
 
@@ -104,7 +112,10 @@ impl<D: Debugger> Franfish<D> {
 
         log::trace!("visited {} nodes", unsafe { NODES_VISITED });
 
-        board.validate(best_move.unwrap()).unwrap()
+        GoResult {
+            exit,
+            movement: board.validate(best_move.unwrap()).unwrap(),
+        }
     }
 
     fn minimax(

@@ -21,6 +21,8 @@ use rustyline::DefaultEditor;
 
 use crate::board_display::BoardDisplay;
 
+use franfish::{SearchExit, GoResult};
+
 #[derive(Default)]
 pub struct Context {
     board: Board,
@@ -189,10 +191,11 @@ fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
         let continuation_str = &fields[2];
         let continuation: Vec<_> = continuation_str.split(' ').collect();
 
+        log::info!("loading fen {fen} and continuation {continuation:?}");
         let mut board = Board::from_fen(fen).map_err(|x| format!("{x:?}"))?;
         board.try_feed(continuation[0]).unwrap();
 
-        let movement = franfish::go(&board);
+        let GoResult { exit, movement } = franfish::go(&board);
         let expected = match board.validate(continuation[1]) {
             Some(expected) => expected,
             None => {
@@ -205,7 +208,11 @@ fn batch(_context: &mut Context, args: Args) -> Result<(), String> {
 
         if movement != expected {
             let real_fen = board.as_fen();
-            println!("FEN {real_fen:>60} FAILED (expected={expected}, got={movement})");
+            let reason = match exit {
+                SearchExit::FullDepth => "FAILED",
+                SearchExit::Timeout => "TIMEOUT",
+            };
+            println!("FEN {real_fen:>63} {reason:>7} (expected={expected}, got={movement})");
         }
     }
 
@@ -337,15 +344,17 @@ mod ff {
     use crate::Context;
     use std::time::Instant;
 
+    use franfish::GoResult;
+
     pub fn go(context: &mut Context, _args: Args) -> Result<(), String> {
-        let movement = franfish::go(&context.board);
+        let GoResult { movement, .. } = franfish::go(&context.board);
         println!("bestmove {movement}");
 
         Ok(())
     }
 
     pub fn go_debug(context: &mut Context, _args: Args) -> Result<(), String> {
-        let movement = franfish::go_debug(&context.board);
+        let GoResult { movement, .. } = franfish::go_debug(&context.board);
         println!("bestmove {movement}");
 
         Ok(())

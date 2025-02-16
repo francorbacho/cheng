@@ -13,6 +13,10 @@ impl Side {
             Self::Black => Self::White,
         }
     }
+
+    pub fn iter() -> impl Iterator<Item = Side> {
+        [Side::White, Side::Black].into_iter()
+    }
 }
 
 impl From<Side> for char {

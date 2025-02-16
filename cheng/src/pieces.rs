@@ -8,7 +8,7 @@ pub enum Piece {
     King,
 }
 
-pub type PieceIterator = std::iter::Copied<std::slice::Iter<'static, Piece>>;
+pub type PieceIterator = std::array::IntoIter<Piece, 6>;
 
 impl Piece {
     #[cfg(not(feature = "simd"))]
@@ -26,8 +26,7 @@ impl Piece {
             Piece::Queen,
             Piece::King,
         ]
-        .iter()
-        .copied()
+        .into_iter()
     }
 
     pub fn iter_promotable_pieces() -> impl Iterator<Item = Piece> {

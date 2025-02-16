@@ -11,4 +11,3 @@ impl Display for GoResult<'_> {
         }
     }
 }
-

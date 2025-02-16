@@ -27,3 +27,12 @@ impl From<Side> for char {
         }
     }
 }
+
+impl From<Side> for usize {
+    fn from(value: Side) -> usize {
+        match value {
+            Side::White => 0,
+            Side::Black => 1,
+        }
+    }
+}

@@ -25,6 +25,12 @@ impl BoardMask {
     }
 
     #[inline]
+    pub fn replace(&mut self, this: Square, for_this: Square) {
+        self.reset(this);
+        self.set(for_this);
+    }
+
+    #[inline]
     pub fn get(self, square: Square) -> bool {
         self.0 & (1 << square.to_index()) != 0
     }

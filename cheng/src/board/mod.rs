@@ -1,3 +1,6 @@
+mod new;
+mod masks;
+
 mod borked;
 pub use borked::BorkedBoard;
 

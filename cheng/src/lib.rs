@@ -15,24 +15,11 @@ pub use crate::{
     board::{Board, BoardMask, BorkedBoard, FENParsingError, GameResult, PseudoMoveGenerator},
     fen::FromIntoFen,
     movement::{Castle, LegalMove, MoveKind, MoveParseError, PseudoMove, SAN},
-    pieces::Piece,
+    pieces::{SidedPiece, Piece},
     side_state::CastlingRights,
     sides::Side,
     square::{prelude, Square},
 };
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SidedPiece(pub Side, pub Piece);
-
-impl From<SidedPiece> for char {
-    fn from(SidedPiece(side, piece): SidedPiece) -> Self {
-        if side == Side::White {
-            char::from(piece).to_ascii_uppercase()
-        } else {
-            char::from(piece)
-        }
-    }
-}
 
 #[cfg(test)]
 mod test;

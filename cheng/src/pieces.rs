@@ -1,3 +1,5 @@
+use crate::Side;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Piece {
     Pawn,
@@ -86,6 +88,25 @@ impl From<Piece> for char {
             Piece::Rook => 'r',
             Piece::Queen => 'q',
             Piece::King => 'k',
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SidedPiece(pub Side, pub Piece);
+
+impl SidedPiece {
+    pub fn iter() -> impl Iterator<Item = SidedPiece> {
+        Side::iter().flat_map(|side| Piece::iter().map(move |piece| SidedPiece(side, piece)))
+    }
+}
+
+impl From<SidedPiece> for char {
+    fn from(SidedPiece(side, piece): SidedPiece) -> Self {
+        if side == Side::White {
+            char::from(piece).to_ascii_uppercase()
+        } else {
+            char::from(piece)
         }
     }
 }

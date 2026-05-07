@@ -4,6 +4,7 @@ mod uci;
 
 mod board_display;
 mod perft_bisect;
+mod http_uci;
 use perft_bisect::perft_bisect;
 
 use args::Args;
@@ -14,7 +15,6 @@ use std::ops::ControlFlow::{self, Break, Continue};
 use std::time::{Duration, Instant};
 
 use cheng::{Board, FromIntoFen, LegalMove, PseudoMove, Square};
-use flimsybird::Evaluable;
 
 use rustyline::error::ReadlineError;
 use rustyline::DefaultEditor;
@@ -104,6 +104,7 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "d" => Ok(display_board(context, args)),
         "dump-tables" => Ok(dump_tables()),
         "bench" => bench(args),
+        "serve" => http_server(args),
         "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
     };
@@ -229,10 +230,8 @@ fn batch(context: &mut Context, args: Args) -> Result<(), String> {
 
 #[allow(clippy::unnecessary_wraps)]
 fn goinfo(context: &mut Context) -> Result<(), &'static str> {
-    let mut board_clone = context.board.clone();
-    let (mv, _) = board_clone.evaluate();
-    let mv = mv.unwrap();
-    println!("info pv {mv}");
+    let result = franfish::go(&context.board);
+    println!("info pv {}", result.movement);
     Ok(())
 }
 
@@ -271,14 +270,8 @@ fn feed(context: &mut Context, args: Args) -> Result<(), String> {
 }
 
 fn evaluate(context: &mut Context) {
-    let mut binding = context.board.clone();
-    let (best_move, evaluation) = binding.evaluate();
-
-    if let Some(best_move) = best_move {
-        println!("{}", cheng::SAN(&best_move, &context.board));
-    }
-
-    println!("evaluation: {evaluation}");
+    let result = franfish::go(&context.board);
+    println!("best move: {}", result.movement);
 }
 
 fn dump_tables() {
@@ -352,6 +345,11 @@ fn bench_fen() {
     let after = Instant::now();
     let took = after - before;
     println!("evaluation took :: {took:?}");
+}
+
+fn http_server(args: Args) -> Result<(), String> {
+    let port: u16 = args.parse("port", 1).unwrap_or(8080);
+    http_uci::start_http_server(port)
 }
 
 mod ff {

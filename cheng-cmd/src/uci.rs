@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use cheng::{Board, FromIntoFen};
-use flimsybird::{Evaluable, Evaluation};
 
 use crate::args::Args;
 use crate::Context;
@@ -61,7 +60,6 @@ pub fn position(context: &mut Context, args: Args) -> Result<(), String> {
 #[allow(clippy::needless_pass_by_value)]
 pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
     let movetime = match args.parts()[1..] {
-        // FIXME: Workaround to get `go` working.
         [] => "0",
         ["movetime", movetime] => movetime,
         ["wtime", wtime, "btime", _btime] => wtime,
@@ -69,35 +67,18 @@ pub fn go(context: &mut Context, args: Args) -> Result<(), String> {
         _ => return Err("invalid format".to_string()),
     };
 
-    let _movetime: usize = movetime.parse().map_err(|_| "invalid wtime".to_string())?;
+    let _movetime: usize = movetime.parse().map_err(|_| "invalid movetime".to_string())?;
 
-    let (best_move, _) = context.board.evaluate();
+    let result = franfish::go(&context.board);
 
-    if let Some(best_move) = best_move {
-        println!("bestmove {best_move}");
-    } else {
-        println!("bestmove (none)");
-    }
-
-    log::info!("Evaluated {} nodes", unsafe { flimsybird::EVALUATED_NODES });
+    println!("bestmove {}", result.movement);
 
     Ok(())
 }
 
 pub fn eval(context: &mut Context) {
-    flimsybird::board_static_evaluation::<flimsybird::UciTracer>(&context.board);
-
-    let result = flimsybird::quiescense_search(
-        &context.board,
-        Evaluation::winner(context.board.turn().opposite()),
-        Evaluation::winner(context.board.turn()),
-        flimsybird::params::QUIESCENSE_DEPTH,
-    );
-
-    println!(
-        "quiescense search (at depth {depth}): {result}",
-        depth = flimsybird::params::QUIESCENSE_DEPTH
-    );
+    let result = franfish::go(&context.board);
+    println!("best move: {}", result.movement);
 }
 
 #[allow(clippy::needless_pass_by_value)]

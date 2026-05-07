@@ -269,7 +269,9 @@ class Chessboard {
 
     scheduleMove() {
         if (this.playerConfiguration[wasm.getSideToMove()].kind === "wasm") {
-            this.worker.postMessage({ inputData: wasm.boardToFen() });
+            wasm.franfishRun()
+                .then(move => this.feedMove(move))
+                .catch(err => console.error("franfish error:", err));
             return;
         }
 

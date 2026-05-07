@@ -1,4 +1,3 @@
-use flimsybird::Evaluable;
 use js_sys::JsString;
 use wasm_bindgen::prelude::*;
 
@@ -7,11 +6,21 @@ use cheng::{Board, FromIntoFen, GameResult, MoveKind, Piece, PseudoMove, Side, S
 static mut BOARD: Option<Board> = None;
 
 fn get_board() -> &'static Board {
-    unsafe { BOARD.as_ref() }.expect("BOARD was not initialized")
+    unsafe {
+        match BOARD.as_ref() {
+            Some(b) => b,
+            None => panic!("BOARD was not initialized"),
+        }
+    }
 }
 
 fn get_board_mut() -> &'static mut Board {
-    unsafe { BOARD.as_mut() }.expect("BOARD was not initialized")
+    unsafe {
+        match BOARD.as_mut() {
+            Some(b) => b,
+            None => panic!("BOARD was not initialized"),
+        }
+    }
 }
 
 fn side_to_js_string(side: Side) -> JsString {
@@ -24,11 +33,13 @@ fn side_to_js_string(side: Side) -> JsString {
 #[wasm_bindgen(start)]
 pub fn main() {
     wasm_logger::init(wasm_logger::Config::default());
+    log::info!("Initializing cheng...");
     cheng::init();
 
     unsafe {
         BOARD = Some(Board::default());
     }
+    log::info!("Board initialized");
 }
 
 #[wasm_bindgen(js_name = "restartBoard")]
@@ -40,13 +51,15 @@ pub fn restart_board() {
 
 #[wasm_bindgen(js_name = "loadBoardFromFen")]
 pub fn load_board_from_fen(fen: &JsString) -> Result<(), String> {
-    if let Ok(board) = Board::from_fen(fen.as_string().unwrap_or_default().as_ref()) {
-        unsafe {
-            BOARD = Some(board);
-        };
-        Ok(())
-    } else {
-        Err("Invalid FEN".to_string())
+    let fen_str = fen.as_string().unwrap_or_default();
+    match Board::from_fen(&fen_str) {
+        Ok(board) => {
+            unsafe {
+                BOARD = Some(board);
+            };
+            Ok(())
+        }
+        Err(e) => Err(format!("Invalid FEN: {:?}", e)),
     }
 }
 
@@ -111,11 +124,9 @@ pub fn get_pieces() -> js_sys::Array {
         };
 
         let side_field_js_value = side_to_js_string(side);
-
         let position_field_js_value = JsString::from(format!("{square:?}"));
 
         let js_obj = js_sys::Object::new();
-
         js_sys::Reflect::set(&js_obj, &side_field, &side_field_js_value).unwrap();
         js_sys::Reflect::set(&js_obj, &piece_field, &piece_field_js_value).unwrap();
         js_sys::Reflect::set(&js_obj, &position_field, &position_field_js_value).unwrap();
@@ -130,7 +141,6 @@ pub fn get_pieces() -> js_sys::Array {
 pub struct MoveFeedback {
     pub origin: String,
     pub destination: String,
-
     pub promotion: Option<String>,
     #[wasm_bindgen(js_name = "moveIsCapture")]
     pub move_is_capture: bool,
@@ -177,8 +187,6 @@ pub fn feed_move(movement: &JsString) -> Result<MoveFeedback, String> {
             .occupancy
             .get(movement.destination);
 
-    // TODO: This is code from the feed function. Obviously this is less than ideal.
-    // We should be using a different interface other than LegalMove.
     let moved_piece_is_king = board
         .inner()
         .side(board.turn())
@@ -233,8 +241,7 @@ pub fn valid_moves() -> js_sys::Array {
     let result = js_sys::Array::default();
 
     for movement in board.moves() {
-        let movement_str = format!("{movement}");
-        result.push(&JsString::from(movement_str));
+        result.push(&JsString::from(format!("{movement}")));
     }
 
     result
@@ -243,28 +250,25 @@ pub fn valid_moves() -> js_sys::Array {
 #[wasm_bindgen]
 #[must_use]
 pub fn evaluate() -> i32 {
-    let board = get_board_mut();
-
-    Evaluable::evaluate(board).1 .0
+    let board = get_board();
+    let result = franfish::go(board);
+    let mv_str = format!("{}", result.movement);
+    mv_str.parse().unwrap_or(0)
 }
 
-#[wasm_bindgen(js_name = "flimsybirdRun")]
-pub async fn flimsybird_run() -> Result<String, String> {
-    let board = get_board_mut();
-    let (Some(best_move), ev) = Evaluable::evaluate(board) else {
-        return Err("No move is possible".to_string());
-    };
-
-    let nodes = unsafe { flimsybird::EVALUATED_NODES };
-
-    log::debug!("line: {best_move} :: {ev} ({nodes} nodes evaluated)");
-    Ok(format!("{best_move}"))
-}
-
-#[wasm_bindgen(js_name = "static_evaluate")]
-pub async fn static_evaluate() -> Result<(), String> {
-    let board = get_board_mut();
-    flimsybird::board_static_evaluation::<flimsybird::LogTracer>(board);
-
-    Ok(())
+#[wasm_bindgen(js_name = "franfishRun")]
+pub async fn franfish_run() -> Result<String, String> {
+    let board = get_board();
+    match board.result() {
+        GameResult::Checkmate { .. } => Err("Game is over - checkmate".to_string()),
+        GameResult::Draw => Err("Game is over - draw".to_string()),
+        GameResult::Undecided => {
+            let moves_count = board.moves().count();
+            if moves_count == 0 {
+                return Err("No legal moves available".to_string());
+            }
+            let result = franfish::go(board);
+            Ok(format!("{}", result.movement))
+        }
+    }
 }

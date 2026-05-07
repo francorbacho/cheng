@@ -3,6 +3,10 @@ name = "franfish"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+wasm = []
+
 [dependencies]
 cheng = { path = "../cheng" }
 log = "0.4"

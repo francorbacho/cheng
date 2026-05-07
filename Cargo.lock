@@ -57,6 +57,7 @@ dependencies = [
  "franfish",
  "log 0.4.21",
  "owo-colors",
+ "rand",
  "rustyline",
  "tiny_http",
  "uci",
@@ -67,7 +68,7 @@ name = "chess-wasm"
 version = "0.1.0"
 dependencies = [
  "cheng",
- "flimsybird",
+ "franfish",
  "js-sys",
  "log 0.4.21",
  "serde",
@@ -164,14 +165,6 @@ dependencies = [
  "cfg-if",
  "rustix",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "flimsybird"
-version = "0.1.0"
-dependencies = [
- "cheng",
- "log 0.4.21",
 ]
 
 [[package]]

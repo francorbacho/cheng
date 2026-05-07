@@ -17,6 +17,10 @@ pub fn go(board: &Board) -> GoResult {
     franfish.go(board)
 }
 
+pub fn go_with_timeout(board: &Board, _max_time: Option<Duration>) -> GoResult {
+    go(board)
+}
+
 pub fn go_debug(board: &Board) -> GoResult {
     let mut franfish = Franfish::new(LogAllDebugger::default(), Some(Duration::from_secs(15)));
     franfish.go(board)

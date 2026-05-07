@@ -5,6 +5,7 @@ mod uci;
 mod board_display;
 mod perft_bisect;
 mod http_uci;
+mod benchmark;
 use perft_bisect::perft_bisect;
 
 use args::Args;
@@ -105,6 +106,8 @@ fn interpret(context: &mut Context, args: Args) -> Result<(), String> {
         "dump-tables" => Ok(dump_tables()),
         "bench" => bench(args),
         "serve" => http_server(args),
+        "benchmark" => benchmark::run_benchmark(&args.parts()),
+        "gen-positions" => benchmark::generate_positions(&args.parts()),
         "version" => Ok(version()),
         other => Err(format!("command not found: {other}")),
     };

@@ -7,10 +7,11 @@ pub fn start_http_server(port: u16) -> Result<(), String> {
     let addr = std::net::SocketAddr::from((Ipv4Addr::UNSPECIFIED, port));
     let server = Server::http(&addr).map_err(|e| format!("Failed to bind to port {port}: {e}"))?;
 
-    println!("HTTP UCI server listening on http://localhost:{}/uci", port);
+    log::info!("Listening on http://localhost:{}/uci", port);
 
     for mut request in server.incoming_requests() {
         let path = request.url();
+        log::info!("{} {}", request.method(), path);
         
         // Handle CORS preflight
         if *request.method() == tiny_http::Method::Options {
@@ -34,9 +35,11 @@ pub fn start_http_server(port: u16) -> Result<(), String> {
         // Handle GET request with ?fen=...
         if *request.method() == tiny_http::Method::Get {
             if let Some(fen) = get_fen_from_query(path) {
+                log::info!("GET FEN={}", fen);
                 let board = Board::from_fen(&fen).unwrap_or_default();
                 let result = franfish::go(&board);
                 let json = format!(r#"{{"movement":"{}"}}"#, result.movement);
+                log::info!("GET response={}", json);
                 let response = Response::from_string(json)
                     .with_header(content_type("application/json"))
                     .with_header(cors_header(b"Access-Control-Allow-Origin", b"*"));
@@ -59,11 +62,12 @@ pub fn start_http_server(port: u16) -> Result<(), String> {
         // Parse UCI commands from body
         let response = handle_uci_request(&body);
         
-        let http_response = Response::from_string(response)
+        let http_response = Response::from_string(response.clone())
             .with_header(content_type("text/plain"))
             .with_header(cors_header(b"Access-Control-Allow-Origin", b"*"));
         
         let _ = request.respond(http_response);
+        log::info!("POST response={}", response.lines().next().unwrap_or(""));
     }
 
     Ok(())
